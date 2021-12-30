@@ -24,7 +24,14 @@ with open("./django-token", "r+") as f:
     SECRET_KEY = str(f.readline()).strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ.get('DEBUG') is not None:
+    if os.environ['DB_NAME'] == "True":
+        DEBUG = True
+    else:
+        DEBUG = False
+
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = []
 
