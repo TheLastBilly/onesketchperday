@@ -29,6 +29,8 @@ services:
             - onesketchaday_static:/onesketchaday/static
             - onesketchaday_config:/config
             - ./onesketchaday.sock:/onesketchaday.sock
+            - ./django-token:/onesketchaday/django-token
+            - ./telegram-token:/onesketchaday/telegram-token
         depends_on:
             - "db"
         networks:

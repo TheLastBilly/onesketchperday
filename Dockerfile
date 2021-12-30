@@ -1,6 +1,6 @@
 FROM python
 
-ENV DEFAULT_PASSWORD=admin
+ENV DEFAULT_PASSWORD=pass
 ENV APP_NAME=onesketchaday
 
 ENV WORKERS=3
@@ -17,7 +17,6 @@ ENV USE_SOCKET=1
 
 ENV DEBIAN_FRONTEND noninteractive
 
-
 RUN apt update
 RUN apt install -y postgresql-client libmariadb-dev
 RUN apt-get autoremove
@@ -27,6 +26,9 @@ RUN python3 -m pip install -r /tmp/requirements.txt
 
 COPY ./$APP_NAME /$APP_NAME
 WORKDIR /$APP_NAME
+RUN rm -f /$APP_NAME/telegram-token
+RUN rm -f /$APP_NAME/django-token
+RUN rm -f  /$APP_NAME/db.sqlite3
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

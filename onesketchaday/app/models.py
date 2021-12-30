@@ -12,12 +12,12 @@ import markdown
 ID_LENGTH = 8
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, username, password=None, **extra_fields):
-        if not email:
-            raise ValueError('Users must have an email address')
+    def create_user(self, telegramId, username, password=None, **extra_fields):
+        if not telegramId:
+            raise ValueError('Users must have a telegramId')
         if not username:
             raise ValueError('Users must have a username')
-        user = self.model(email=self.normalize_email(email),
+        user = self.model(telegramId=telegramId,
                           username=username.lower(),
                           **extra_fields)
         user.set_password(password)
@@ -26,28 +26,28 @@ class UserManager(BaseUserManager):
         return user
 
     
-    def create_superuser(self, username, email, password):
-        user = self.create_user(email, username, password)
+    def create_superuser(self, username, telegramId, password):
+        user = self.create_user(telegramId, username, password)
         user.is_staff = True
         user.is_superuser = True
         user.is_a_participant = False
+        self.is_competing = False
         user.save(using=self._db)
 
         return user
 
 class User(AbstractBaseUser, PermissionsMixin):
     username            = models.CharField(max_length=20, unique=True)
-    email               = models.EmailField(unique=True)
     telegramId          = models.CharField(max_length=20, unique=True)
     is_staff            = models.BooleanField(default=False)
 
     is_a_participant     = models.BooleanField(default=True)
-    is_competing        = models.BooleanField(default=True, editable=False)
+    is_competing        = models.BooleanField(default=True)
 
     objects             = UserManager()
 
     USERNAME_FIELD      = 'username'
-    REQUIRED_FIELDS     = ['email', 'password']
+    REQUIRED_FIELDS     = ['password']
 
     def __str__(self):
         return str(self.username)
@@ -64,7 +64,7 @@ class Post(models.Model):
     rating              = models.IntegerField(default=0, editable=False)
 
     timestamp           = models.IntegerField(null=True)
-    id                  = models.CharField(max_length=ID_LENGTH, primary_key=True, editable=False)
+    id                  = models.CharField(max_length=ID_LENGTH+10, primary_key=True, editable=False)
 
     def save(self, *args, **kwargs):
         if not self.timestamp:

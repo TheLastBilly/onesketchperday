@@ -7,7 +7,7 @@ BIND=""
 if [ "$USE_SOCKET" == "1" ]; then
     BIND="--bind unix:/tmp/$APP_NAME.sock"
 else
-    BIND=""
+    BIND="--bind 0.0.0.0:8000"
 fi
 
 if [ ! -f /config/done ]; then
@@ -20,4 +20,5 @@ if [ ! -f /config/done ]; then
     fi
 fi
 
+python manage.py startbot &
 gunicorn --user=$PUID --group=$PGID --workers $WORKERS $BIND $APP_NAME.wsgi
