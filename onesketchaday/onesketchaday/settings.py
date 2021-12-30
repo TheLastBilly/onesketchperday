@@ -150,4 +150,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 with open("./telegram-token", "r+") as f:
     TELEGRAM_API_TOKEN = str(f.readline()).strip()
 
-SITE_URL = "http://127.0.0.1:8000/"
+if os.environ.get('SITE_URL') is not None:
+    SITE_URL = os.environ['SITE_URL']
+SITE_URL = "http://127.0.0.1:8000"
