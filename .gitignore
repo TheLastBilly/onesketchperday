@@ -1,0 +1,6 @@
+.venv
+*__pycache__/
+*migrations/
+onesketchaday/media/
+*db.sqlite3
+*telegram-token

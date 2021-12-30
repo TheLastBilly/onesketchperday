@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="day_list">
+    {% for day in days %}
+        <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">{{ day.name }}</a>
+    {% endfor %}
+</div>
+{% endblock %}

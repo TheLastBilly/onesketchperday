@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>{{post.title}}</h1>
+<div class="post">
+    <div class="post_image">
+        <a href="{% url 'getPost' pk=post.id %}">
+            <img src="{{ media_url }}{{ post.image.name }}" alt="">
+        </a>
+    </div>
+    <div class="post_text">
+        <p>Uploaded by {{ post.owner.username }} on {{ post.date }}</p>
+        <p>{{ post.likes }} Likes</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="pariticipants_list">
+    {% if competitors %}
+    <h2>Still in the competition</h2>
+    <ul>
+    {% for competitor in competitors %}
+    <li>
+        <a href="{% url 'getPostsFromUser' username=competitor.user.username %}">{{ competitor.user.username }} ({{ competitor.posts }} post(s))</a>
+    </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if losers %}
+    <h2>Better luck next year!</h2>
+    <ul>
+    {% for loser in losers %}
+    <li>
+        <a href="{% url 'getPostsFromUser' username=loser.user.username %}">{{ loser.user.username }} ({{ loser.posts }} post(s))</a>
+    </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}

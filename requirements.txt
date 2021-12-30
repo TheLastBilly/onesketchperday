@@ -1,0 +1,9 @@
+Django
+django-cors-headers
+django-filter
+djangorestframework
+djangorestframework-jwt
+gunicorn
+pillow
+markdown
+python-telegram-bot

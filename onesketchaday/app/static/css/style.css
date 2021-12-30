@@ -1,0 +1,279 @@
+/* Taken from https://github.com/mixu/markdown-styles/blob/master/output/jasonm23-foghorn/assets/style.css */
+
+html, body {
+    margin:auto;
+    /* padding:1em; */
+    /* max-width:60em; */
+    background: #232b2b;
+}
+
+body {
+    color: #b9c7c6;
+/*line-height: 1.4;*/
+    text-align: justify;
+}
+
+header, nav, article, footer {
+  /* width: 700px; */
+  margin:0 auto;
+}
+
+article {
+    margin-top: 4em;
+    margin-bottom: 4em;
+    min-height: 400px;
+}
+footer {
+    margin-bottom:50px;
+}
+video {
+    margin: 2em 0;
+    border:1px solid #ddd;
+}
+nav {
+    font-size: .9em;
+    font-style: italic;
+    border-bottom: 1px solid #ddd;
+    padding: 1em 0;
+}
+nav p {
+    margin: 0;
+}
+
+/* Typography
+-------------------------------------------------------- */
+
+h1 {
+    text-align: center;
+    margin-top: 0;
+    font-weight: normal;
+}
+h2 {
+    font-weight: normal;
+}
+h3 {
+    font-weight: normal;
+    font-style: italic;
+    margin-top:1em;
+}
+p {
+    margin-top:0;
+    -webkit-hypens:auto;
+    -moz-hypens:auto;
+    hyphens:auto;
+}
+ul {
+    list-style: square;
+    padding-left:1.2em;
+}
+ol {
+    padding-left:1.2em;
+}
+blockquote {
+    margin-left: 1em;
+    padding-left: 1em;
+    border-left: 1px solid #ddd;
+}
+code {
+    font-family: "Consolas", "Menlo", "Monaco", monospace, serif;
+    font-size: .9em;
+}
+pre {
+    border: 2em solid #b9c7c6;
+    background: #b9c7c6;
+    background-clip: content-box;
+    color: black;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+a {
+    color: #ffffff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+img {
+    display: block;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    border-spacing: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    width: 100%;
+}
+h1 a, h1 a:hover {
+/*    color: #333;*/
+    text-decoration: none;
+}
+hr {
+    color : #ddd;
+    height : 1px;
+    margin: 2em 0;
+    border-top : solid 1px #ddd;
+    border-bottom : none;
+    border-left: 0;
+    border-right: 0;
+}
+p#heart{
+    font-size: 2em;
+    line-height: 1;
+    text-align: center;
+    color: #ccc;
+}
+.red {
+    color:#B50000;
+}
+
+/* Home Page
+--------------------------- */
+body#index li {
+  margin-bottom: 1em;
+}
+
+/* iPad
+-------------------------------------------------------- */
+@media only screen and (max-device-width: 1024px) {
+body {
+  font-size: 120%;
+  line-height: 1.4;
+}
+
+} /* @iPad */
+
+/* iPhone
+-------------------------------------------------------- */
+@media only screen and (max-device-width: 480px) {
+    body {
+        text-align: left;
+    }
+
+    article, footer {
+        width: auto;
+    }
+
+    article {
+        padding: 0 10px;
+    }
+} /* @iPhone */
+
+/* The side navigation menu */
+.sidebar {
+    margin: 0;
+    padding: 0;
+    width: 150px;
+    background-color: #121414;
+    position: fixed;
+    height: 100%;
+    overflow: auto;
+}
+
+.errorCode {
+    text-align: center;
+}
+
+.errorCode h1 {
+    font-size: 10em;
+    padding: 0;
+    margin-bottom: 0;
+}
+.errorCode p {
+    font-size: 1em;
+}
+
+.content h1 {
+    margin-top: 1em;
+}
+  
+/* Sidebar links */
+.sidebar a {
+    display: block;
+    padding: 16px;
+    text-decoration: none;
+    text-align: center;
+}
+
+.sidebar h2 {
+    text-align: center;
+}
+
+  
+/* Active/current link */
+.sidebar a.active {
+    background-color: #04AA6D;
+    color: white;
+}
+
+  
+/* Links on mouse-over */
+.sidebar a:hover:not(.active) {
+    background-color: #555;
+    color: white;
+}
+
+  
+/* Page content. The value of the margin-left property should match the value of the sidebar's width property */
+div.content {
+    padding: 1px 16px;
+    width: 40%;
+    margin-left: 30%;
+    display: inline-block;
+}
+
+.post {
+    background-color: white;
+    display: inline-block;
+    width: 100%;
+
+    margin-bottom: 2em;
+}
+
+.post_image, .post_text {
+    width: 95%;
+    margin-left: 2.5%;
+}
+
+.post_text {
+    color: #121414;
+}
+
+.day_list {
+    margin-top: 4em;
+    text-align: center;
+}
+
+.pariticipants_list h2 {
+    margin-top: 1em;
+}
+
+.sidebar_bottom {
+    bottom: 0;
+    position: absolute;
+    text-align: center;
+    display: block;
+    width: 100%;
+}
+
+/* On screens that are less than 700px wide, make the sidebar into a topbar */
+@media screen and (max-width: 700px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .sidebar a {float: left;}
+    div.content {margin-left: 0;}
+}
+
+  
+/* On screens that are less than 400px, display the bar vertically, instead of horizontally */
+@media screen and (max-width: 400px) {
+    .sidebar a {
+        text-align: center;
+        float: none;
+    }
+}

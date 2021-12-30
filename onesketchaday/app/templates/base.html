@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" type="/image/png" href="{{ static_url }}/img/favicon.png"/>
+    <link rel="stylesheet" href="{{ static_url }}/css/style.css">
+</head>
+<body>
+    <div class="sidebar">
+    <a href="/">
+        <h2>{{ sidebar_title }}</h2>
+    </a>
+    {% for month in sidebar_months %}
+    <a href="{% url 'getPostsOfMonth' month=forloop.counter|add:"-1" %}">{{ month }}</a>
+    {% endfor %}
+
+    <div class="sidebar_bottom">
+        <a href="{% url 'participants' %}">Participants</a>
+        <a href="{% url 'about' %}">About</a>
+    </div>
+
+    </div>
+
+    <div class="content">
+    {% block content %}
+    {% endblock %}
+    </div>
+</body>
+</html>
