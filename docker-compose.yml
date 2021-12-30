@@ -1,0 +1,37 @@
+version: "2.1"
+
+volumes:
+    onesketchaday_media:
+    onesketchaday_static:
+    onesketchaday_config:
+    onesketchaday_db:
+
+networks:
+    backend:
+
+services:
+    db:
+        image: mariadb
+        container_name: onesketchaday_db
+        volumes:
+            - onesketchaday_db:/var/lib/mysql
+        networks:
+            backend:
+        env_file:
+            - variables.env
+
+    app:
+        container_name: onesketchaday_app
+        image: onesketchaday
+        build: .
+        volumes:
+            - onesketchaday_media:/onesketchaday/media
+            - onesketchaday_static:/onesketchaday/static
+            - onesketchaday_config:/config
+            - ./onesketchaday.sock:/onesketchaday.sock
+        depends_on:
+            - "db"
+        networks:
+            backend:
+        env_file:
+            - variables.env

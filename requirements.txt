@@ -7,3 +7,6 @@ gunicorn
 pillow
 markdown
 python-telegram-bot
+gunicorn
+psycopg2
+mysqlclient
