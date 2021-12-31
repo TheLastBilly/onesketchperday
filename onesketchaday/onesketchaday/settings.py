@@ -25,7 +25,7 @@ with open("./django-token", "r+") as f:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if os.environ.get('DEBUG') is not None:
-    if os.environ['DB_NAME'] == "True":
+    if os.environ['DEBUG'] == "True":
         DEBUG = True
     else:
         DEBUG = False
@@ -33,7 +33,10 @@ if os.environ.get('DEBUG') is not None:
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = []
+if os.environ.get('DOMAIN') is not None:
+    ALLOWED_HOSTS = [os.environ['DOMAIN']]
+else:
+    ALLOWED_HOSTS = ['0.0.0.0']
 
 # Application definition
 
@@ -152,4 +155,10 @@ with open("./telegram-token", "r+") as f:
 
 if os.environ.get('SITE_URL') is not None:
     SITE_URL = os.environ['SITE_URL']
-SITE_URL = "http://127.0.0.1:8000"
+else:
+    SITE_URL = "http://127.0.0.1:8000"
+
+if os.environ.get('ADMIN_PAGE') is not None:
+    ADMIN_PAGE = os.environ['ADMIN_PAGE']
+else:
+    ADMIN_PAGE = "admin"

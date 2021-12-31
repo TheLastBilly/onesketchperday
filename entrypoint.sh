@@ -5,7 +5,8 @@ cd /$APP_NAME
 
 BIND=""
 if [ "$USE_SOCKET" == "1" ]; then
-    BIND="--bind unix:/tmp/$APP_NAME.sock"
+    mkdir /sockets/
+    BIND="--bind unix:/sockets/$APP_NAME.sock"
 else
     BIND="--bind 0.0.0.0:8000"
 fi
@@ -20,5 +21,8 @@ if [ ! -f /config/done ]; then
     fi
 fi
 
+groupadd -g $PGID app
+useradd -u $PUID -g $PGID app
+
 python manage.py startbot &
-gunicorn --user=$PUID --group=$PGID --workers $WORKERS $BIND $APP_NAME.wsgi
+gunicorn --user $PUID --group $PGID --workers $WORKERS $BIND $APP_NAME.wsgi
