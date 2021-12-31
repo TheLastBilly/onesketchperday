@@ -9,8 +9,6 @@ from .utils import *
 
 import markdown
 
-ID_LENGTH = 8
-
 class UserManager(BaseUserManager):
     def create_user(self, username, password=None, **extra_fields):
         if not username:
@@ -36,9 +34,9 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     username            = models.CharField(max_length=20, unique=True)
 
-    telegram_username    = models.CharField(max_length=255, blank=True)
-    mastodon_handle      = models.CharField(max_length=255, blank=True)
-    twitter_handle       = models.CharField(max_length=255, blank=True)
+    telegram_username   = models.CharField(max_length=255, blank=True)
+    mastodon_handle     = models.CharField(max_length=255, blank=True)
+    twitter_handle      = models.CharField(max_length=255, blank=True)
 
     is_staff            = models.BooleanField(default=False)
 
@@ -49,6 +47,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD      = 'username'
     REQUIRED_FIELDS     = ['password']
+    
+    id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
     
     def __str__(self):
         return str(self.username)
@@ -65,14 +65,11 @@ class Post(models.Model):
     rating              = models.IntegerField(default=0, editable=False)
 
     timestamp           = models.IntegerField(null=True)
-    id                  = models.CharField(max_length=ID_LENGTH+10, primary_key=True, editable=False)
+    id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
 
     def save(self, *args, **kwargs):
         if not self.timestamp:
             self.timestamp = getTimeStampFromDate(timezone.now())
-            
-        if not self.id:
-            self.id = getRandomBase64String(ID_LENGTH)
 
         super(Post, self).save(*args, **kwargs)
 

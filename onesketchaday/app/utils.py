@@ -1,5 +1,7 @@
 import datetime, os, base64
 
+ID_LENGTH = 10
+
 def getTimeStampFromDate(date):
     return getTimeStamp(date.year, date.month, date.day)
 
@@ -12,6 +14,6 @@ def getDateFromTimestamp(timestamp):
     day = int(timestamp - int(timestamp/100)*100)
     return datetime.datetime(year, month, day)
 
-def getRandomBase64String(lenght):
+def getRandomBase64String(lenght=ID_LENGTH):
     new_id = base64.b64encode(os.urandom(lenght))
-    return str(new_id, "utf-8").replace('/', 's')
+    return str(new_id, "utf-8").replace('/', 's')[:lenght]
