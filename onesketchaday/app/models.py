@@ -12,13 +12,10 @@ import markdown
 ID_LENGTH = 8
 
 class UserManager(BaseUserManager):
-    def create_user(self, telegramId, username, password=None, **extra_fields):
-        if not telegramId:
-            raise ValueError('Users must have a telegramId')
+    def create_user(self, username, password=None, **extra_fields):
         if not username:
             raise ValueError('Users must have a username')
-        user = self.model(telegramId=telegramId,
-                          username=username.lower(),
+        user = self.model(username=username.lower(),
                           **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -26,8 +23,8 @@ class UserManager(BaseUserManager):
         return user
 
     
-    def create_superuser(self, username, telegramId, password):
-        user = self.create_user(telegramId, username, password)
+    def create_superuser(self, username, password):
+        user = self.create_user(username, password)
         user.is_staff = True
         user.is_superuser = True
         user.is_a_participant = False
@@ -38,17 +35,21 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     username            = models.CharField(max_length=20, unique=True)
-    telegramId          = models.CharField(max_length=20, unique=True)
+
+    telegram_username    = models.CharField(max_length=255, blank=True)
+    mastodon_handle      = models.CharField(max_length=255, blank=True)
+    twitter_handle       = models.CharField(max_length=255, blank=True)
+
     is_staff            = models.BooleanField(default=False)
 
-    is_a_participant     = models.BooleanField(default=True)
+    is_a_participant    = models.BooleanField(default=True)
     is_competing        = models.BooleanField(default=True)
 
     objects             = UserManager()
 
     USERNAME_FIELD      = 'username'
     REQUIRED_FIELDS     = ['password']
-
+    
     def __str__(self):
         return str(self.username)
 
@@ -71,8 +72,7 @@ class Post(models.Model):
             self.timestamp = getTimeStampFromDate(timezone.now())
             
         if not self.id:
-            new_id = base64.b64encode(os.urandom(ID_LENGTH))
-            self.id = str(new_id, "utf-8").replace('/', 's')
+            self.id = getRandomBase64String(ID_LENGTH)
 
         super(Post, self).save(*args, **kwargs)
 

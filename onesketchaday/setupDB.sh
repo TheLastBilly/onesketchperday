@@ -5,8 +5,7 @@ if [ -f ./db.sqlite3 ]; then
     rm -rf ./db.sqlite3
 fi
 
-python3 manage.py makemigrations app
-python3 manage.py migrate --run-syncdb
+bash ./migrate.sh
 
 if [[ -z "$DEFAULT_PASSWORD" ]]; then
     DEFAULT_PASSWORD=pass
@@ -16,7 +15,7 @@ cat << EOF | python manage.py shell
 from app.models import *
 from django.utils import timezone
 
-User.objects.create_superuser('admin', 'adminId', '$DEFAULT_PASSWORD')
+User.objects.create_superuser('admin', '$DEFAULT_PASSWORD')
 
 MardownPost.objects.create(title='About',contents='# About')
 Variable.objects.create(name='StartDate', date=timezone.now())

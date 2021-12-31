@@ -1,5 +1,4 @@
-import time
-import datetime
+import datetime, os, base64
 
 def getTimeStampFromDate(date):
     return getTimeStamp(date.year, date.month, date.day)
@@ -12,3 +11,7 @@ def getDateFromTimestamp(timestamp):
     month = int((timestamp - year*10000)/100)
     day = int(timestamp - int(timestamp/100)*100)
     return datetime.datetime(year, month, day)
+
+def getRandomBase64String(lenght):
+    new_id = base64.b64encode(os.urandom(lenght))
+    return str(new_id, "utf-8").replace('/', 's')

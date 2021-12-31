@@ -13,7 +13,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'telegramId')
+        fields = ('username', 'telegram_username', 'mastodon_handle', 'twitter_handle', 'is_staff', 'is_a_participant')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -37,17 +37,19 @@ class UserChangeForm(UserCreationForm):
     """
     class Meta:
         model = User
-        fields = ('username', 'telegramId', 'is_staff', 'is_a_participant',)
+        fields = ('username', 'telegram_username', 'mastodon_handle', 'twitter_handle', 'is_staff', 'is_a_participant')
 
 
 class UserAdmin(BaseUserAdmin):
+    default_fields = ('username', 'telegram_username', 'mastodon_handle', 'twitter_handle', 'password1', 'password2')
+
     form = UserChangeForm
     add_form = UserCreationForm
 
     list_display = ('username', 'is_superuser', 'is_staff', 'is_a_participant', 'is_competing')
     list_filter = ('is_a_participant', 'is_competing', 'is_superuser')
     fieldsets = (
-        (None, {'fields': ('username', 'telegramId', 'password1', 'password2')}),
+        (None, {'fields': default_fields}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser')}),
         ('Status', {'fields': ('is_a_participant',)}),
     )
@@ -55,12 +57,12 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'telegramId', 'password1', 'password2')},
+            'fields': default_fields},
         ),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'is_a_participant')}),
     )
-    search_fields = ('telegramId',)
-    ordering = ('telegramId',)
+    search_fields = ('username',)
+    ordering = ('username',)
     filter_horizontal = ()
 
 admin.site.register(User, UserAdmin)
