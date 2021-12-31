@@ -250,8 +250,8 @@ div.content {
 }
 
 .sidebar_bottom {
+    margin-top: 2em;
     bottom: 0;
-    position: absolute;
     text-align: center;
     display: block;
     width: 100%;

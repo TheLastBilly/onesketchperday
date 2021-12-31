@@ -36,7 +36,7 @@ else:
 if os.environ.get('DOMAIN') is not None:
     ALLOWED_HOSTS = [os.environ['DOMAIN']]
 else:
-    ALLOWED_HOSTS = ['0.0.0.0']
+    ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
 
