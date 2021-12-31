@@ -1,0 +1,2 @@
+- Add next/previous day/post buttons
+- Add updates page
