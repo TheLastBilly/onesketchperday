@@ -95,7 +95,7 @@ async def createPost(context, *, arg=None):
             break
     
     if ext == "":
-        await bot.sendUserReply('Can only accept attachments with the following extensions: {}'.format(','.join(IMAGE_EXTENSIONS)), context)
+        await bot.sendUserReply('Can only accept attachments with the following extensions: {}'.format(', '.join(IMAGE_EXTENSIONS)), context)
         return
     fileName = str(context.message.attachments[0].id) + ext
 
