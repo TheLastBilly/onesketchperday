@@ -47,11 +47,3 @@ class Command(BaseCommand):
                 startDate += datetime.timedelta(days=1)
             
             user.save()
-
-        
-        
-
-
-
-
-
