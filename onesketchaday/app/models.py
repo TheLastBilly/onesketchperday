@@ -37,6 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     telegram_username   = models.CharField(max_length=255, blank=True)
     mastodon_handle     = models.CharField(max_length=255, blank=True)
     twitter_handle      = models.CharField(max_length=255, blank=True)
+    discord_username    = models.CharField(max_length=255, blank=True)
 
     is_staff            = models.BooleanField(default=False)
 
