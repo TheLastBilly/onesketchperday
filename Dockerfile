@@ -26,8 +26,7 @@ RUN python3 -m pip install -r /tmp/requirements.txt
 
 COPY ./$APP_NAME /$APP_NAME
 WORKDIR /$APP_NAME
-RUN rm -f /$APP_NAME/telegram-token
-RUN rm -f /$APP_NAME/django-token
+RUN rm -f /$APP_NAME/*-token
 RUN rm -f  /$APP_NAME/db.sqlite3
 
 COPY ./entrypoint.sh /entrypoint.sh

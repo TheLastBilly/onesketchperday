@@ -32,5 +32,5 @@ fi
 groupadd -g $PGID app
 useradd -u $PUID -g $PGID app
 
-python manage.py startTelegramBot &
+python manage.py start_discord_bot &
 gunicorn --user $PUID --group $PGID --workers $WORKERS $BIND $APP_NAME.wsgi

@@ -153,9 +153,6 @@ if not os.path.exists(MEDIA_ROOT):
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-with open("./telegram-token", "r+") as f:
-    TELEGRAM_API_TOKEN = str(f.readline()).strip()
-
 with open("./discord-token", "r+") as f:
     DISCORD_API_TOKEN = str(f.readline()).strip()
 

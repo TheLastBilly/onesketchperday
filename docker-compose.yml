@@ -30,7 +30,7 @@ services:
             - onesketchaday_config:/config
             - ./sockets:/sockets
             - ./django-token:/onesketchaday/django-token
-            - ./telegram-token:/onesketchaday/telegram-token
+            - ./docker-token:/onesketchaday/docker-token
         depends_on:
             - "db"
         networks:

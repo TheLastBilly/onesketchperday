@@ -6,7 +6,6 @@ djangorestframework-jwt
 gunicorn
 pillow
 markdown
-python-telegram-bot
 gunicorn
 mysqlclient
 discord.py

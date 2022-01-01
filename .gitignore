@@ -3,7 +3,5 @@
 *migrations/
 onesketchaday/media/
 *db.sqlite3
-*telegram-token
-*django-token
-*discord-token
+*-token
 onesketchaday/static/

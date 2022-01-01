@@ -34,9 +34,6 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     username            = models.CharField(max_length=20, unique=True)
 
-    telegram_username   = models.CharField(max_length=255, blank=True)
-    mastodon_handle     = models.CharField(max_length=255, blank=True)
-    twitter_handle      = models.CharField(max_length=255, blank=True)
     discord_username    = models.CharField(max_length=255, blank=True)
 
     is_staff            = models.BooleanField(default=False)
@@ -73,6 +70,12 @@ class Post(models.Model):
             self.timestamp = getTimeStampFromDate(timezone.now())
 
         super(Post, self).save(*args, **kwargs)
+
+    def delete(self):
+        absolutePath = self.image.storage.base_location + "/" + self.image.field.upload_to + "/" + self.image.name
+        if os.path.exists(absolutePath):
+            os.remove(absolutePath)
+        super(Post, self).delete()
 
     def __str__(self):
         return str(self.title)
