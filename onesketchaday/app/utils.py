@@ -33,6 +33,9 @@ def getDateFromTimestamp(timestamp):
 
     return timezone.datetime(year, month, day)
 
+def validateTimeStamp(timestamp):
+    return getTimeStampFromDate(getDateFromTimestamp(timestamp))
+
 def getRandomBase64String(lenght=ID_LENGTH):
     new_id = base64.b64encode(os.urandom(lenght))
     return str(new_id, "utf-8").replace('/', 's')[:lenght]

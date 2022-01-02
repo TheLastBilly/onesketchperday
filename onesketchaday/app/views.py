@@ -1,3 +1,4 @@
+from datetime import time
 from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import redirect, render
@@ -25,7 +26,7 @@ def getDaysFromStartDateToTimestamp(timestamp):
     start = getStartDate()
     offset = timezone.datetime(start.year, start.month, start.day)
     target = getDateFromTimestamp(timestamp)
-    return (target - offset).days
+    return (target - offset).days + 1
 
 def getGlobalContext():
     return {
@@ -114,8 +115,11 @@ def getPost(request, pk):
 
 def getPostsOfDay(request, timestamp):
     posts = []
+    timeStampDate = getDateFromTimestamp(timestamp)
+
     try:
-        posts = Post.objects.filter(timestamp=timestamp).order_by('date')
+        # This is done to validate the timestamp, I'm doing it this way because I need timeStampDate
+        posts = Post.objects.filter(timestamp=getTimeStampFromDate(timeStampDate)).order_by('date')
     except Exception as e:
         logger.error(str(e))
         return redirect('internalError')
@@ -123,7 +127,8 @@ def getPostsOfDay(request, timestamp):
     if timestamp == getTimeStampFromDate(timezone.localdate()):
         title = "Today"
     else:
-        title = str(timestamp)
+        title = timeStampDate.strftime("%B %d, %Y")
+
     title = title + " (Day " + str(getDaysFromStartDateToTimestamp(timestamp)) + ")"
 
     context = {

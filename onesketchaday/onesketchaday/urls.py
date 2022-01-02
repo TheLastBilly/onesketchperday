@@ -24,3 +24,6 @@ urlpatterns = [
     path(settings.ADMIN_PAGE + '/', admin.site.urls),
     path('', include('app.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler404 = 'app.views.pageNotFound'
+handler500 = 'app.views.internalError'
