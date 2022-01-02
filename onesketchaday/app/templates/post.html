@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1>{{post.title}}</h1>
-<div class="post">
+<div class="post_single">
     <div class="post_image">
         <a href="{% url 'getPost' pk=post.id %}">
             <img src="{{ media_url }}{{ post.image.name }}" alt="">

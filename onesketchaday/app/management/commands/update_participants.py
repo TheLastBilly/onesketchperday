@@ -44,6 +44,6 @@ class Command(BaseCommand):
                     user.is_competing = False
                     break
 
-                startDate += datetime.timedelta(days=1)
+                startDate += timezone.timedelta(days=1)
             
             user.save()

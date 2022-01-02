@@ -222,15 +222,24 @@ body {
 /* Page content. The value of the margin-left property should match the value of the sidebar's width property */
 div.content {
     padding: 1px 16px;
-    width: 40%;
-    margin-left: 35%;
+    width: 80%;
+    margin-left: 10%;
     display: inline-block;
 }
 
-.post {
+.post_single, .post_multiple {
     background-color: white;
     display: inline-block;
-    width: 100%;
+}
+
+.post_single {
+    width: 80%;
+    margin-left: 10%;
+}
+
+.post_multiple {
+    width: 50%;
+    margin-left: 25%;
 
     margin-bottom: 2em;
 }
