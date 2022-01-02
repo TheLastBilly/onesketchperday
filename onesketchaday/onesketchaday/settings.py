@@ -129,7 +129,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+if os.environ.get('TIME_ZONE') is not None:
+    TIME_ZONE = os.environ['TIME_ZONE']
+else:
+    TIME_ZONE="America/New_York"
 
 USE_I18N = True
 

@@ -4,6 +4,9 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.core.exceptions import *
 from .models import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 
@@ -15,12 +18,14 @@ def getStartDate():
     return start.date
 
 def getDaysFromStartDate():
-    return getDaysFromStartDateToTimestamp(getTimeStampFromDate(timezone.now()))
+    return getDaysFromStartDateToTimestamp(getTimeStampFromDate(timezone.localdate()))
 
 def getDaysFromStartDateToTimestamp(timestamp):
     start = getStartDate()
-    offset = datetime.datetime(start.year, start.month, start.day).replace(tzinfo=None)
-    target = getDateFromTimestamp(timestamp).replace(tzinfo=None)
+    offset = timezone.datetime(start.year, start.month, start.day)
+    target = getDateFromTimestamp(timestamp)
+    print("Target: " + str(target))
+    print("Offset: " + str(offset))
     return (target - offset).days
 
 def getGlobalContext():
@@ -68,6 +73,7 @@ def getParticipantsPage(request):
                 losers.append(d)
 
     except Exception as e:
+        logger.error(str(e))
         return redirect('internalError')
 
     context = {
@@ -110,9 +116,10 @@ def getPostsOfDay(request, timestamp):
     try:
         posts = Post.objects.filter(timestamp=timestamp).order_by('date')
     except Exception as e:
+        logger.error(str(e))
         return redirect('internalError')
     
-    if timestamp == getTimeStampFromDate(datetime.datetime.today()):
+    if timestamp == getTimeStampFromDate(timezone.localdate()):
         title = "Today"
     else:
         title = str(timestamp)
@@ -158,10 +165,11 @@ def getPostsOfMonth(request, month):
             return redirect('internalError')
     
     for post in posts:
+        print("StartDate: {}\t\tPost: {}, Date: {}, Passed: {}".format(startDate, post, post.date, post.date >= startDate))
         if post and post.date >= startDate and post.date.month == month:
             if lastTimestamp < post.timestamp:
                 lastTimestamp = post.timestamp
-                days.append({"timestamp" : str(lastTimestamp), "name" : post.date.strftime("%A %d, %B %Y")})
+                days.append({"timestamp" : str(lastTimestamp), "name" : timezone.localtime(post.date).strftime("%A %d, %B %Y")})
 
     title = MONTHS[month-1]
     context = {
@@ -172,4 +180,4 @@ def getPostsOfMonth(request, month):
     return render(request, "month.html", context)
 
 def getTodaysPosts(request):
-    return getPostsOfDay(request, getTimeStampFromDate(datetime.datetime.now()))
+    return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))

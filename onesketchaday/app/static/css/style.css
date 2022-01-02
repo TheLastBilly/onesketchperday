@@ -261,6 +261,11 @@ div.content {
     width: 100%;
 }
 
+.day_list a {
+    margin-bottom: 1em;
+    display: inline-block;
+}
+
 /* On screens that are less than 700px wide, make the sidebar into a topbar */
 @media screen and (max-width: 700px) {
     .sidebar {

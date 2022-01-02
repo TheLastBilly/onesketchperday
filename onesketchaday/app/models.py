@@ -65,9 +65,14 @@ class Post(models.Model):
     timestamp           = models.IntegerField(null=True)
     id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
 
+    def update_timestamp(self, save=True):
+        self.timestamp = getTimeStampFromDate(timezone.localtime(self.date))
+        if save:
+            super(Post, self).save()
+        
     def save(self, *args, **kwargs):
         if not self.timestamp:
-            self.timestamp = getTimeStampFromDate(timezone.now())
+            self.update_timestamp(save=False)
 
         super(Post, self).save(*args, **kwargs)
 
