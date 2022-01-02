@@ -78,13 +78,24 @@ class Post(models.Model):
         super(Post, self).save(*args, **kwargs)
 
     def delete(self):
-        absolutePath = self.image.storage.base_location + "/" + self.image.field.upload_to + "/" + self.image.name
-        if os.path.exists(absolutePath):
-            os.remove(absolutePath)
+        targets = []
+
+        if self.image:
+            targets.append(self.image)
+        if self.video:
+            targets.append(self.video)
+
+        for target in targets:
+            absolutePath = target.storage.base_location + "/" + target.field.upload_to + "/" + target.name
+            if os.path.exists(absolutePath):
+                os.remove(absolutePath)
         super(Post, self).delete()
 
     def __str__(self):
-        return str(self.title)
+        if self.title and len(self.title) > 0:
+            return str(self.title)
+        else:
+            return "NO TITLE"
     
 class Variable(models.Model):
     name                = models.CharField(max_length=50, primary_key=True)

@@ -80,7 +80,14 @@ class DiscordBot():
 bot = DiscordBot()
 
 @bot.bot.command(name='post', pass_context=True)
-async def createPost(context, *, arg=None):
+async def postCommand(context, *, arg=None):
+    try:
+        await createPost(context, arg)
+    except Exception as e:
+        logger.error("Error on post: {}".format(str(e)))
+        await bot.sendUserReply("Sorry, but I couldn't create your post due to an internal error, please try again later", context)
+
+async def createPost(context, arg=None):
     username = str(context.message.author)
     title = arg
     if not title:
@@ -121,6 +128,13 @@ async def createPost(context, *, arg=None):
             await bot.createPostFromUser(user, title, fileName, context, attachment, isVideo=isVideo)
 
 @bot.bot.command(name='delete', pass_context=True)
+async def deleteCommand(context, link):
+    try:
+        await deletePost(context, link)
+    except Exception as e:
+        logger.error("Error on delete: {}".format(str(e)))
+        await bot.sendUserReply("Sorry, but I couldn't delete your post due to an internal error, please try again later", context)
+
 async def deletePost(context, link):
     username = str(context.message.author)
     user = await bot.validateUser(username)
