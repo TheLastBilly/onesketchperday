@@ -14,8 +14,6 @@ fi
 if [ ! -f /config/initialized ]; then
     /$APP_NAME/setupDB.sh
     A="$?"
-    rm -rf static/*
-    python manage.py collectstatic
     B="$?"
     if [ $A -eq 0 ] && [ $B -eq 0 ]; then
         touch /config/initialized
@@ -28,6 +26,9 @@ if [ -f /config/migrate_database ]; then
         rm /config/migrate_database
     fi
 fi
+
+rm -rf static/*
+python manage.py collectstatic
 
 groupadd -g $PGID app
 useradd -u $PUID -g $PGID app

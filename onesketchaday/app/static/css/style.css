@@ -226,6 +226,11 @@ div.content {
     display: inline-block;
 }
 
+.textPost {
+    width: 70%;
+    margin-left: 15%;
+}
+
 .post_single, .post_multiple {
     background-color: #374444;
     display: inline-block;
@@ -247,6 +252,7 @@ div.content {
     width: 95%;
     margin-left: 2.5%;
     font-style:oblique;
+    text-align: center;
 }
 
 .day_list {
