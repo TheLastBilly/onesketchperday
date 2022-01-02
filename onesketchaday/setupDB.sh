@@ -16,7 +16,4 @@ from app.models import *
 from django.utils import timezone
 
 User.objects.create_superuser('admin', '$DEFAULT_PASSWORD')
-
-MardownPost.objects.create(title='About',contents='# About')
-Variable.objects.create(name='StartDate', date=timezone.now())
 EOF

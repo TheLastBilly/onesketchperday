@@ -97,8 +97,8 @@ class Variable(models.Model):
     def __str__(self):
         return str(self.name)
     
-class MardownPost(models.Model):
-    title               = models.CharField(max_length=100, null=True)
+class MarkdownPost(models.Model):
+    title               = models.CharField(max_length=100, null=True, unique=True)
     
     contents            = models.TextField(null=True)
     html                = models.TextField(null=True, editable=False)
@@ -113,7 +113,7 @@ class MardownPost(models.Model):
         except Exception as e:
             self.html = "Cannot convert post to html: " + str(e)
 
-        super(MardownPost, self).save(*args, **kwargs)
+        super(MarkdownPost, self).save(*args, **kwargs)
 
     def __str__(self):
         return str(self.title)

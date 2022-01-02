@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.core.exceptions import *
 from .models import *
 import logging
+import base64
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +25,6 @@ def getDaysFromStartDateToTimestamp(timestamp):
     start = getStartDate()
     offset = timezone.datetime(start.year, start.month, start.day)
     target = getDateFromTimestamp(timestamp)
-    print("Target: " + str(target))
-    print("Offset: " + str(offset))
     return (target - offset).days
 
 def getGlobalContext():
@@ -38,7 +37,7 @@ def getGlobalContext():
 
 def renderMarkdownPost(request, title):
     try:
-        post = MardownPost.objects.get(title=title)
+        post = MarkdownPost.objects.get(title=title)
         if not post:
             return redirect('pageNotFound')
     except Exception as e:
@@ -52,6 +51,8 @@ def renderMarkdownPost(request, title):
     
 def getAboutPage(request):
     return renderMarkdownPost(request, 'About')
+def getUpdatesPage(request):
+    return renderMarkdownPost(request, 'Updates')
 
 def getParticipantsPage(request):
     competitors = []
@@ -137,6 +138,7 @@ def getPostsFromUser(request, username):
     try:
         posts = Post.objects.filter(owner=User.objects.get(username=username)).order_by('date')
     except Exception as e:
+        logger.error(str(e))
         return redirect('internalError')
     
     title = "Posts from " + username
@@ -165,7 +167,6 @@ def getPostsOfMonth(request, month):
             return redirect('internalError')
     
     for post in posts:
-        print("StartDate: {}\t\tPost: {}, Date: {}, Passed: {}".format(startDate, post, post.date, post.date >= startDate))
         if post and post.date >= startDate and post.date.month == month:
             if lastTimestamp < post.timestamp:
                 lastTimestamp = post.timestamp
