@@ -19,11 +19,14 @@ class DiscordBot():
     def syncGetUser(self, index):
         return User.objects.filter(discord_username=index)[0]
     
-    def syncCreatePost(self, owner, image, title):
-        return Post.objects.create(owner=owner, image=image, title=title)
+    def syncCreatePost(self, owner, file, title, isVideo=False):
+        if isVideo:
+            return Post.objects.create(owner=owner, video=file, title=title)
+        else:
+            return Post.objects.create(owner=owner, image=file, title=title)
 
-    async def createPost(self, owner, image, title):
-        return await sync_to_async(self.syncCreatePost)(owner, image, title)
+    async def createPost(self, owner, file, title, isVideo=False):
+        return await sync_to_async(self.syncCreatePost)(owner, file, title, isVideo)
 
     def syncDeletePost(self, owner, id):
         Post.objects.get(owner=owner, id=id).delete()
@@ -49,10 +52,10 @@ class DiscordBot():
     async def sendUserReply(self, message, context):
         await context.message.reply(message)
     
-    async def downloadImage(self, imagePath, context):
-        await context.message.attachments[0].save(open(imagePath, "wb"))
+    async def downloadFile(self, filePath, attachment):
+        await attachment.save(open(filePath, "wb"))
 
-    async def createPostFromUser(self, user, title, fileName, context=None):
+    async def createPostFromUser(self, user, title, fileName, context, attachment, isVideo=False):
         logger.info('Received post request from user {}'.format(user.username))
 
         if title:
@@ -62,9 +65,9 @@ class DiscordBot():
 
         try:
             absolutePath = settings.MEDIA_ROOT + "/" + fileName
-            await self.downloadImage(absolutePath, context)
+            await self.downloadFile(absolutePath, attachment)
 
-            post = await self.createPost(user, fileName, title)
+            post = await self.createPost(user, fileName, title, isVideo)
 
             await self.sendUserReply("File succesfully uploaded!\nHere's the link yo your new post: " + settings.SITE_URL + "post/" + post.id + "", context)
         
@@ -80,26 +83,42 @@ bot = DiscordBot()
 async def createPost(context, *, arg=None):
     username = str(context.message.author)
     title = arg
+    if not title:
+        title = ""
     user = await bot.validateUser(username)
     if not user:
         return
 
-    if len(context.message.attachments) < 1:
+    attachmentCount = len(context.message.attachments)
+    if attachmentCount < 1:
         await bot.sendUserReply('Cannot create post since no attachment was provided :p', context)
         return
-    fileName = context.message.attachments[0].filename
-    ext = ""
-    for e in IMAGE_EXTENSIONS:
-        if e in fileName:
-            ext = e
-            break
     
-    if ext == "":
-        await bot.sendUserReply('Can only accept attachments with the following extensions: {}'.format(', '.join(IMAGE_EXTENSIONS)), context)
-        return
-    fileName = str(context.message.attachments[0].id) + ext
+    i = 0
+    for attachment in context.message.attachments:
+        fileName = attachment.filename
+        ext = ""
+        for e in IMAGE_EXTENSIONS:
+            if e in fileName:
+                ext = e
+                break
 
-    await bot.createPostFromUser(user, title, fileName, context)
+        for e in VIDEO_EXTENSIONS:
+            if e in fileName:
+                ext = e
+                isVideo = True
+                break
+        
+        if ext == "":
+            await bot.sendUserReply('Can only accept attachments with the following extensions: {}'.format(', '.join(IMAGE_EXTENSIONS)), context)
+            return
+        fileName = str(attachment.id) + ext
+
+        i = i + 1
+        if attachmentCount > 1:
+            await bot.createPostFromUser(user, title + "(" + str(i) + "/" + str(attachmentCount)+ ")", fileName, context, attachment, isVideo=isVideo)
+        else:
+            await bot.createPostFromUser(user, title, fileName, context, attachment, isVideo=isVideo)
 
 @bot.bot.command(name='delete', pass_context=True)
 async def deletePost(context, link):

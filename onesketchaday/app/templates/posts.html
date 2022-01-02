@@ -7,7 +7,13 @@
     <div class="post_multiple">
         <div class="post_image">
             <a href="{% url 'getPost' pk=post.id %}">
-                <img src="{{ media_url }}{{ post.image.name }}" alt="">
+                {% if post.image %}
+                    <img src="{{ media_url }}{{ post.image.name }}" alt="">
+                {% elif post.video %}
+                    <video controls>
+                        <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4'>
+                    </video>
+                {% endif %}
             </a>
         </div>
         <div class="post_text">

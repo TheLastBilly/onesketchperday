@@ -59,6 +59,7 @@ class Post(models.Model):
     date                = models.DateTimeField(auto_now_add=True)
 
     image               = models.ImageField(null=True, blank=True, unique=True)
+    video               = models.ImageField(null=True, blank=True, unique=True)
     likes               = models.IntegerField(default=0, editable=False)
     rating              = models.IntegerField(default=0, editable=False)
 

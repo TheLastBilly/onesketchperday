@@ -99,12 +99,11 @@ a {
 a:hover {
     text-decoration: underline;
 }
-img {
+img, video {
     display: block;
     text-align: center;
     margin-left: auto;
     margin-right: auto;
-    border-spacing: 1em;
     margin-top: 1em;
     margin-bottom: 1em;
     width: 100%;
@@ -228,13 +227,13 @@ div.content {
 }
 
 .post_single, .post_multiple {
-    background-color: white;
+    background-color: #374444;
     display: inline-block;
 }
 
 .post_single {
-    width: 80%;
-    margin-left: 10%;
+    width: 70%;
+    margin-left: 15%;
 }
 
 .post_multiple {
@@ -247,10 +246,7 @@ div.content {
 .post_image, .post_text {
     width: 95%;
     margin-left: 2.5%;
-}
-
-.post_text {
-    color: #121414;
+    font-style:oblique;
 }
 
 .day_list {
