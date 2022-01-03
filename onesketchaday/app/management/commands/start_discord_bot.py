@@ -90,6 +90,8 @@ async def postCommand(context, *, arg=None):
 async def createPost(context, arg=None):
     username = str(context.message.author)
     title = arg
+    isVideo = False
+
     if not title:
         title = ""
     user = await bot.validateUser(username)
