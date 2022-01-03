@@ -9,3 +9,5 @@ logger = logging.getLogger(__name__)
 
 IMAGE_EXTENSIONS = ['.png', '.jpeg', '.gif', '.jpg', '.mp4']
 VIDEO_EXTENSIONS = ['.mp4']
+
+FILE_EXTENSIONS = IMAGE_EXTENSIONS + VIDEO_EXTENSIONS

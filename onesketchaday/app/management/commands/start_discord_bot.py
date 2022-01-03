@@ -69,11 +69,11 @@ class DiscordBot():
 
             post = await self.createPost(user, fileName, title, isVideo)
 
-            await self.sendUserReply("File succesfully uploaded!\nHere's the link yo your new post: " + settings.SITE_URL + "post/" + post.id + "", context)
+            await self.sendUserReply("File succesfully uploaded!\nHere's the link to your new post: " + settings.SITE_URL + "post/" + post.id + "", context)
         
         except Exception as e:
             logger.error("Cannot create image post for user {}: {}".format(user.username, str(e)))
-            await self.sendUserReply("Cannot upload requested picture due to an internal error", context)
+            await self.sendUserReply("Cannot upload requested file due to an internal error", context)
             if os.path.exists(absolutePath):
                 os.remove(absolutePath)
 

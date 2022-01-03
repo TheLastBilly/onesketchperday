@@ -53,6 +53,9 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'app.User'
 
 MIDDLEWARE = [
+    'django.middleware.cache.UpdateCacheMiddleware',
+    
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -60,6 +63,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'onesketchaday.urls'
@@ -90,6 +95,8 @@ if os.environ.get('DB_HOST') is not None:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
+            'CONN_MAX_AGE' : 3600,
+
             'NAME': os.environ['DB_NAME'],
             'USER': os.environ['DB_USER'],
             'PASSWORD': os.environ['DB_PASSWORD'],
@@ -122,6 +129,17 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'onesketchaday-cache',
+        'TIMEOUT': 60,
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}
 
 
 # Internationalization
