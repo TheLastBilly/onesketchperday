@@ -5,6 +5,12 @@
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="{% url 'favicon' %}"/>
     <link rel="stylesheet" href="{{ static_url }}css/style.css">
+
+    {% if title %}
+        <title>{{ page_title }} | {{ title }}</title>
+    {% else %}
+        <title>{{ page_title }}</title>
+    {% endif %}
 </head>
 <body>
     <div class="sidebar">

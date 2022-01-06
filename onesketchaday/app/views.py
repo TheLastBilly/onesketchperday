@@ -35,6 +35,7 @@ def getGlobalContext():
         "static_url" : settings.STATIC_URL,
         "sidebar_title" : "Day " + str(getDaysFromStartDate()),
         "sidebar_months": MONTHS,
+        "page_title" : "onesketchaday",
     }
 
 def renderMarkdownPost(request, title):
@@ -125,7 +126,8 @@ def getPost(request, pk):
         return redirect('pageNotFound')
     
     context = {
-        "post" : post
+        "post" : post,
+        "title" : post.title
     }
     context.update(getGlobalContext())
     return render(request, "post.html", context)
