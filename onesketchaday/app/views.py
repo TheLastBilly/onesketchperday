@@ -1,8 +1,9 @@
 from datetime import time
 from django.conf import settings
+from django.core import exceptions
 from django.utils import timezone
 from django.shortcuts import redirect, render
-from django.http import HttpResponse
+from django.http import HttpResponse, response
 from django.core.exceptions import *
 from .models import *
 import logging
@@ -101,6 +102,22 @@ def pageNotFound(request, *args, **argv):
 
 def internalError(request, *args, **argv):
     return returnError(request, 500, "Something went wrong... I wish I know what it was")
+
+def getFavicon(request):
+    icon = None
+    try:
+        icon = Variable.objects.get(name="PageIcon")
+        
+        icon_file = open(icon.file.path, "rb")
+        if not icon_file:
+            raise IOError
+        
+        response = HttpResponse(content=icon_file)
+        response['Content-Type'] = '/image/png'
+
+        return response
+    except Exception as e:
+        return redirect('pageNotFound')
 
 def getPost(request, pk):
     post = Post.objects.filter(id=pk).first()

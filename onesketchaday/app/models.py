@@ -101,8 +101,9 @@ class Variable(models.Model):
     name                = models.CharField(max_length=50, primary_key=True)
 
     label               = models.CharField(max_length=200, null=True, blank=True)
-    date                = models.DateTimeField(null=True, blank=True)
+    date                = models.DateTimeField(null=True, blank=True, auto_now_add=True)
     integer             = models.IntegerField(null=True, blank=True)
+    file                = models.FileField(null=True, blank=True)
 
     text                = models.TextField(null=True, blank=True)
 
