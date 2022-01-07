@@ -1,4 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 from django.core.exceptions import *
 from django.core.files import File
 from django.utils import timezone
@@ -11,10 +13,23 @@ from app.bot import *
 import logging, os
 import discord
 import asyncio
+from app.utils import *
 
 class DiscordBot():
     help = 'Updates the Participants page'
     bot = commands.Bot(command_prefix='.', description="A bot for the onesketchaday.art website")
+
+    def syncGetReminder(self):
+        return Variable.objects.get(name="ReminderMessage")
+    def syncSetReminder(self, text):
+        reminder = self.syncGetReminder()
+        reminder.text = text
+        reminder.save()
+
+    async def getReminder(self):
+        return await sync_to_async(self.syncGetReminder)()
+    async def setReminder(self, text):
+        await sync_to_async(self.syncSetReminder)(text)
 
     def syncGetUser(self, index):
         return User.objects.filter(discord_username=index)[0]
@@ -40,9 +55,9 @@ class DiscordBot():
         except ObjectDoesNotExist as e:
             return None
         
-    async def validateUser(self, username):
+    async def validateUser(self, username, context):
         user = await self.getUser(username)
-        if not user:
+        if not user or not user.is_a_participant:
             await self.sendUserReply("Sorry, but you are not allowed to interact with this bot", context)
             logger.error("Rejected request from {}: {}".format(username, str(e)))
             return None
@@ -79,6 +94,7 @@ class DiscordBot():
 
 bot = DiscordBot()
 
+# Post Command
 @bot.bot.command(name='post', pass_context=True)
 async def postCommand(context, *, arg=None):
     try:
@@ -94,7 +110,7 @@ async def createPost(context, arg=None):
 
     if not title:
         title = ""
-    user = await bot.validateUser(username)
+    user = await bot.validateUser(username, context)
     if not user:
         return
 
@@ -129,6 +145,7 @@ async def createPost(context, arg=None):
         else:
             await bot.createPostFromUser(user, title, fileName, context, attachment, isVideo=isVideo)
 
+# Delete Command
 @bot.bot.command(name='delete', pass_context=True)
 async def deleteCommand(context, link):
     try:
@@ -139,7 +156,7 @@ async def deleteCommand(context, link):
 
 async def deletePost(context, link):
     username = str(context.message.author)
-    user = await bot.validateUser(username)
+    user = await bot.validateUser(username, context)
     if not user:
         return
 
@@ -155,6 +172,47 @@ async def deletePost(context, link):
         logger.error("Cannot delete post on link \"{}\" from user {}: {}".format(link, username, str(e)))
         await bot.sendUserReply('Sorry, but I couldn\'t find a post with that link, or that post doesn\'t belong to you', context)
 
+# Reminder
+async def sendReminder():
+    try:
+        reminder = await bot.getReminder()
+        channel = None
+        for c in bot.bot.get_all_channels():
+            if c.name == reminder.label:
+                channel = c
+                break
+        if not channel:
+            raise IOError("Cannot find channel \"{}\"".format(reminder.label))
+        await channel.send("@everyone " + reminder.text + " (Day {})".format(await sync_to_async(getDaysFromStartDate)()))
+    except Exception as e:
+        logger.error("Cannot send reminder: {}".format(str(e)))
+
+@bot.bot.event
+async def on_ready():
+    try:
+        scheduler = AsyncIOScheduler()
+        reminder = await bot.getReminder()
+        reminder.date = timezone.localtime(reminder.date)
+        scheduler.add_job(sendReminder, CronTrigger(hour=reminder.date.hour, minute=reminder.date.minute, second=reminder.date.second)) 
+        logger.info("Reminder set to be sent every day at {}:{}:{}".format(reminder.date.hour, reminder.date.minute, reminder.date.second))
+        scheduler.start()
+    except Exception as e:
+        logger.error("Cannot setup reminder: {}".format(str(e)))
+    
+@bot.bot.command(name="set_reminder", pass_context=True)
+async def setReminder(context, *, arg):
+    try:
+        if not await bot.validateUser(str(context.message.author), context):
+            return
+
+        await bot.setReminder(arg)
+        await bot.sendUserReply('Reminder message changed!', context)
+    except Exception as e:
+        logger.error("Cannot set reminder: {}".format(str(e)))
+        await bot.sendUserReply('Sorry, but I couldn\'t change the reminder message due to an internal errror', context)
+
+
+# Entrypoint
 class Command(BaseCommand):
     def handle(self, *args, **options):
         load_dotenv()

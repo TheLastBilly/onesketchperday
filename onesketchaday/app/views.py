@@ -13,22 +13,6 @@ logger = logging.getLogger(__name__)
 
 MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 
-def getStartDate():
-    start = Variable.objects.filter(name="StartDate").first()
-    if not start:
-        raise ObjectDoesNotExist("Variable \"StartDate\" was not defined")
-    
-    return start.date
-
-def getDaysFromStartDate():
-    return getDaysFromStartDateToTimestamp(getTimeStampFromDate(timezone.localdate()))
-
-def getDaysFromStartDateToTimestamp(timestamp):
-    start = getStartDate()
-    offset = timezone.datetime(start.year, start.month, start.day)
-    target = getDateFromTimestamp(timestamp)
-    return (target - offset).days + 1
-
 def getGlobalContext():
     return {
         "media_url" : settings.MEDIA_URL,

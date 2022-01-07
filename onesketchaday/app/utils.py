@@ -1,8 +1,26 @@
+from django.core.exceptions import *
 from django.utils import timezone
 import os, base64
 from calendar import monthrange
 
 ID_LENGTH = 10
+
+def getStartDate():
+    from .models import Variable
+    start = Variable.objects.filter(name="StartDate").first()
+    if not start:
+        raise ObjectDoesNotExist("Variable \"StartDate\" was not defined")
+    
+    return start.date
+
+def getDaysFromStartDate():
+    return getDaysFromStartDateToTimestamp(getTimeStampFromDate(timezone.localdate()))
+
+def getDaysFromStartDateToTimestamp(timestamp):
+    start = getStartDate()
+    offset = timezone.datetime(start.year, start.month, start.day)
+    target = getDateFromTimestamp(timestamp)
+    return (target - offset).days + 1
 
 def getTimeStampFromDate(date):
     return getTimeStamp(date.year, date.month, date.day)

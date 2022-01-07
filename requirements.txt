@@ -10,3 +10,4 @@ gunicorn
 mysqlclient
 discord.py
 python-dotenv
+apscheduler
