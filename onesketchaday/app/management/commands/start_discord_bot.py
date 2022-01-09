@@ -1,3 +1,4 @@
+from datetime import time
 from django.core.management.base import BaseCommand, CommandError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -19,17 +20,39 @@ class DiscordBot():
     help = 'Updates the Participants page'
     bot = commands.Bot(command_prefix='.', description="A bot for the onesketchaday.art website")
 
-    def syncGetReminder(self):
-        return Variable.objects.get(name="ReminderMessage")
-    def syncSetReminder(self, text):
-        reminder = self.syncGetReminder()
-        reminder.text = text
+    def syncGetVariable(self, name):
+        return Variable.objects.get(name=name)
+    def syncSetVariable(self, name, text=None, label=None, date=None, integer=None, file=None):
+        reminder = self.syncGetVariable(name)
+        if text:
+            reminder.text = text
+        if label:
+            reminder.label = label
+        if date:
+            reminder.date = date
+        if integer:
+            reminder.integer = integer
+        if file:
+            reminder.file = file
         reminder.save()
 
     async def getReminder(self):
-        return await sync_to_async(self.syncGetReminder)()
+        return await sync_to_async(self.syncGetVariable)("ReminderMessage")
     async def setReminder(self, text):
-        await sync_to_async(self.syncSetReminder)(text)
+        await sync_to_async(self.syncSetVariable)(name="ReminderMessage", text=text)
+    
+    async def getVariable(self, name):
+        return await sync_to_async(self.syncGetVariable)(name)
+    async def setVariable(self, name, text=None, label=None, date=None, integer=None, file=None):
+        return await sync_to_async(self.syncSetVariable)(name, text=text, label=label, date=date, integer=integer, file=file)
+
+    def syncGetPostsOnTimestamp(self, timestamp):
+        posts = Post.objects.filter(timestamp=timestamp)
+        return posts, len(posts)
+    def syncGetTodaysPosts(self):
+        return self.syncGetPostsOnTimestamp(getTodaysTimestamp())
+    async def getTodaysPosts(self):
+        return await sync_to_async(self.syncGetTodaysPosts)()
 
     def syncGetUser(self, index):
         return User.objects.filter(discord_username=index)[0]
@@ -66,6 +89,17 @@ class DiscordBot():
 
     async def sendUserReply(self, message, context):
         await context.message.reply(message)
+    
+    async def sendMessageOnChannel(self, channel : str, message : str):
+        ch = None
+        for c in bot.bot.get_all_channels():
+            if c.name == channel:
+                ch = c
+                break
+        if not ch:
+            raise IOError("Cannot find channel \"{}\"".format(channel))
+        await ch.send(message)
+
     
     async def downloadFile(self, filePath, attachment):
         await attachment.save(open(filePath, "wb"))
@@ -176,29 +210,37 @@ async def deletePost(context, link):
 async def sendReminder():
     try:
         reminder = await bot.getReminder()
-        channel = None
-        for c in bot.bot.get_all_channels():
-            if c.name == reminder.label:
-                channel = c
-                break
-        if not channel:
-            raise IOError("Cannot find channel \"{}\"".format(reminder.label))
-        await channel.send("@everyone " + reminder.text + " (Day {})".format(await sync_to_async(getDaysFromStartDate)()))
+        await bot.sendMessageOnChannel(reminder.label, "@everyone " + reminder.text + " (Day {})".format(await sync_to_async(getDaysFromStartDate)()))
     except Exception as e:
         logger.error("Cannot send reminder: {}".format(str(e)))
+
+async def sendTodaysPostCount():
+    try:
+        post_count_message = await bot.getVariable("PostCountMessage")
+        posts, posts_size = await bot.getTodaysPosts()
+        await bot.sendMessageOnChannel(post_count_message.label, "@everyone I have received a grand total of {} {}, and with that we conclude today's session.\nSee you tomorrow!".format(posts_size, "posts" if posts_size != 1 else "post"))
+    except Exception as e:
+        logger.error("Cannot send post count: {}".format(str(e)))
 
 @bot.bot.event
 async def on_ready():
     try:
         scheduler = AsyncIOScheduler()
         reminder = await bot.getReminder()
+        post_count_message = await bot.getVariable("PostCountMessage")
+
         reminder.date = timezone.localtime(reminder.date)
+        post_count_message.date = timezone.localtime(post_count_message.date)
+
         scheduler.add_job(sendReminder, CronTrigger(hour=reminder.date.hour, minute=reminder.date.minute, second=reminder.date.second)) 
-        logger.info("Reminder set to be sent every day at {}:{}:{}".format(reminder.date.hour, reminder.date.minute, reminder.date.second))
+        logger.info("Reminder message set to be sent every day at {}:{}:{}".format(reminder.date.hour, reminder.date.minute, reminder.date.second))
+        scheduler.add_job(sendTodaysPostCount, CronTrigger(hour=post_count_message.date.hour, minute=post_count_message.date.minute, second=post_count_message.date.second)) 
+        logger.info("Post count message set to be sent every day at {}:{}:{}".format(post_count_message.date.hour, post_count_message.date.minute, post_count_message.date.second))
+
         scheduler.start()
     except Exception as e:
         logger.error("Cannot setup reminder: {}".format(str(e)))
-    
+
 @bot.bot.command(name="set_reminder", pass_context=True)
 async def setReminder(context, *, arg):
     try:

@@ -28,6 +28,9 @@ def getTimeStampFromDate(date):
 def getTimeStamp(year, month, day):
     return int(year)*10000 + int(month)*100 + int(day)
 
+def getTodaysTimestamp():
+    return getTimeStampFromDate(timezone.localdate())
+
 def getDateFromTimestamp(timestamp):
     year = int(timestamp/10000)
     month = int((timestamp - year*10000)/100)
