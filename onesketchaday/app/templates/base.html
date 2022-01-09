@@ -18,7 +18,7 @@
         <h2>{{ sidebar_title }}</h2>
     </a>
     {% for month in sidebar_months %}
-    <a href="{% url 'getPostsOfMonth' month=forloop.counter|add:"-1" %}">{{ month }}</a>
+    <a href="{% url 'getActiveDaysOfMonth' month=forloop.counter|add:"-1" %}">{{ month }}</a>
     {% endfor %}
 
     <div class="sidebar_bottom">

@@ -2,14 +2,17 @@
 {% load static %}
 
 {% block content %}
-<h1>{{ title }}</h1>
 <div class="day_list">
+    <h1>{{ title }}</h1>
     <ul>
     {% for day in days %}
     <li>
         <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">{{ day.name }}</a>
     </li>
     {% endfor %}
+    <li>
+        <a href="{% url 'getGalleryOfMonth' month=month %}">Gallery</a>
+    </li>
     </ul>
 </div>
 {% endblock %}

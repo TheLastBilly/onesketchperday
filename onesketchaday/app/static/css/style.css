@@ -237,8 +237,11 @@ div.content {
 }
 
 .post_gallery {
-    margin-top: 2em;
     float: left;
+}
+
+.post_gallery h1 {
+    margin-bottom: 1em;
 }
 
 .post_gallery div {
@@ -285,15 +288,25 @@ div.content {
 
 .post_title {
     margin-top: 1em;
+}
+
+.post_list .post_title {
+    font-size: 1.5em;
+}
+
+.post_list .post_description {
+    font-size: 1em;
+}
+
+.post_gallery .post_title {
     font-size: .75em;
     font-weight: bold;
 }
-.post_description {
+.post_gallery .post_description {
     font-size: .65em;
 }
 
 .day_list {
-    margin-top: 4em;
     text-align: center;
 }
 
@@ -312,6 +325,10 @@ div.content {
 .day_list a {
     margin-bottom: 1em;
     display: inline-block;
+}
+
+.day_list h1 {
+    margin-bottom: 1em;
 }
 
 /* On screens that are less than 700px wide, make the sidebar into a topbar */

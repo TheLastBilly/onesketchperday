@@ -97,6 +97,9 @@ class Post(models.Model):
         else:
             return "NO TITLE"
     
+    def get_local_time(self):
+        return timezone.localtime(self.date)
+    
 class Variable(models.Model):
     name                = models.CharField(max_length=50, primary_key=True)
 

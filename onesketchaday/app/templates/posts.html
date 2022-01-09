@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block content %}
-    <h1>{{ title }}</h1>
     <div class="{{ style }}">
+        <h1>{{ title }}</h1>
+        
         {% for post in posts %}
         <div class="post">
-            <p class="post_title"> {{ post.title }} </p>
             <a href="{% url 'getPost' pk=post.id %}">
                 {% if post.image %}
                     <img src="{{ media_url }}{{ post.image.name }}" alt="">
@@ -16,7 +16,10 @@
                     </video>
                 {% endif %}
             </a>
-            <p class="post_description">Uploaded by {{ post.owner.username }} on {{ post.date }}</p>
+            <a href="{% url 'getPost' pk=post.id %}">
+                <p class="post_title"> {{ post.title }} </p>
+            </a>
+            <p class="post_description">by {{ post.owner.username }} on {{ post.date|date:"M jS" }}, {{ post.date|date:"h:i a" }}</p>
         </div>
         {% endfor %}
     </div>

@@ -123,6 +123,8 @@ def getPostsOfDay(request, timestamp):
     try:
         # This is done to validate the timestamp, I'm doing it this way because I need timeStampDate
         posts = Post.objects.filter(timestamp=getTimeStampFromDate(timeStampDate)).order_by('date')
+        for post in posts:
+            post.date = post.get_local_time()
     except Exception as e:
         logger.error(str(e))
         return redirect('internalError')
@@ -137,7 +139,7 @@ def getPostsOfDay(request, timestamp):
     context = {
         "posts" : posts,
         "title" : title,
-        "style" : "post_gallery",
+        "style" : "post_list",
     }
     context.update(getGlobalContext())
     return render(request, "posts.html", context)
@@ -159,7 +161,7 @@ def getPostsFromUser(request, username):
     context.update(getGlobalContext())
     return render(request, "posts.html", context)
 
-def getPostsOfMonth(request, month):
+def getActiveDaysOfMonth(request, month):
     posts = []
     days = []
     lastTimestamp = 0
@@ -171,7 +173,7 @@ def getPostsOfMonth(request, month):
     month = month +1
 
     try:
-        posts = Post.objects.all().order_by('timestamp')
+        posts = Post.objects.all().order_by('date')
     except Exception as e:
             return redirect('internalError')
     
@@ -181,13 +183,48 @@ def getPostsOfMonth(request, month):
                 lastTimestamp = post.timestamp
                 days.append({"timestamp" : str(lastTimestamp), "name" : timezone.localtime(post.date).strftime("%A %d, %B %Y")})
 
-    title = MONTHS[month-1]
+    month = month - 1
+    title = MONTHS[month]
     context = {
         "days" : days,
-        "title" : title
+        "title" : title,
+        "month" : month
     }
     context.update(getGlobalContext())
     return render(request, "month.html", context)
+
+
+def getGalleryOfMonth(request, month):
+    initialPosts = []
+    curatedPosts = []
+    days = []
+    lastTimestamp = 0
+
+    startDate = getStartDate()
+
+    if month > 11 or month < 0:
+        return redirect('pageNotFound')
+    month = month +1
+
+    try:
+        initialPosts = Post.objects.all().order_by('date')
+    except Exception as e:
+            return redirect('internalError')
+    
+    for post in initialPosts:
+        if post and post.date >= startDate and post.date.month == month:
+            post.date = post.get_local_time()
+            curatedPosts.append(post)
+
+    title = MONTHS[month-1]
+    context = {
+        "days" : days,
+        "title" : title,
+        "posts" : curatedPosts,
+        "style" : "post_gallery",
+    }
+    context.update(getGlobalContext())
+    return render(request, "posts.html", context)
 
 def getTodaysPosts(request):
     return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
