@@ -130,16 +130,23 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'onesketchaday-cache',
-        'TIMEOUT': 60,
-        'OPTIONS': {
-            'MAX_ENTRIES': 1000
+if not DEBUG:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'onesketchaday-cache',
+            'TIMEOUT': 60,
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000
+            }
         }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
 
 
 # Internationalization

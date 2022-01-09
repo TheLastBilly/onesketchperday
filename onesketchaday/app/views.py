@@ -136,7 +136,8 @@ def getPostsOfDay(request, timestamp):
 
     context = {
         "posts" : posts,
-        "title" : title
+        "title" : title,
+        "style" : "post_gallery",
     }
     context.update(getGlobalContext())
     return render(request, "posts.html", context)

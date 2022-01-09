@@ -4,7 +4,7 @@
 {% block content %}
 <h1>{{ post.title }}</h1>
 <div class="post_single">
-    <div class="post_image">
+    <div class="post">
         <a href="{% url 'getPost' pk=post.id %}">
             {% if post.image %}
                 <img src="{{ media_url }}{{ post.image.name }}" alt="">
@@ -14,8 +14,6 @@
                 </video>
             {% endif %}
         </a>
-    </div>
-    <div class="post_text">
         <p>Uploaded by {{ post.owner.username }} on {{ post.date }}</p>
     </div>
 </div>

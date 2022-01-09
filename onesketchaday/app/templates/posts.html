@@ -3,9 +3,10 @@
 
 {% block content %}
     <h1>{{ title }}</h1>
-    {% for post in posts %}
-    <div class="post_multiple">
-        <div class="post_image">
+    <div class="{{ style }}">
+        {% for post in posts %}
+        <div class="post">
+            <p class="post_title"> {{ post.title }} </p>
             <a href="{% url 'getPost' pk=post.id %}">
                 {% if post.image %}
                     <img src="{{ media_url }}{{ post.image.name }}" alt="">
@@ -15,10 +16,8 @@
                     </video>
                 {% endif %}
             </a>
+            <p class="post_description">Uploaded by {{ post.owner.username }} on {{ post.date }}</p>
         </div>
-        <div class="post_text">
-            <p>Uploaded by {{ post.owner.username }} on {{ post.date }}</p>
-        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 {% endblock %}

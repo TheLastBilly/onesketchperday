@@ -222,7 +222,7 @@ body {
 div.content {
     padding: 1px 16px;
     width: 80%;
-    margin-left: 10%;
+    margin-left: 150px;
     display: inline-block;
 }
 
@@ -231,28 +231,65 @@ div.content {
     margin-left: 15%;
 }
 
-.post_single, .post_multiple {
-    background-color: #374444;
-    display: inline-block;
+.post_list {
+    width: 40%;
+    margin-left: 30%;
+}
+
+.post_gallery {
+    margin-top: 2em;
+    float: left;
+}
+
+.post_gallery div {
+    width: 10em;
+    margin-left: 1em;
+}
+
+.post_gallery .post img, video {
+    height: 135px;
+}
+
+.post_gallery .post_title {
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .post_single {
-    width: 70%;
-    margin-left: 15%;
+    width: 60%;
+    margin-left: 20%;
 }
 
-.post_multiple {
-    width: 50%;
-    margin-left: 25%;
-
+.post {
+    width: 100%;
+    background-color: #374444;
+    display: inline-block;
     margin-bottom: 2em;
+    border-radius: .75em;
+    text-align: center;
+    overflow-wrap: break-word;
 }
 
-.post_image, .post_text {
-    width: 95%;
-    margin-left: 2.5%;
-    font-style:oblique;
-    text-align: center;
+.post * {
+    width: 90%;
+}
+
+.post img {
+    border-radius: .75em;
+}
+
+.post p {
+    font-style: oblique;
+    margin-left: 5%;
+}
+
+.post_title {
+    margin-top: 1em;
+    font-size: .75em;
+    font-weight: bold;
+}
+.post_description {
+    font-size: .65em;
 }
 
 .day_list {
