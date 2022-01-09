@@ -248,7 +248,7 @@ div.content {
     width: 10em;
 }
 
-.post_gallery .post img, video {
+.post_gallery .post img, .post_gallery .post video {
     max-height: 10em;
     width: auto;
     max-width: 90%;
