@@ -11,12 +11,14 @@
 <meta property="og:type" content="website" />
 
 {% if post.image %}
-<meta property="og:image" content="{{ media_url }}{{ post.image.name }}" />
+<meta property="og:image" content="{{ site_url }}{{ media_url }}{{ post.image.name }}" />
+<meta property="og:image:url" content="{{ site_url }}{{ media_url }}{{ post.image.name }}" />
+<meta property="twitter:image" content="{{ site_url }}{{ media_url }}{{ post.image.name }}" />
 {% elif post.video %}
-<meta property="og:video" content="{{ media_url }}{{ post.video.name }}" />
+<meta property="og:video" content="{{ site_url }}{{ media_url }}{{ post.video.name }}" />
 {% endif %}
 
-<meta property="og:url" content="{% url 'getPost' pk=post.id %}" />
+<meta property="og:url" content="{{ site_url }}{% url 'getPost' pk=post.id %}" />
 {% endblock %}
 
 {% block content %}
