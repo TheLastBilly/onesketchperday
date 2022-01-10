@@ -23,6 +23,7 @@ def getGlobalContext():
         "sidebar_title" : "Day " + str(getDaysFromStartDate()),
         "sidebar_months": MONTHS,
         "page_title" : "onesketchaday",
+        "site_name" : "onesketchaday",
         "site_url" : settings.SITE_URL,
     }
 
