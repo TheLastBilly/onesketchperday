@@ -10,11 +10,20 @@ from .models import *
 import logging
 import base64
 
-MAX_POSTS_PER_PAGE = 50
+DEFAULT_MAX_POST_PER_PAGE = 50
 
 logger = logging.getLogger(__name__)
 
 MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+
+def getMaxPostsPerPage():
+    try:
+        p = Variable.objects.get(name="PostsPerPage")
+        if not p or not p.integer:
+            raise ValueError
+        return p.integer
+    except Exception as e:
+        return DEFAULT_MAX_POST_PER_PAGE
 
 def getGlobalContext():
     return {
@@ -184,15 +193,16 @@ def getActiveDaysOfMonth(request, month):
 def getGallery(request, posts, page, root_page, extra):
     pages = []
 
-    if len(posts) < page * MAX_POSTS_PER_PAGE:
+    maxPostPerPage = getMaxPostsPerPage()
+    if len(posts) < page * maxPostPerPage:
         return redirect('pageNotFound')
     else:
-        for i in range(int(len(posts)/MAX_POSTS_PER_PAGE)+1):
+        for i in range(int(len(posts)/maxPostPerPage)+1):
             pages.append(i)
         if len(pages) < 2:
             pages = []
-        posts = posts[page*MAX_POSTS_PER_PAGE:]
-        posts = posts[:MAX_POSTS_PER_PAGE]
+        posts = posts[page*maxPostPerPage:]
+        posts = posts[:maxPostPerPage]
 
     context = {
         "posts" : posts,
@@ -243,7 +253,7 @@ def getGalleryOfMonth(request, month, page=0):
     context = {
         "title" : title
     }
-    return getGallery(request, curatedPosts, page, reverse("getGalleryOfMonth", kwargs={"month": month}), context)
+    return getGallery(request, curatedPosts, page, reverse("getGalleryOfMonth", kwargs={"month": month-1}), context)
     
 
 def getTodaysPosts(request):
