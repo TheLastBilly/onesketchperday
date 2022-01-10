@@ -6,6 +6,9 @@
     <link rel="icon" type="image/png" href="{% url 'favicon' %}"/>
     <link rel="stylesheet" href="{{ static_url }}css/style.css">
 
+    {% block meta %}
+    {% endblock %}
+
     {% if title %}
         <title>{{ page_title }} | {{ title }}</title>
     {% else %}

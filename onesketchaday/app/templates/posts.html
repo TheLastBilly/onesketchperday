@@ -22,5 +22,17 @@
             <p class="post_description">by {{ post.owner.username }} on {{ post.date|date:"M jS" }}, {{ post.date|date:"h:i a" }}</p>
         </div>
         {% endfor %}
+
+        <div class="pages_list">
+            {% if pages %}
+            <ul>
+                {% for page in pages %}
+                <li>
+                    <a href="{{ root_page }}/{{ page }}">[{{page}}]</a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}

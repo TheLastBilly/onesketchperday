@@ -5,9 +5,14 @@ from django.utils import timezone
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, response
 from django.core.exceptions import *
+from django.urls import reverse
 from .models import *
 import logging
 import base64
+
+
+MAX_POSTS_PER_PAGE = 50
+
 
 logger = logging.getLogger(__name__)
 
@@ -144,23 +149,6 @@ def getPostsOfDay(request, timestamp):
     context.update(getGlobalContext())
     return render(request, "posts.html", context)
 
-def getPostsFromUser(request, username):
-    
-    try:
-        posts = Post.objects.filter(owner=User.objects.get(username=username)).order_by('date')
-    except Exception as e:
-        logger.error(str(e))
-        return redirect('internalError')
-    
-    title = "Posts from " + username
-
-    context = {
-        "posts" : posts,
-        "title" : title
-    }
-    context.update(getGlobalContext())
-    return render(request, "posts.html", context)
-
 def getActiveDaysOfMonth(request, month):
     posts = []
     days = []
@@ -193,12 +181,47 @@ def getActiveDaysOfMonth(request, month):
     context.update(getGlobalContext())
     return render(request, "month.html", context)
 
+def getGallery(request, posts, page, root_page, extra):
+    pages = []
 
-def getGalleryOfMonth(request, month):
+    if len(posts) < page * MAX_POSTS_PER_PAGE:
+        return redirect('pageNotFound')
+    else:
+        for i in range(int(len(posts)/MAX_POSTS_PER_PAGE)+1):
+            pages.append(i)
+        if len(pages) < 2:
+            pages = []
+        posts = posts[page*MAX_POSTS_PER_PAGE:]
+        posts = posts[:MAX_POSTS_PER_PAGE]
+
+    context = {
+        "posts" : posts,
+        "style" : "post_gallery",
+        "pages" : pages,
+        "root_page" : root_page,
+    }
+    context.update(getGlobalContext())
+    context.update(extra)
+    return render(request, "posts.html", context)
+
+def getPostsFromUser(request, username, page=0):
+    
+    try:
+        posts = Post.objects.filter(owner=User.objects.get(username=username)).order_by('date')
+    except Exception as e:
+        logger.error(str(e))
+        return redirect('internalError')
+    
+    title = "Posts from " + username
+
+    context = {
+        "title" : title,
+    }
+    return getGallery(request, posts, page, reverse("getPostsFromUser", kwargs={"username": username}), context)
+
+def getGalleryOfMonth(request, month, page=0):
     initialPosts = []
     curatedPosts = []
-    days = []
-    lastTimestamp = 0
 
     startDate = getStartDate()
 
@@ -218,13 +241,10 @@ def getGalleryOfMonth(request, month):
 
     title = MONTHS[month-1]
     context = {
-        "days" : days,
-        "title" : title,
-        "posts" : curatedPosts,
-        "style" : "post_gallery",
+        "title" : title
     }
-    context.update(getGlobalContext())
-    return render(request, "posts.html", context)
+    return getGallery(request, curatedPosts, page, reverse("getGalleryOfMonth", kwargs={"month": month}), context)
+    
 
 def getTodaysPosts(request):
     return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))

@@ -11,9 +11,15 @@ urlpatterns = [
     path('404/', views.pageNotFound, name='pageNotFound'),
     path('500/', views.internalError, name='internalError'),
     path('day/<int:timestamp>', views.getPostsOfDay, name='getPostsOfDay'),
+    
     path('month/active/<int:month>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
+    path('month/active/<int:month>/<int:page>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
+
     path('month/gallery/<int:month>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
+    path('month/gallery/<int:month>/<int:page>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
+
     path('user/<str:username>', views.getPostsFromUser, name='getPostsFromUser'),
+    path('user/<str:username>/<int:page>', views.getPostsFromUser, name='getPostsFromUser'),
 
     path('favicon', views.getFavicon, name='favicon'),
     

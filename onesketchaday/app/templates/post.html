@@ -1,6 +1,24 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block meta %}
+{% if post.title %}
+<meta property="og:title" content="{{ post.title }}" />
+{% else %}
+<meta property="og:title" content="{{ page_title }}" />
+{% endif %}
+
+<meta property="og:type" content="website" />
+
+{% if post.image %}
+<meta property="og:image" content="{{ media_url }}{{ post.image.name }}" />
+{% elif post.video %}
+<meta property="og:video" content="{{ media_url }}{{ post.video.name }}" />
+{% endif %}
+
+<meta property="og:url" content="{% url 'getPost' pk=post.id %}" />
+{% endblock %}
+
 {% block content %}
 <h1>{{ post.title }}</h1>
 <div class="post_single">
