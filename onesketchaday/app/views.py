@@ -10,9 +10,7 @@ from .models import *
 import logging
 import base64
 
-
 MAX_POSTS_PER_PAGE = 50
-
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +210,7 @@ def getPostsFromUser(request, username, page=0):
         logger.error(str(e))
         return redirect('internalError')
     
-    title = "Posts from " + username
+    title = username
 
     context = {
         "title" : title,
