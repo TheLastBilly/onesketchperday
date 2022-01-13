@@ -2,17 +2,28 @@
 {% load static %}
 
 {% block content %}
-<div class="day_list">
+<div class="post_gallery_title">
     <h1>{{ title }}</h1>
-    <ul>
+    <a href="{% url 'getGalleryOfMonth' index=month %}">
+        <p>Gallery</p>
+    </a>
+</div>
+<div class="post_gallery">    
     {% for day in days %}
-    <li>
-        <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">{{ day.name }}</a>
-    </li>
+    <div class="post">
+        <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">
+            {% if day.image %}
+                <img src="{{ media_url }}{{ day.image.name }}" alt="">
+            {% elif post.video %}
+                <video controls>
+                    <source src="{{ media_url }}{{ day.video.name }}" type='video/mp4'>
+                </video>
+            {% endif %}
+        </a>
+        <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">
+            <p class="post_title"> {{ day.title }} </p>
+        </a>
+    </div>
     {% endfor %}
-    <li>
-        <a href="{% url 'getGalleryOfMonth' month=month %}">Gallery</a>
-    </li>
-    </ul>
 </div>
 {% endblock %}

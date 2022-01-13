@@ -7,19 +7,24 @@ from django.conf.urls.static import static
 urlpatterns = [
 
     path('post/<str:pk>', views.getPost, name='getPost'),
+    
+    path('focused/month/<str:index>/<str:page>', views.getFocusedMonthPost, name='getFocusedMonthPost'),
+    path('focused/user/<str:index>/<str:page>', views.getFocusedUserPost, name='getFocusedUserPost'),
+    path('focused/day/<str:index>/<str:page>', views.getFocusedDayPost, name='getFocusedDayPost'),
+
     path('', views.getTodaysPosts, name='getTodaysPosts'),
     path('404/', views.pageNotFound, name='pageNotFound'),
     path('500/', views.internalError, name='internalError'),
     path('day/<int:timestamp>', views.getPostsOfDay, name='getPostsOfDay'),
     
-    path('month/active/<int:month>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
-    path('month/active/<int:month>/<int:page>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
+    path('month/active/<int:index>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
+    path('month/active/<int:index>/<int:page>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
 
-    path('month/gallery/<int:month>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
-    path('month/gallery/<int:month>/<int:page>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
+    path('month/gallery/<int:index>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
+    path('month/gallery/<int:index>/<int:page>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
 
-    path('user/<str:username>', views.getPostsFromUser, name='getPostsFromUser'),
-    path('user/<str:username>/<int:page>', views.getPostsFromUser, name='getPostsFromUser'),
+    path('user/<str:index>', views.getPostsFromUser, name='getPostsFromUser'),
+    path('user/<str:index>/<int:page>', views.getPostsFromUser, name='getPostsFromUser'),
 
     path('favicon', views.getFavicon, name='favicon'),
     

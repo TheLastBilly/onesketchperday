@@ -23,8 +23,12 @@
 {% endblock %}
 
 {% block content %}
-<h1>{{ post.title }}</h1>
+
 <div class="post_single">
+    <div class="post_single_title">
+        <h1>{{ title }}</h1>
+    </div>
+
     <div class="post">
         <a href="{% url 'getPost' pk=post.id %}">
             {% if post.image %}
@@ -35,7 +39,24 @@
                 </video>
             {% endif %}
         </a>
-        <p>Uploaded by {{ post.owner.username }} on {{ post.date }}</p>
+        <p>Uploaded by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a>  on {{ post.date }}</p>
     </div>
+</div>
+
+
+<div class="pages_list">
+    <ul>
+        {% if previous is not None %}
+        <li>
+            [<a href="{% url transition_url index=transition_index page=previous %}">previous</a>]
+        </li>
+        {% endif %}
+
+        {% if next is not None %}
+        <li>
+            [<a href="{% url transition_url index=transition_index page=next %}">next</a>]
+        </li>
+        {% endif %}
+    </ul>
 </div>
 {% endblock %}

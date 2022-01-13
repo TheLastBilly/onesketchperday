@@ -2,37 +2,58 @@
 {% load static %}
 
 {% block content %}
-    <div class="{{ style }}">
-        <h1>{{ title }}</h1>
-        
-        {% for post in posts %}
-        <div class="post">
-            <a href="{% url 'getPost' pk=post.id %}">
-                {% if post.image %}
-                    <img src="{{ media_url }}{{ post.image.name }}" alt="">
-                {% elif post.video %}
-                    <video controls>
-                        <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4'>
-                    </video>
-                {% endif %}
-            </a>
-            <a href="{% url 'getPost' pk=post.id %}">
-                <p class="post_title"> {{ post.title }} </p>
-            </a>
-            <p class="post_description">by {{ post.owner.username }} on {{ post.date|date:"M jS" }}, {{ post.date|date:"h:i a" }}</p>
-        </div>
-        {% endfor %}
+{% if non_gallery  %}
+<div class="post_gallery_title post_gallery_title_center">
+{% else %}
+<div class="post_gallery_title">
+{% endif %}
+    <h1>{{ title }}</h1>
+</div>
 
-        <div class="pages_list">
-            {% if pages %}
-            <ul>
-                {% for page in pages %}
-                <li>
-                    <a href="{{ root_page }}/{{ page }}">[{{page}}]</a>
-                </li>
-                {% endfor %}
-            </ul>
+{% if non_gallery  %}
+<div class="post_list">
+{% else %}
+<div class="post_gallery">
+{% endif %}
+
+    {% for post in posts %}
+    <div class="post">
+        <a href="{% url focused_url index=post.index page=post.page %}">
+            {% if post.image %}
+                <img src="{{ media_url }}{{ post.image.name }}" alt="">
+            {% elif post.video %}
+                <video controls>
+                    <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4'>
+                </video>
             {% endif %}
-        </div>
+        </a>
+        <a href="{% url focused_url index=post.index page=post.page %}">
+            <p class="post_title"> {{ post.title }} </p>
+        </a>
+        <p class="post_description">by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a> on {{ post.date|date:"M jS" }}, {{ post.date|date:"h:i a" }}</p>
     </div>
+    {% endfor %}
+
+    <div class="pages_list">
+        <ul>
+            {% if previous is not None %}
+            <li>
+                [<a href="{% url transition_url index=transition_index page=previous %}">previous</a>]
+            </li>
+            {% endif %}
+
+            {% for page in pages %}
+            <li>
+                [<a href="{% url transition_url index=transition_index page=page %}">{{page}}</a>]
+            </li>
+            {% endfor %}
+
+            {% if next is not None %}
+            <li>
+                [<a href="{% url transition_url index=transition_index page=next %}">next</a>]
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
 {% endblock %}

@@ -9,7 +9,7 @@
     <ul>
     {% for competitor in competitors %}
     <li>
-        <a href="{% url 'getPostsFromUser' username=competitor.user.username %}">{{ competitor.user.username }} ({{ competitor.posts }} post(s))</a>
+        <a href="{% url 'getPostsFromUser' index=competitor.user.username %}">{{ competitor.user.username }} ({{ competitor.posts }} post(s))</a>
     </li>
     {% endfor %}
     </ul>
@@ -20,7 +20,7 @@
     <ul>
     {% for loser in losers %}
     <li>
-        <a href="{% url 'getPostsFromUser' username=loser.user.username %}">{{ loser.user.username }} ({{ loser.posts }} post(s))</a>
+        <a href="{% url 'getPostsFromUser' index=loser.user.username %}">{{ loser.user.username }} ({{ loser.posts }} post(s))</a>
     </li>
     {% endfor %}
     </ul>

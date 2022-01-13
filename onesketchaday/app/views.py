@@ -130,15 +130,163 @@ def getPost(request, pk):
     context.update(getGlobalContext())
     return render(request, "post.html", context)
 
+# Optimize this shit tomorrow
+def getFocusedMonthPost(request, index, page):
+
+    post = None
+    next_page = None
+    previous_page = None
+
+    curatedPosts = []
+
+    month = index
+    try:
+        startDate = getStartDate()
+        if month > 11 or month < 0:
+            return redirect('pageNotFound')
+        month = month +1
+
+        try:
+            initialPosts = Post.objects.all().order_by('date')
+        except Exception as e:
+                return redirect('internalError')
+        
+        for post in initialPosts:
+            if post and post.date >= startDate and post.date.month == month:
+                post.date = post.get_local_time()
+                curatedPosts.append(post)
+        i = 0
+        for p in curatedPosts:
+            if page == i:
+                post = p
+                break
+            i += 1
+        if i < len(curatedPosts)-1:
+            next_page = i+1
+        if i > 0 and len(curatedPosts) > i:
+            previous_page = i-1
+    except Exception as e:
+        logger.error(str(e))
+        return redirect('internalError')
+
+    if post == None:
+        return redirect('pageNotFound')
+    
+    context = {
+        "post" : post,
+        "title" : post.title,
+        "next" : next_page,
+        "previous": previous_page,
+        "transition_url" : "getFocusedMonthPost",
+        "transition_index" : month,
+
+    }
+    context.update(getGlobalContext())
+    return render(request, "post.html", context)
+
+def getFocusedDayPost(request, index, page):
+    post = None
+    next_page = None
+    previous_page = None
+
+    timestamp = index
+    try:
+        posts = Post.objects.filter(timestamp=timestamp).order_by('date')
+        i = 0
+        for p in posts:
+            if page == i:
+                post = p
+                break
+            i += 1
+        if i < len(posts)-1:
+            next_page = i+1
+        if i > 0 and len(posts) > i:
+            previous_page = i-1
+    except Exception as e:
+        logger.error(str(e))
+        return redirect('internalError')
+
+    if post == None:
+        return redirect('pageNotFound')
+    
+    context = {
+        "post" : post,
+        "title" : post.title,
+        "next" : next_page,
+        "previous": previous_page,
+        "transition_url" : "getFocusedDayPost",
+        "transition_index" : timestamp,
+
+    }
+    context.update(getGlobalContext())
+    return render(request, "post.html", context)
+
+def getFocusedUserPost(request, index, page):
+
+    post = None
+    next_page = None
+    previous_page = None
+
+    username = index
+    pk = page
+    try:
+        owner = User.objects.get(username=username)
+        posts = Post.objects.filter(owner=owner).order_by('date')
+        i = 0
+        for p in posts:
+            if p.id == pk:
+                post = p
+                break
+            i += 1
+        if i < len(posts)-1:
+            next_page = posts[i+1].id
+        if i > 0 and len(posts) > i:
+            previous_page = posts[i-1].id
+    except Exception as e:
+        logger.error(str(e))
+        return redirect('internalError')
+
+    if post == None:
+        return redirect('pageNotFound')
+    
+    context = {
+        "post" : post,
+        "title" : post.title,
+        "next" : next_page,
+        "previous": previous_page,
+        "transition_url" : "getFocusedUserPost",
+        "transition_index" : username,
+
+    }
+    context.update(getGlobalContext())
+    return render(request, "post.html", context)
+
+def getPostsDictionary(posts, index):
+    result = []
+    i = 0
+    for p in posts:
+        post = p.__dict__
+        post["date"] = p.get_local_time()
+        context = {
+            "page" : i,
+            "index" : index,
+            "owner" : p.owner,
+            "image" : p.image,
+            "video" : p.video
+        }
+        post.update(context)
+        result.append(post)
+        i += 1
+    
+    return result
+
 def getPostsOfDay(request, timestamp):
     posts = []
     timeStampDate = getDateFromTimestamp(timestamp)
 
     try:
         # This is done to validate the timestamp, I'm doing it this way because I need timeStampDate
-        posts = Post.objects.filter(timestamp=getTimeStampFromDate(timeStampDate)).order_by('date')
-        for post in posts:
-            post.date = post.get_local_time()
+        posts = getPostsDictionary(Post.objects.filter(timestamp=getTimeStampFromDate(timeStampDate)).order_by('date'), timestamp)
     except Exception as e:
         logger.error(str(e))
         return redirect('internalError')
@@ -153,16 +301,18 @@ def getPostsOfDay(request, timestamp):
     context = {
         "posts" : posts,
         "title" : title,
-        "style" : "post_list",
+        "non_gallery" : True,
+        "focused_url" : "getFocusedDayPost"
     }
     context.update(getGlobalContext())
     return render(request, "posts.html", context)
 
-def getActiveDaysOfMonth(request, month):
+def getActiveDaysOfMonth(request, index):
     posts = []
     days = []
     lastTimestamp = 0
 
+    month = index
     startDate = getStartDate()
 
     if month > 11 or month < 0:
@@ -178,7 +328,8 @@ def getActiveDaysOfMonth(request, month):
         if post and post.date >= startDate and post.date.month == month:
             if lastTimestamp < post.timestamp:
                 lastTimestamp = post.timestamp
-                days.append({"timestamp" : str(lastTimestamp), "name" : timezone.localtime(post.date).strftime("%A %d, %B %Y")})
+                post.title = timezone.localtime(post.date).strftime("%A %d")
+                days.append(post)
 
     month = month - 1
     title = MONTHS[month]
@@ -190,9 +341,11 @@ def getActiveDaysOfMonth(request, month):
     context.update(getGlobalContext())
     return render(request, "month.html", context)
 
-def getGallery(request, posts, page, root_page, extra):
+def getGallery(request, posts, page, transition_url, transition_index, extra, focused_url=None):
     pages = []
 
+    next_page = None
+    previous_page = None
     maxPostPerPage = getMaxPostsPerPage()
     if len(posts) < page * maxPostPerPage:
         return redirect('pageNotFound')
@@ -201,23 +354,33 @@ def getGallery(request, posts, page, root_page, extra):
             pages.append(i)
         if len(pages) < 2:
             pages = []
+        
+        if page > 0:
+            previous_page = page - 1
+        if len(pages)-1 > page:
+            next_page = page + 1
+        
         posts = posts[page*maxPostPerPage:]
         posts = posts[:maxPostPerPage]
 
     context = {
         "posts" : posts,
-        "style" : "post_gallery",
         "pages" : pages,
-        "root_page" : root_page,
+        "transition_url" : transition_url,
+        "transition_index" : transition_index,
+        "previous" : previous_page,
+        "next" : next_page,
+        "focused_url" : focused_url,
     }
     context.update(getGlobalContext())
     context.update(extra)
     return render(request, "posts.html", context)
 
-def getPostsFromUser(request, username, page=0):
+def getPostsFromUser(request, index, page=0):
     
+    username = index
     try:
-        posts = Post.objects.filter(owner=User.objects.get(username=username)).order_by('date')
+        posts = getPostsDictionary(Post.objects.filter(owner=User.objects.get(username=username)).order_by('date'), index)
     except Exception as e:
         logger.error(str(e))
         return redirect('internalError')
@@ -227,12 +390,13 @@ def getPostsFromUser(request, username, page=0):
     context = {
         "title" : title,
     }
-    return getGallery(request, posts, page, reverse("getPostsFromUser", kwargs={"username": username}), context)
+    return getGallery(request, posts, page, "getPostsFromUser", username, context, focused_url="getFocusedUserPost")
 
-def getGalleryOfMonth(request, month, page=0):
+def getGalleryOfMonth(request, index, page=0):
     initialPosts = []
     curatedPosts = []
 
+    month = index
     startDate = getStartDate()
 
     if month > 11 or month < 0:
@@ -253,7 +417,7 @@ def getGalleryOfMonth(request, month, page=0):
     context = {
         "title" : title
     }
-    return getGallery(request, curatedPosts, page, reverse("getGalleryOfMonth", kwargs={"month": month-1}), context)
+    return getGallery(request, curatedPosts, page, "getGalleryOfMonth", month-1, context, focused_url="getFocusedMonthPost")
     
 
 def getTodaysPosts(request):
