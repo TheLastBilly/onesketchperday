@@ -175,7 +175,7 @@ def getFocusedMonthPost(request, pk):
         startDate = getStartDate()
 
         try:
-            initialPosts = Post.objects.all()
+            initialPosts = Post.objects.all().order_by('date')
         except Exception as e:
             return redirect('pageNotFound')
         
