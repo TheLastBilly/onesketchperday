@@ -1,4 +1,5 @@
 from . import views
+
 from django.urls import path
 
 from django.conf import settings
@@ -8,9 +9,9 @@ urlpatterns = [
 
     path('post/<str:pk>', views.getPost, name='getPost'),
     
-    path('focused/month/<str:index>/<str:page>', views.getFocusedMonthPost, name='getFocusedMonthPost'),
-    path('focused/user/<str:index>/<str:page>', views.getFocusedUserPost, name='getFocusedUserPost'),
-    path('focused/day/<str:index>/<str:page>', views.getFocusedDayPost, name='getFocusedDayPost'),
+    path('focused/month/<str:pk>', views.getFocusedMonthPost, name='getFocusedMonthPost'),
+    path('focused/user/<str:pk>', views.getFocusedUserPost, name='getFocusedUserPost'),
+    path('focused/day/<str:pk>', views.getFocusedDayPost, name='getFocusedDayPost'),
 
     path('', views.getTodaysPosts, name='getTodaysPosts'),
     path('404/', views.pageNotFound, name='pageNotFound'),
@@ -18,7 +19,6 @@ urlpatterns = [
     path('day/<int:timestamp>', views.getPostsOfDay, name='getPostsOfDay'),
     
     path('month/active/<int:index>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
-    path('month/active/<int:index>/<int:page>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
 
     path('month/gallery/<int:index>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
     path('month/gallery/<int:index>/<int:page>', views.getGalleryOfMonth, name='getGalleryOfMonth'),

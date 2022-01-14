@@ -23,14 +23,29 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="post_single">
+    <div class="pages_list">
+        <ul>
+            {% if previous is not None %}
+            <li style="margin-right: 1em;">
+                [<a href="{% url transition_url pk=previous %}">previous</a>]
+            </li>
+            {% endif %}
+    
+            {% if next is not None %}
+            <li style="margin-left: 1em;">
+                [<a href="{% url transition_url pk=next %}">next</a>]
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+
     <div class="post_single_title">
         <h1>{{ title }}</h1>
     </div>
-
+    
     <div class="post">
-        <a href="{% url 'getPost' pk=post.id %}">
+        <a href="{% url focused_url pk=post.id %}">
             {% if post.image %}
                 <img src="{{ media_url }}{{ post.image.name }}" alt="">
             {% elif post.video %}
@@ -39,24 +54,7 @@
                 </video>
             {% endif %}
         </a>
-        <p>Uploaded by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a>  on {{ post.date }}</p>
+        <p>Uploaded by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a>  on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date }}</a></p>
     </div>
-</div>
-
-
-<div class="pages_list">
-    <ul>
-        {% if previous is not None %}
-        <li>
-            [<a href="{% url transition_url index=transition_index page=previous %}">previous</a>]
-        </li>
-        {% endif %}
-
-        {% if next is not None %}
-        <li>
-            [<a href="{% url transition_url index=transition_index page=next %}">next</a>]
-        </li>
-        {% endif %}
-    </ul>
 </div>
 {% endblock %}
