@@ -119,16 +119,7 @@ def getFavicon(request):
         return redirect('pageNotFound')
 
 def getPost(request, pk):
-    post = Post.objects.filter(id=pk).first()
-    if post == None:
-        return redirect('pageNotFound')
-    
-    context = {
-        "post" : post,
-        "title" : post.title
-    }
-    context.update(getGlobalContext())
-    return render(request, "post.html", context)
+    return redirect('getFocusedDayPost', pk)
 
 def getFocusedPost(request, transition_url, pk, posts):
     post = None

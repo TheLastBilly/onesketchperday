@@ -5,7 +5,7 @@
 {% if non_gallery  %}
 <div class="post_gallery_title post_gallery_title_center">
 {% else %}
-<div class="post_gallery_title">
+<div class="post_gallery_title" style="margin-bottom: 0em;">
 {% endif %}
     <h1>{{ title }}</h1>
 </div>
@@ -16,8 +16,16 @@
 <div class="post_gallery">
 {% endif %}
 
+    {% if non_gallery is None %}
+    {% include "posts_pages_list.html" %}
+    {% endif %}
+
     {% for post in posts %}
+    {% if non_gallery is None %}
+    <div class="post" style="margin-top: 2em;">
+    {% else %}
     <div class="post">
+    {% endif %}
         <a href="{% url focused_url pk=post.id %}">
             {% if post.image %}
                 <img src="{{ media_url }}{{ post.image.name }}" alt="">
@@ -40,26 +48,8 @@
     </div>
     {% endfor %}
 
-    <div class="pages_list">
-        <ul>
-            {% if previous is not None %}
-            <li style="margin-right: 1em;">
-                [<a href="{% url transition_url index=transition_index page=previous %}">previous</a>]
-            </li>
-            {% endif %}
-
-            {% for page in pages %}
-            <li>
-                [<a href="{% url transition_url index=transition_index page=page %}">{{page}}</a>]
-            </li>
-            {% endfor %}
-
-            {% if next is not None %}
-            <li style="margin-left: 1em;">
-                [<a href="{% url transition_url index=transition_index page=next %}">next</a>]
-            </li>
-            {% endif %}
-        </ul>
-    </div>
+    {% if non_gallery is None %}
+    {% include "posts_pages_list.html" %}
+    {% endif %}
 </div>
 {% endblock %}

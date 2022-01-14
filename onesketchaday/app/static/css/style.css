@@ -275,7 +275,7 @@ div.content {
     width: 90%;
 }
 
-.post img {
+.post img, .post video {
     border-radius: .75em;
 }
 

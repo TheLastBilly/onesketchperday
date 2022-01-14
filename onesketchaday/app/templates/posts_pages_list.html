@@ -1,0 +1,21 @@
+<div class="pages_list">
+    <ul>
+        {% if previous is not None %}
+        <li style="margin-right: 1em;">
+            [<a href="{% url transition_url index=transition_index page=previous %}">previous</a>]
+        </li>
+        {% endif %}
+
+        {% for page in pages %}
+        <li>
+            [<a href="{% url transition_url index=transition_index page=page %}">{{page}}</a>]
+        </li>
+        {% endfor %}
+
+        {% if next is not None %}
+        <li style="margin-left: 1em;">
+            [<a href="{% url transition_url index=transition_index page=next %}">next</a>]
+        </li>
+        {% endif %}
+    </ul>
+</div>

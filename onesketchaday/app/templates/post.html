@@ -22,26 +22,17 @@
 <meta property="og:url" content="{{ site_url }}{% url 'getPost' pk=post.id %}" />
 {% endblock %}
 
+
 {% block content %}
 <div class="post_single">
-    <div class="pages_list">
-        <ul>
-            {% if previous is not None %}
-            <li style="margin-right: 1em;">
-                [<a href="{% url transition_url pk=previous %}">previous</a>]
-            </li>
-            {% endif %}
-    
-            {% if next is not None %}
-            <li style="margin-left: 1em;">
-                [<a href="{% url transition_url pk=next %}">next</a>]
-            </li>
-            {% endif %}
-        </ul>
-    </div>
+    {% include "post_pages_list.html" %}
 
     <div class="post_single_title">
+        {% if focused_url %}
         <a href="{% url focused_url pk=post.id %}">
+        {% else %}
+        <a href="{% url 'getPost' pk=post.id %}">
+        {% endif %}
             {% if title  %}
             <h1>{{ title }}</h1>
             {% else %}
@@ -51,7 +42,11 @@
     </div>
     
     <div class="post">
+        {% if focused_url %}
         <a href="{% url focused_url pk=post.id %}">
+        {% else %}
+        <a href="{% url 'getPost' pk=post.id %}">
+        {% endif %}
             {% if post.image %}
                 <img src="{{ media_url }}{{ post.image.name }}" alt="">
             {% elif post.video %}
@@ -62,5 +57,7 @@
         </a>
         <p>Uploaded by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a>  on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date }}</a></p>
     </div>
+
+    {% include "post_pages_list.html" %}
 </div>
 {% endblock %}
