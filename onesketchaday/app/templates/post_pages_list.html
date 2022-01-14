@@ -1,13 +1,13 @@
 <div class="pages_list">
     <ul>
         {% if previous is not None %}
-        <li style="margin-right: 1em;">
+        <li {% if next %} style="margin-right: 1em;" {% endif %}>
             [<a href="{% url transition_url pk=previous %}">previous</a>]
         </li>
         {% endif %}
 
         {% if next is not None %}
-        <li style="margin-left: 1em;">
+        <li {% if previous %} style="margin-left: 1em;" {% endif %}>
             [<a href="{% url transition_url pk=next %}">next</a>]
         </li>
         {% endif %}

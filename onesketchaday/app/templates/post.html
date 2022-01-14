@@ -25,7 +25,9 @@
 
 {% block content %}
 <div class="post_single">
+    {% if previous or next %}
     {% include "post_pages_list.html" %}
+    {% endif %}
 
     <div class="post_single_title">
         {% if focused_url %}
@@ -58,6 +60,8 @@
         <p>Uploaded by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a>  on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date }}</a></p>
     </div>
 
+    {% if previous or next %}
     {% include "post_pages_list.html" %}
+    {% endif %}
 </div>
 {% endblock %}

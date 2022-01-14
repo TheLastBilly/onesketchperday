@@ -15,8 +15,7 @@
 {% else %}
 <div class="post_gallery">
 {% endif %}
-
-    {% if non_gallery is None %}
+    {% if previous or next or page %}
     {% include "posts_pages_list.html" %}
     {% endif %}
 
@@ -48,7 +47,7 @@
     </div>
     {% endfor %}
 
-    {% if non_gallery is None %}
+    {% if previous or next or page %}
     {% include "posts_pages_list.html" %}
     {% endif %}
 </div>
