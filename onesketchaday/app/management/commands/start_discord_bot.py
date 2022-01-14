@@ -175,7 +175,7 @@ async def createPost(context, arg=None):
 
         i = i + 1
         if attachmentCount > 1:
-            await bot.createPostFromUser(user, title + "(" + str(i) + "/" + str(attachmentCount)+ ")", fileName, context, attachment, isVideo=isVideo)
+            await bot.createPostFromUser(user, title + " (" + str(i) + "/" + str(attachmentCount)+ ")", fileName, context, attachment, isVideo=isVideo)
         else:
             await bot.createPostFromUser(user, title, fileName, context, attachment, isVideo=isVideo)
 
