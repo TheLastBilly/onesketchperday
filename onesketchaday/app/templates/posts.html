@@ -27,9 +27,15 @@
                 </video>
             {% endif %}
         </a>
+
         <a href="{% url focused_url pk=post.id %}">
-            <p class="post_title"> {{ post.title }} </p>
+            {% if post.title %}
+            <p class="post_title">{{ post.title }}</p>
+            {% else %}
+            <p class="post_title">{{ post.date|date:"l" }}</p>
+            {% endif %}
         </a>
+
         <p class="post_description">by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a> on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date|date:"M jS, h:i a" }}</a></p>
     </div>
     {% endfor %}
