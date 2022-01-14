@@ -131,8 +131,6 @@ def getPost(request, pk):
     return render(request, "post.html", context)
 
 def getFocusedPost(request, transition_url, pk, posts):
-    posts = posts.order_by('date')
-
     post = None
     next_page = None
     previous_page = None
@@ -201,7 +199,7 @@ def getFocusedDayPost(request, pk):
         logger.error(str(e))
         return redirect('pageNotFound')
     
-    return getFocusedPost(request, "getFocusedDayPost", pk, Post.objects.filter(timestamp=timestamp))
+    return getFocusedPost(request, "getFocusedDayPost", pk, Post.objects.filter(timestamp=timestamp).order_by('date'))
 
 def getFocusedUserPost(request, pk):
     owner = None
@@ -212,7 +210,7 @@ def getFocusedUserPost(request, pk):
         logger.error(str(e))
         return redirect('pageNotFound')
 
-    return getFocusedPost(request, "getFocusedUserPost", pk, Post.objects.filter(owner=owner))
+    return getFocusedPost(request, "getFocusedUserPost", pk, Post.objects.filter(owner=owner).order_by('date'))
 
 def getPostsOfDay(request, timestamp):
     posts = []
