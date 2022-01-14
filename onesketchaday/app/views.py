@@ -260,7 +260,6 @@ def getActiveDaysOfMonth(request, index):
         if post and post.date >= startDate and post.date.month == month:
             if lastTimestamp < post.timestamp:
                 lastTimestamp = post.timestamp
-                post.title = timezone.localtime(post.date).strftime("%A %d")
                 days.append(post)
 
     month = month - 1

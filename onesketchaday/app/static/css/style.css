@@ -349,6 +349,7 @@ div.content {
 .post_gallery_title {
     background-color: #374444;
     width: 45%;
+    margin-left: 27.5%;
     margin-top: 1em;
     border-radius: .75em;
     display: inline-block;

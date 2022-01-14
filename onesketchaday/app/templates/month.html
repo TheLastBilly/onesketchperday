@@ -14,14 +14,14 @@
         <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">
             {% if day.image %}
                 <img src="{{ media_url }}{{ day.image.name }}" alt="">
-            {% elif post.video %}
+            {% elif day.video %}
                 <video controls>
                     <source src="{{ media_url }}{{ day.video.name }}" type='video/mp4'>
                 </video>
             {% endif %}
         </a>
         <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">
-            <p class="post_title"> {{ day.title }} </p>
+            <p class="post_title"> {{ day.date|date:"l" }} the {{ day.date|date:" jS" }} </p>
         </a>
     </div>
     {% endfor %}
