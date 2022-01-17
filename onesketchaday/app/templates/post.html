@@ -44,16 +44,20 @@
     </div>
     
     <div class="post">
+        {% if post.is_nsfw %}
+        <p style="margin-top: 1em; font-weight: bolder;">Clik on content and/or title to view NSFW</p>
+        {% endif %}
+
         {% if focused_url %}
         <a href="{% url focused_url pk=post.id %}">
         {% else %}
         <a href="{% url 'getPost' pk=post.id %}">
         {% endif %}
             {% if post.image %}
-                <img src="{{ media_url }}{{ post.image.name }}" alt="">
+                <img src="{{ media_url }}{{ post.image.name }}" alt="" {% if post.is_nsfw and not show_nsfw %} class="add_blur" {% endif %}>
             {% elif post.video %}
                 <video controls>
-                    <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4'>
+                    <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4' {% if post.is_nsfw and not show_nsfw %} class="add_blur" {% endif %}>
                 </video>
             {% endif %}
         </a>

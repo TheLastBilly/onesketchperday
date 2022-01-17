@@ -55,16 +55,19 @@ class DiscordBot():
         return await sync_to_async(self.syncGetTodaysPosts)()
 
     def syncGetUser(self, index):
-        return User.objects.filter(discord_username=index)[0]
+        users = User.objects.filter(discord_username=index)
+        if (len(users) < 1):
+            return None
+        return users[0]
     
-    def syncCreatePost(self, owner, file, title, isVideo=False):
+    def syncCreatePost(self, owner, file, title, isVideo=False, is_nsfw=False):
         if isVideo:
-            return Post.objects.create(owner=owner, video=file, title=title)
+            return Post.objects.create(owner=owner, video=file, title=title, is_nsfw=is_nsfw)
         else:
-            return Post.objects.create(owner=owner, image=file, title=title)
+            return Post.objects.create(owner=owner, image=file, title=title, is_nsfw=is_nsfw)
 
-    async def createPost(self, owner, file, title, isVideo=False):
-        return await sync_to_async(self.syncCreatePost)(owner, file, title, isVideo)
+    async def createPost(self, owner, file, title, isVideo=False, is_nsfw=False):
+        return await sync_to_async(self.syncCreatePost)(owner, file, title, isVideo, is_nsfw)
 
     def syncDeletePost(self, owner, id):
         Post.objects.get(owner=owner, id=id).delete()
@@ -82,7 +85,7 @@ class DiscordBot():
         user = await self.getUser(username)
         if not user or not user.is_a_participant:
             await self.sendUserReply("Sorry, but you are not allowed to interact with this bot", context)
-            logger.error("Rejected request from {}: {}".format(username, str(e)))
+            logger.error("Rejected request from {}: Not in the registered list".format(username))
             return None
         
         return user
@@ -104,7 +107,7 @@ class DiscordBot():
     async def downloadFile(self, filePath, attachment):
         await attachment.save(open(filePath, "wb"))
 
-    async def createPostFromUser(self, user, title, fileName, context, attachment, isVideo=False):
+    async def createPostFromUser(self, user, title, fileName, context, attachment, isVideo=False, is_nsfw=False):
         logger.info('Received post request from user {}'.format(user.username))
 
         if title:
@@ -116,7 +119,7 @@ class DiscordBot():
             absolutePath = settings.MEDIA_ROOT + "/" + fileName
             await self.downloadFile(absolutePath, attachment)
 
-            post = await self.createPost(user, fileName, title, isVideo)
+            post = await self.createPost(user, fileName, title, isVideo=isVideo, is_nsfw=is_nsfw)
 
             await self.sendUserReply("File succesfully uploaded!\nHere's the link to your new post: " + settings.SITE_URL + "post/" + post.id + "", context)
         
@@ -131,11 +134,11 @@ bot = DiscordBot()
 # Post Command
 @bot.bot.command(name='post', pass_context=True)
 async def postCommand(context, *, arg=None):
-    try:
+    # try:
         await createPost(context, arg)
-    except Exception as e:
-        logger.error("Error on post: {}".format(str(e)))
-        await bot.sendUserReply("Sorry, but I couldn't create your post due to an internal error, please try again later", context)
+    # except Exception as e:
+    #     logger.error("Error on post: {}".format(str(e)))
+    #     await bot.sendUserReply("Sorry, but I couldn't create your post due to an internal error, please try again later", context)
 
 async def createPost(context, arg=None):
     username = str(context.message.author)
@@ -155,8 +158,10 @@ async def createPost(context, arg=None):
     
     i = 0
     for attachment in context.message.attachments:
+        is_nsfw = attachment.is_spoiler()
         fileName = attachment.filename
         ext = ""
+
         for e in IMAGE_EXTENSIONS:
             if e in fileName:
                 ext = e
@@ -175,9 +180,9 @@ async def createPost(context, arg=None):
 
         i = i + 1
         if attachmentCount > 1:
-            await bot.createPostFromUser(user, title + " (" + str(i) + "/" + str(attachmentCount)+ ")", fileName, context, attachment, isVideo=isVideo)
+            await bot.createPostFromUser(user, title + " (" + str(i) + "/" + str(attachmentCount)+ ")", fileName, context, attachment, isVideo=isVideo, is_nsfw=is_nsfw)
         else:
-            await bot.createPostFromUser(user, title, fileName, context, attachment, isVideo=isVideo)
+            await bot.createPostFromUser(user, title, fileName, context, attachment, isVideo=isVideo, is_nsfw=is_nsfw)
 
 # Delete Command
 @bot.bot.command(name='delete', pass_context=True)
@@ -218,7 +223,7 @@ async def sendTodaysPostCount():
     try:
         post_count_message = await bot.getVariable("PostCountMessage")
         posts, posts_size = await bot.getTodaysPosts()
-        await bot.sendMessageOnChannel(post_count_message.label, "@everyone I have received a grand total of {} {}, and with that we conclude today's session.\nSee you tomorrow!".format(posts_size, "posts" if posts_size != 1 else "post"))
+        await bot.sendMessageOnChannel(post_count_message.label, "@everyone I have received a grand total of {} {}!, and with that we conclude today's session.\nSee you tomorrow!".format(posts_size, "posts" if posts_size != 1 else "post"))
     except Exception as e:
         logger.error("Cannot send post count: {}".format(str(e)))
 

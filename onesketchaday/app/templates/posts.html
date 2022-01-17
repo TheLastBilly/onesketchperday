@@ -25,12 +25,16 @@
     {% else %}
     <div class="post">
     {% endif %}
+        {% if post.is_nsfw %}
+        <p style="margin-top: 1em; font-weight: bolder;">NSFW</p>
+        {% endif %}
+
         <a href="{% url focused_url pk=post.id %}">
             {% if post.image %}
-                <img src="{{ media_url }}{{ post.image.name }}" alt="">
+                <img src="{{ media_url }}{{ post.image.name }}" alt="" {% if post.is_nsfw %} class="add_blur" {% endif %}>
             {% elif post.video %}
                 <video controls>
-                    <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4'>
+                    <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4' {% if post.is_nsfw %} class="add_blur" {% endif %}>
                 </video>
             {% endif %}
         </a>

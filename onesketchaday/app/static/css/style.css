@@ -269,6 +269,7 @@ div.content {
     border-radius: .75em;
     text-align: center;
     overflow-wrap: break-word;
+    overflow: hidden;
 }
 
 .post * {
@@ -344,6 +345,14 @@ div.content {
 .pages_list li {
     display: flex;
     margin-left: 0.2em;
+}
+
+.add_blur {
+    filter: blur(20px);
+    -webkit-filter: blur(20px);
+    width: 80%;
+    margin-top: 3em;
+    margin-bottom: 3em;
 }
 
 .post_gallery_title {

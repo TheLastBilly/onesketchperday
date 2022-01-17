@@ -119,7 +119,21 @@ def getFavicon(request):
         return redirect('pageNotFound')
 
 def getPost(request, pk):
-    return redirect('getFocusedDayPost', pk)
+    post = None
+
+    try:
+        post = Post.objects.get(id=pk)
+    except Exception as e:
+        logger.error(str(e))
+        return redirect('pageNotFound')
+    
+    context = {
+        "post" : post,
+        "title" : post.title,
+        "show_nsfw" : True,
+    }
+    context.update(getGlobalContext())
+    return render(request, "post.html", context)
 
 def getFocusedPost(request, transition_url, pk, posts):
     post = None
@@ -128,6 +142,9 @@ def getFocusedPost(request, transition_url, pk, posts):
 
     try:
         post = Post.objects.get(id=pk)
+
+        if post.is_nsfw:
+            transition_url = "getPost"
 
         i = 0
         for p in posts:
@@ -141,7 +158,7 @@ def getFocusedPost(request, transition_url, pk, posts):
             previous_page = posts[i-1].id
     except Exception as e:
         logger.error(str(e))
-        return redirect('internalError')
+        return redirect('pageNotFound')
     
     context = {
         "post" : post,

@@ -63,6 +63,8 @@ class Post(models.Model):
     likes               = models.IntegerField(default=0, editable=False)
     rating              = models.IntegerField(default=0, editable=False)
 
+    is_nsfw             = models.BooleanField(default=False)
+
     timestamp           = models.IntegerField(null=True)
     id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
 
