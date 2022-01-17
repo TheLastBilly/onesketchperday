@@ -44,8 +44,8 @@
     </div>
     
     <div class="post">
-        {% if post.is_nsfw %}
-        <p style="margin-top: 1em; font-weight: bolder;">Clik on content and/or title to view NSFW</p>
+        {% if post.is_nsfw and not show_nsfw %}
+        <p style="margin-top: 1em; font-weight: bolder;">Click on content and/or title to view NSFW</p>
         {% endif %}
 
         {% if focused_url %}
