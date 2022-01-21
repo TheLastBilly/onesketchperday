@@ -289,14 +289,14 @@ def getGallery(request, posts, page, transition_url, transition_index, extra, fo
     if len(posts) < page * maxPostPerPage:
         return redirect('pageNotFound')
     else:
-        for i in range(int(len(posts)/maxPostPerPage)+1):
+        for i in range(int(len(posts)/maxPostPerPage)):
             pages.append(i)
         if len(pages) < 2:
             pages = []
         
         if page > 0:
             previous_page = page - 1
-        if len(pages)-1 > page:
+        if len(pages) > page+1:
             next_page = page + 1
         
         posts = posts[page*maxPostPerPage:]
@@ -310,6 +310,7 @@ def getGallery(request, posts, page, transition_url, transition_index, extra, fo
         "previous" : previous_page,
         "next" : next_page,
         "focused_url" : focused_url,
+        "page": page,
     }
     context.update(getGlobalContext())
     context.update(extra)
