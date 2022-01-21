@@ -18,11 +18,12 @@ ENV USE_SOCKET=1
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update
-RUN apt install -y postgresql-client libmariadb-dev
+RUN apt install -y postgresql-client libmariadb-dev python3-virtualenv
 RUN apt-get autoremove
 
 COPY ./requirements.txt /tmp/
-RUN python3 -m pip install -r /tmp/requirements.txt
+RUN virtualenv /venv
+RUN /venv/bin/pip install -r /tmp/requirements.txt
 
 COPY ./$APP_NAME /$APP_NAME
 WORKDIR /$APP_NAME

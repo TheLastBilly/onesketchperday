@@ -6,9 +6,9 @@
         </li>
         {% endif %}
 
-        {% for page in pages %}
+        {% for p in pages %}
         <li>
-            [<a href="{% url transition_url index=transition_index page=page %}">{{page}}</a>]
+            [<a href="{% url transition_url index=transition_index page=p %}" {% if page == p %} style="color:lightslategray;" {% endif %}>{{p}}</a>]
         </li>
         {% endfor %}
 

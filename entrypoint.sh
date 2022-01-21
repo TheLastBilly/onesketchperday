@@ -28,10 +28,10 @@ if [ -f /config/migrate_database ]; then
 fi
 
 rm -rf static/*
-python manage.py collectstatic
+/venv/bin/python manage.py collectstatic
 
 groupadd -g $PGID app
 useradd -u $PUID -g $PGID app
 
-python manage.py start_discord_bot &
-gunicorn --user $PUID --group $PGID --workers $WORKERS $BIND $APP_NAME.wsgi
+/venv/bin/python manage.py start_discord_bot &
+/venv/bin/gunicorn --user $PUID --group $PGID --workers $WORKERS $BIND $APP_NAME.wsgi
