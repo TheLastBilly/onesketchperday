@@ -296,7 +296,7 @@ def getGallery(request, posts, page, transition_url, transition_index, extra, fo
         
         if page > 0:
             previous_page = page - 1
-        if len(pages)-1 > page:
+        if len(pages) > page+1:
             next_page = page + 1
         
         posts = posts[page*maxPostPerPage:]
