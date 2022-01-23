@@ -1,5 +1,6 @@
 import base64, uuid, os
 
+from django.conf import settings
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -33,6 +34,8 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     username            = models.CharField(max_length=20, unique=True)
+    profile_picture     = models.ImageField(null=True, blank=True)
+    biography           = models.TextField(null=True, blank=True)
 
     discord_username    = models.CharField(max_length=255, blank=True)
 
@@ -48,6 +51,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
     
+
+    def delete(self):
+        absolutePath = ""
+        if self.profile_picture:
+            absolutePath = self.profile_picture.storage.base_location + "/" + self.profile_picture.field.upload_to + "/" + self.profile_picture.name
+        if os.path.exists(absolutePath):
+            os.remove(absolutePath)
+        super(User, self).delete()
+    
+    def get_page(self):
+        from django.urls import reverse
+        return settings.SITE_URL + reverse('getPostsFromUser', kwargs={"index" : self.username})
+
     def __str__(self):
         return str(self.username)
 
@@ -60,8 +76,7 @@ class Post(models.Model):
 
     image               = models.ImageField(null=True, blank=True)
     video               = models.FileField(null=True, blank=True)
-    likes               = models.IntegerField(default=0, editable=False)
-    rating              = models.IntegerField(default=0, editable=False)
+    likes               = models.ManyToManyField(User, blank=True)
 
     is_nsfw             = models.BooleanField(default=False)
 
@@ -78,6 +93,10 @@ class Post(models.Model):
             self.update_timestamp(save=False)
 
         super(Post, self).save(*args, **kwargs)
+
+    def get_page(self):
+        from django.urls import reverse
+        return settings.SITE_URL + reverse('getPost', kwargs={"pk" : self.id})
 
     def delete(self):
         targets = []
@@ -135,7 +154,6 @@ class MarkdownPost(models.Model):
 
     def __str__(self):
         return str(self.title)
-    
 
 class Comment(models.Model):
     content = models.TextField(null=True)

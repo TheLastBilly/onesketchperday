@@ -1,6 +1,6 @@
 from django.core.exceptions import *
 from asgiref.sync import *
-from .models import *
+from app.models import *
 import logging, os
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

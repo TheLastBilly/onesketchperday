@@ -10,7 +10,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from app.models import *
 from app.utils import *
-from app.bot import *
+from onesketchaday.bot.globals import *
 import logging, os
 import discord
 import asyncio

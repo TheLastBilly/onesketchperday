@@ -33,7 +33,7 @@ def getGlobalContext():
         "sidebar_months": MONTHS,
         "page_title" : "onesketchaday",
         "site_name" : "onesketchaday",
-        "site_url" : settings.SITE_URL,
+        "site_url" : settings.SITE_URL + "/",
     }
 
 def renderMarkdownPost(request, title):

@@ -187,7 +187,7 @@ with open("./discord-token", "r+") as f:
 if os.environ.get('SITE_URL') is not None:
     SITE_URL = os.environ['SITE_URL']
 else:
-    SITE_URL = "http://127.0.0.1:8000/"
+    SITE_URL = "http://127.0.0.1:8000"
 
 if os.environ.get('ADMIN_PAGE') is not None:
     ADMIN_PAGE = os.environ['ADMIN_PAGE']
