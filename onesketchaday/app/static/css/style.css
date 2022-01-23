@@ -371,6 +371,11 @@ div.content {
     border-radius: .75em;
 }
 
+.participant_post_count {
+    font-size: 1em;
+    margin-top: .2em;
+}
+
 .sidebar_bottom {
     margin-top: 2em;
     bottom: 0;

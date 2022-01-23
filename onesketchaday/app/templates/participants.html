@@ -11,7 +11,9 @@
     {% for competitor in competitors %}
     <div class="participant">
         <div class="participant_picture">
-            <img src="{{ media_url }}{{ competitor.user.profile_picture.name }}" alt="">
+            <a href="{% url 'getPostsFromUser' index=competitor.user.username %}">
+                <img src="{{ media_url }}{{ competitor.user.profile_picture.name }}" alt="" >
+            </a>
         </div>
         
         <div class="participant_info">
@@ -19,6 +21,9 @@
                 <a href="{% url 'getPostsFromUser' index=competitor.user.username %}">
                     <p>{{ competitor.user.username }}<p>
                 </a>
+            </div>
+            <div class = "participant_post_count">
+                <p>({{competitor.posts}} posts)</p>
             </div>
             <div class="participant_bio">
                 <p >{{ competitor.user.biography }}</p>
