@@ -57,7 +57,6 @@ def getUpdatesPage(request):
 
 def getParticipantsPage(request):
     competitors = []
-    losers = []
 
     try:
         users = User.objects.all()
@@ -72,6 +71,9 @@ def getParticipantsPage(request):
             if len(user.biography) < 1:
                 user.user.biography = None
 
+            if len(user.biography) > 250:
+                user.biography = user.biography[:250] + "..."
+            
             d = {"user":user, "posts":postCount}
             if user.is_competing:
                 competitors.append(d)
