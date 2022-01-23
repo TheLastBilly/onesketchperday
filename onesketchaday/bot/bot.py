@@ -12,12 +12,12 @@ from .utils import *
 class OnesketchadayBot(commands.Bot):
     # Commands
     def add_commands(self):
-        @commands.command(name='post', description="Creates a post based on the provided attachments. The text provided by the message would be used as the post's title")
+        @commands.command(name='post', brief="post [title] ATTACHMENT", description="Creates a post based on the provided attachments. The text provided by the message would be used as the post's title")
         async def post_command(context, *, arg=None):
             await self.create_post(context, arg)
         self.add_command(post_command)
 
-        @commands.command(name='delete', description="Deletes your post from the site. The text provided with the message most be a link to your post")
+        @commands.command(name='delete', brief="delete POST_URL", description="Deletes your post from the site. The text provided with the message most be a link to your post")
         async def delete_command(context, link):
             try:
                 await self.delete_post(context, link)
@@ -26,7 +26,7 @@ class OnesketchadayBot(commands.Bot):
                 await self.send_reply_to_user("Sorry, but I couldn't delete your post due to an internal error, please try again later", context)
         self.add_command(delete_command)
 
-        @commands.command(name="set_reminder", description="Sets the reminder message that will be sent every day by the bot (not the posts count message)")
+        @commands.command(name="set_reminder", brief="set_reminder REMINDER", description="Sets the reminder message that will be sent every day by the bot (not the posts count message)")
         async def set_reminder_command(context, *, arg):
             try:
                 if not await self.validate_user(str(context.message.author), context):
@@ -39,19 +39,19 @@ class OnesketchadayBot(commands.Bot):
                 await self.send_reply_to_user('Sorry, but I couldn\'t change the reminder message due to an internal errror', context)
         self.add_command(set_reminder_command)
     
-        @commands.command(name="set_bio", description="Sets your biography and profile picture based on the provided message and attachment. Only the first attachment will be used for your bio")
+        @commands.command(name="set_bio", brief="set_bio BIOGRAPHY [ATTACHMENT]", description="Sets your biography and profile picture based on the provided message and attachment. Only the first attachment will be used for your bio. Your biography will only show up in the participants page if you set both your bio and profile picture")
         async def set_bio_command(context, *, arg=None):
             await self.set_user_bio(context, arg)
         self.add_command(set_bio_command)
 
-        @commands.command(name="clear_bio", description="Clears your biography. If you don't have a biography, your name won't show up on the participants page (you would still be able to make posts however)")
-        async def clear_bio_command(context, *, arg=None):
-            await self.clear_user_bio(context, arg)
+        @commands.command(name="clear_bio", brief="clear_bio", description="Clears your biography. If you don't have a biography, your name won't show up on the participants page (you will still be able to make posts however)")
+        async def clear_bio_command(context):
+            await self.clear_user_bio(context)
         self.add_command(clear_bio_command)
 
-        @commands.command(name="commands", description="Send a list of all the available commands")
-        async def commands_command(context):
-            await self.send_commands(context)
+        @commands.command(name="commands", brief="commands [COMMAND]", description="Send a list of all the available commands")
+        async def commands_command(context, command=None):
+            await self.send_commands(context, command)
         self.add_command(commands_command)
 
     # Internals
@@ -81,16 +81,30 @@ class OnesketchadayBot(commands.Bot):
             logger.error("Cannot setup reminder: {}".format(str(e)))
 
     # Send a message with all the available commands
-    async def send_commands(self, context):
+    async def send_commands(self, context, arg=None):
         username = str(context.message.author)
         user = await self.validate_user(username, context)
         if not user:
             return
 
-        command_list = "```Available commands:\n"
-        for command in self.walk_commands():
-            command_list += "\t{}{}:\t{}\n".format(self.command_prefix, command.name, command.description)
-        command_list += "```"
+        if arg:
+            for command in self.walk_commands():
+                if command.name == arg:
+                    await self.send_reply_to_user("```{}{} \n{}```".format(self.command_prefix, command.brief, command.description), context)
+                    return
+            await self.send_reply_to_user("\"{}\" is not an available command".format(arg), context)
+            return
+        else:
+            command_list = "```\nCommands:\n"
+            for command in self.walk_commands():
+                if not command.brief:
+                    continue
+                command_list += "{}{}\n".format(self.command_prefix, command.brief)
+            command_list += "\nNotes:\n"
+            command_list += "VAL    Means that including VAL value is mandatory\n"
+            command_list += "[VAL]  Means that including VAL value is optional\n"
+            command_list += "```"
+            await self.send_reply_to_user(command_list, context)
 
     # Reply to user message
     async def send_reply_to_user(self, message, context):
@@ -164,6 +178,7 @@ class OnesketchadayBot(commands.Bot):
             user.profile_picture = ""
             await save_user(user)
         
+            await self.send_reply_to_user("Done!, your biography has been cleared. It will no longer show up in the participants page", context)
         except Exception as e:
             logger.error("Cannot clear biography for {}: {}".format(user.username, str(e)))
             await self.send_reply_to_user("Sorry, I couldn't clear your biography due to an internal error", context)

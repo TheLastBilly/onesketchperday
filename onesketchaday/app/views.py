@@ -11,6 +11,7 @@ import logging
 import base64
 
 DEFAULT_MAX_POST_PER_PAGE = 50
+DEFAULT_MAX_CHAR_PER_BIO = 300
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,15 @@ def getMaxPostsPerPage():
         return p.integer
     except Exception as e:
         return DEFAULT_MAX_POST_PER_PAGE
+
+def getMaxCharactersPerBiography():
+    try:
+        p = Variable.objects.get(name="MaxBiographyCharacters")
+        if not p or not p.integer:
+            raise ValueError
+        return p.integer
+    except Exception as e:
+        return DEFAULT_MAX_CHAR_PER_BIO
 
 def getGlobalContext():
     return {
@@ -60,19 +70,18 @@ def getParticipantsPage(request):
 
     try:
         users = User.objects.all()
+        max_bio_len = getMaxCharactersPerBiography()
 
         for user in users:
             if not user.is_a_participant:
                 continue
-                
+            
             postCount = len(Post.objects.filter(owner=user))
-            if len(user.profile_picture.name) < 1:
-                user.profile_picture.name = None
-            if len(user.biography) < 1:
-                user.user.biography = None
+            if len(user.profile_picture.name) < 1 or len(user.biography) < 1:
+                continue
 
-            if len(user.biography) > 250:
-                user.biography = user.biography[:250] + "..."
+            if len(user.biography) > max_bio_len:
+                user.biography = user.biography[:max_bio_len] + "..."
             
             d = {"user":user, "posts":postCount}
             if user.is_competing:
