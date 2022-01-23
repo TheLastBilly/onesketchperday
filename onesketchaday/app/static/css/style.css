@@ -309,8 +309,66 @@ div.content {
     text-align: center;
 }
 
-.pariticipants_list h2 {
+.participants_list h2 {
     margin-top: 1em;
+}
+
+.participants_list {
+    width: 45%;
+    margin-left: 27.5%;
+}
+
+.participant {
+    width: 100%;
+    background-color: #374444;
+    margin-bottom: 2em;
+    border-radius: .75em;
+    text-align: center;
+    overflow-wrap: break-word;
+    overflow: hidden;
+}
+
+.participant * {
+    float: left;
+}
+
+.participant_picture {
+    width: 20%;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+}
+
+.participant_info { 
+    margin-top: 1em;
+    display: inline-block;
+    width: 72.5%;
+}
+
+.participant_name {
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bold;
+    width: 100%;
+}
+.participant_name * {
+    margin-bottom: 0;
+}
+
+.participant_bio {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.participant_bio * {
+    margin-top: 0;
+    word-wrap: break-word;
+    white-space: initial;
+    text-align: justify;
+    width: 100%;
+}
+
+.participant img, .participant video {
+    border-radius: .75em;
 }
 
 .sidebar_bottom {

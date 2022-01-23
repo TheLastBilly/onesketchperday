@@ -71,8 +71,6 @@ def getParticipantsPage(request):
             d = {"user":user, "posts":postCount}
             if user.is_competing:
                 competitors.append(d)
-            else:
-                losers.append(d)
 
     except Exception as e:
         logger.error(str(e))
@@ -80,11 +78,10 @@ def getParticipantsPage(request):
 
     context = {
         "competitors": competitors,
-        "losers": losers,
         "title": "Participants"
     }
     context.update(getGlobalContext())
-    return render(request, "pariticipants.html", context)
+    return render(request, "participants.html", context)
 
 def returnError(request, code, message=""):
     context = {

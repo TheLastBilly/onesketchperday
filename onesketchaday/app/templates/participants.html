@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="post_gallery_title post_gallery_title_center">
+    <h1>{{ title }}</h1>
+</div>
+
+<div class="participants_list">
+    {% for competitor in competitors %}
+    <div class="participant">
+        <div class="participant_picture">
+            <img src="{{ media_url }}{{ competitor.user.profile_picture.name }}" alt="">
+        </div>
+        
+        <div class="participant_info">
+            <div class="participant_name" >
+                <a href="{% url 'getPostsFromUser' index=competitor.user.username %}">
+                    <p>{{ competitor.user.username }}<p>
+                </a>
+            </div>
+            <div class="participant_bio">
+                <p >{{ competitor.user.biography }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}
