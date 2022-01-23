@@ -67,6 +67,10 @@ def getParticipantsPage(request):
                 continue
                 
             postCount = len(Post.objects.filter(owner=user))
+            if len(user.profile_picture.name) < 1:
+                user.profile_picture.name = None
+            if len(user.biography) < 1:
+                user.user.biography = None
 
             d = {"user":user, "posts":postCount}
             if user.is_competing:

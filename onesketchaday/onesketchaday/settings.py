@@ -53,7 +53,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'app.User'
 
 MIDDLEWARE = [
-    'django.middleware.cache.UpdateCacheMiddleware',
+    # 'django.middleware.cache.UpdateCacheMiddleware',
     
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -64,7 +64,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    'django.middleware.cache.FetchFromCacheMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'onesketchaday.urls'
@@ -130,23 +130,23 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-if not DEBUG:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'onesketchaday-cache',
-            'TIMEOUT': 60,
-            'OPTIONS': {
-                'MAX_ENTRIES': 1000
-            }
-        }
-    }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        }
-    }
+# if not DEBUG:
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#             'LOCATION': 'onesketchaday-cache',
+#             'TIMEOUT': 60,
+#             'OPTIONS': {
+#                 'MAX_ENTRIES': 1000
+#             }
+#         }
+#     }
+# else:
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#         }
+#     }
 
 
 # Internationalization

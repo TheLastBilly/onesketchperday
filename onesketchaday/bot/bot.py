@@ -1,3 +1,4 @@
+from glob import escape
 from urllib.parse import urlparse
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -11,12 +12,12 @@ from .utils import *
 class OnesketchadayBot(commands.Bot):
     # Commands
     def add_commands(self):
-        @commands.command(name='post')
+        @commands.command(name='post', description="Creates a post based on the provided attachments. The text provided by the message would be used as the post's title")
         async def post_command(context, *, arg=None):
             await self.create_post(context, arg)
         self.add_command(post_command)
 
-        @commands.command(name='delete')
+        @commands.command(name='delete', description="Deletes your post from the site. The text provided with the message most be a link to your post")
         async def delete_command(context, link):
             try:
                 await self.delete_post(context, link)
@@ -25,7 +26,7 @@ class OnesketchadayBot(commands.Bot):
                 await self.send_reply_to_user("Sorry, but I couldn't delete your post due to an internal error, please try again later", context)
         self.add_command(delete_command)
 
-        @commands.command(name="set_reminder")
+        @commands.command(name="set_reminder", description="Sets the reminder message that will be sent every day by the bot (not the posts count message)")
         async def set_reminder_command(context, *, arg):
             try:
                 if not await self.validate_user(str(context.message.author), context):
@@ -38,10 +39,20 @@ class OnesketchadayBot(commands.Bot):
                 await self.send_reply_to_user('Sorry, but I couldn\'t change the reminder message due to an internal errror', context)
         self.add_command(set_reminder_command)
     
-        @commands.command(name="set_bio")
+        @commands.command(name="set_bio", description="Sets your biography and profile picture based on the provided message and attachment. Only the first attachment will be used for your bio")
         async def set_bio_command(context, *, arg=None):
             await self.set_user_bio(context, arg)
         self.add_command(set_bio_command)
+
+        @commands.command(name="clear_bio", description="Clears your biography. If you don't have a biography, your name won't show up on the participants page (you would still be able to make posts however)")
+        async def clear_bio_command(context, *, arg=None):
+            await self.clear_user_bio(context, arg)
+        self.add_command(clear_bio_command)
+
+        @commands.command(name="commands", description="Send a list of all the available commands")
+        async def commands_command(context):
+            await self.send_commands(context)
+        self.add_command(commands_command)
 
     # Internals
     def __init__(self):
@@ -50,6 +61,7 @@ class OnesketchadayBot(commands.Bot):
         load_dotenv()
         self.add_commands()
 
+    # Creates the scheduler and adds the scheduled messages to it
     async def on_ready(self):
         try:
             scheduler = AsyncIOScheduler()
@@ -68,9 +80,24 @@ class OnesketchadayBot(commands.Bot):
         except Exception as e:
             logger.error("Cannot setup reminder: {}".format(str(e)))
 
+    # Send a message with all the available commands
+    async def send_commands(self, context):
+        username = str(context.message.author)
+        user = await self.validate_user(username, context)
+        if not user:
+            return
+
+        command_list = "```Available commands:\n"
+        for command in self.walk_commands():
+            command_list += "\t{}{}:\t{}\n".format(self.command_prefix, command.name, command.description)
+        command_list += "```"
+
+    # Reply to user message
     async def send_reply_to_user(self, message, context):
         await context.message.reply(message)
     
+    # See if user is authorized to use this bot. If they are not, return None.
+    # If they are, return an user object for that username
     async def validate_user(self, discord_username, context):
         user = await get_user(discord_username)
         if not user or not user.is_a_participant:
@@ -80,6 +107,7 @@ class OnesketchadayBot(commands.Bot):
         
         return user
 
+    # Send message on the specified channel
     async def send_message_on_channel(self, channel : str, message : str):
         ch = None
         for c in self.get_all_channels():
@@ -90,12 +118,13 @@ class OnesketchadayBot(commands.Bot):
             raise IOError("Cannot find channel \"{}\"".format(channel))
         await ch.send(message)
 
-
+    # Download attachment on MEDIA_ROOT
     async def download_file(self, file_path, attachment):
         absolute_path = settings.MEDIA_ROOT + "/" + file_path
         await attachment.save(open(absolute_path, "wb"))
         return absolute_path
 
+    # Create an user post based on an attachment
     async def create_post_from_user(self, user, title, file_name, context, attachment, is_video=False, is_nsfw=False):
         logger.info('Received post request from user {}'.format(user.username))
 
@@ -119,23 +148,43 @@ class OnesketchadayBot(commands.Bot):
         
         except Exception as e:
             logger.error("Cannot create image post for user {}: {}".format(user.username, str(e)))
-            await self.send_reply_to_user("Cannot upload requested file due to an internal error", context)
+            await self.send_reply_to_user("Sorry I couldn't create your post due to an internal error", context)
             if post:
                 await delete_post(post)
 
+    # Remove the biography and profile picture from the user
+    async def clear_user_bio(self, context):
+        username = str(context.message.author)
+        user = await self.validate_user(username, context)
+        if not user:
+            return
+        
+        try:
+            user.biography = ""
+            user.profile_picture = ""
+            await save_user(user)
+        
+        except Exception as e:
+            logger.error("Cannot clear biography for {}: {}".format(user.username, str(e)))
+            await self.send_reply_to_user("Sorry, I couldn't clear your biography due to an internal error", context)
+
+    # Set the user biography and profile picture
     async def set_user_bio(self, context, arg=None):
         username = str(context.message.author)
         attachment = None
         bio = arg
 
+        # The user needs to at least provide a biography
         if not bio:
             await self.send_reply_to_user('Kinda hard to set your bio if you don\'t say what your bio is first', context)
+            return
         user = await self.validate_user(username, context)
         if not user:
             return
         
         attachment_count = len(context.message.attachments)
 
+        # Only use the frist attachment
         file_name = ""
         if attachment_count > 0:
             if attachment_count > 1:
@@ -152,6 +201,7 @@ class OnesketchadayBot(commands.Bot):
                 return
             file_name = str(attachment.id) + ext
 
+        # Try downloading the picture and attach it to the user
         absolute_path = ""
         try:
             if file_name:
@@ -167,6 +217,8 @@ class OnesketchadayBot(commands.Bot):
             if os.path.exists(absolute_path):
                 os.remove(absolute_path)
 
+    # Create an user based on the user message. The args are going to be used for the
+    # post's title
     async def create_post(self, context, arg=None):
         username = str(context.message.author)
         title = arg
@@ -211,6 +263,8 @@ class OnesketchadayBot(commands.Bot):
             
             await self.create_post_from_user(user, title, file_name, context, attachment, is_video=is_video, is_nsfw=is_nsfw)
 
+    # Delete the users post based on the link provided to that post. Only the owner of those posts can delete them.
+    # TODO: Maybe allow the admins to delete any posts also
     async def delete_post(self, context, link):
         username = str(context.message.author)
         user = await self.validate_user(username, context)
@@ -231,6 +285,7 @@ class OnesketchadayBot(commands.Bot):
             logger.error("Cannot delete post on link \"{}\" from user {}: {}".format(link, username, str(e)))
             await self.send_reply_to_user('Sorry, but none of your posts match that link', context)
 
+    # Set the reminder message
     async def send_reminder(self):
         try:
             reminder = await get_reminder()
@@ -238,6 +293,7 @@ class OnesketchadayBot(commands.Bot):
         except Exception as e:
             logger.error("Cannot send reminder: {}".format(str(e)))
 
+    # Send the daily message with the amount of posts received that day
     async def send_todays_post_count(self):
         try:
             post_count_message = await get_variable("PostCountMessage")
