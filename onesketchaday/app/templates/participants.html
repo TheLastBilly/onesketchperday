@@ -9,7 +9,7 @@
 
 <div class="participants_list">
     {% for competitor in competitors %}
-    {% if competitor.user.profile_picture is not None or competitor.user.biography is not None %}
+    {% if competitor.user.profile_picture and competitor.user.biography %}
     <div class="participant">
         <div class="participant_picture">
             <a href="{% url 'getPostsFromUser' index=competitor.user.username %}">
