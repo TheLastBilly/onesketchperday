@@ -53,16 +53,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     
 
     def delete(self):
-        absolutePath = ""
-        if self.profile_picture:
-            absolutePath = self.profile_picture.storage.base_location + "/" + self.profile_picture.field.upload_to + "/" + self.profile_picture.name
-        if os.path.exists(absolutePath):
-            os.remove(absolutePath)
+        self.delete_profile_picture()
         super(User, self).delete()
     
     def get_page(self):
         from django.urls import reverse
         return settings.SITE_URL + reverse('participants')
+    
+    def delete_profile_picture(self):
+        absolutePath = ""
+        if self.profile_picture:
+            absolutePath = self.profile_picture.storage.base_location + "/" + self.profile_picture.field.upload_to + "/" + self.profile_picture.name
+        if os.path.exists(absolutePath):
+            os.remove(absolutePath)
+        self.profile_picture = None
+        self.save()
+        
 
     def __str__(self):
         return str(self.username)

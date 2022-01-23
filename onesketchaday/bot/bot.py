@@ -174,8 +174,11 @@ class OnesketchadayBot(commands.Bot):
             return
         
         try:
+            await sync_to_async(user.delete_profile_picture)()
+
             user.biography = ""
             user.profile_picture = ""
+
             await save_user(user)
         
             await self.send_reply_to_user("Done!, your biography has been cleared. It will no longer show up in the participants page", context)

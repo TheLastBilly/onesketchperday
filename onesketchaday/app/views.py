@@ -77,7 +77,7 @@ def getParticipantsPage(request):
                 continue
             
             postCount = len(Post.objects.filter(owner=user))
-            if len(user.profile_picture.name) < 1 or len(user.biography) < 1:
+            if not user.profile_picture.name or not user.biography:
                 continue
 
             if len(user.biography) > max_bio_len:
