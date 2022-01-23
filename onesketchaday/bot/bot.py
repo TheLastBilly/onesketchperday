@@ -91,8 +91,8 @@ class OnesketchadayBot(commands.Bot):
         await ch.send(message)
 
 
-    async def download_file(self, filePath, attachment):
-        absolute_path = settings.MEDIA_ROOT + "/" + filePath
+    async def download_file(self, file_path, attachment):
+        absolute_path = settings.MEDIA_ROOT + "/" + file_path
         await attachment.save(open(absolute_path, "wb"))
         return absolute_path
 
@@ -125,6 +125,7 @@ class OnesketchadayBot(commands.Bot):
 
     async def set_user_bio(self, context, arg=None):
         username = str(context.message.author)
+        attachment = None
         bio = arg
 
         if not bio:
@@ -154,14 +155,14 @@ class OnesketchadayBot(commands.Bot):
         absolute_path = ""
         try:
             if file_name:
-                absolute_path = await self.download_file(file_name)
+                absolute_path = await self.download_file(file_name, attachment)
                 user.profile_picture = absolute_path
             user.biography = bio
             await save_user(user)
 
             await self.send_reply_to_user("Done! You can now check your biography at {}".format(await get_user_page(user)), context)
         except Exception as e:
-            logger.error("Cannot set user bio for user {}: {}".format(user.username, str(e)))
+            logger.error("Cannot set bio for user {}: {}".format(user.username, str(e)))
             await self.send_reply_to_user("Couldn't set your bio due to an internal error ;p", context)
             if os.path.exists(absolute_path):
                 os.remove(absolute_path)

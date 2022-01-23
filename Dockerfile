@@ -29,6 +29,7 @@ COPY ./$APP_NAME /$APP_NAME
 WORKDIR /$APP_NAME
 RUN rm -f /$APP_NAME/*-token
 RUN rm -f  /$APP_NAME/db.sqlite3
+RUN rm -rf .git
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
