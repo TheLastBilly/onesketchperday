@@ -62,7 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     def get_page(self):
         from django.urls import reverse
-        return settings.SITE_URL + reverse('getPostsFromUser', kwargs={"index" : self.username})
+        return settings.SITE_URL + reverse('participants')
 
     def __str__(self):
         return str(self.username)

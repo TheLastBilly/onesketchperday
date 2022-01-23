@@ -156,7 +156,7 @@ class OnesketchadayBot(commands.Bot):
         try:
             if file_name:
                 absolute_path = await self.download_file(file_name, attachment)
-                user.profile_picture = absolute_path
+                user.profile_picture = file_name
             user.biography = bio
             await save_user(user)
 
