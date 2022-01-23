@@ -9,10 +9,13 @@
 
 <div class="participants_list">
     {% for competitor in competitors %}
+    {% if competitor.user.profile_picture is not None or competitor.user.biography is not None %}
     <div class="participant">
         <div class="participant_picture">
             <a href="{% url 'getPostsFromUser' index=competitor.user.username %}">
+                {% if competitor.user.profile_picture %}
                 <img src="{{ media_url }}{{ competitor.user.profile_picture.name }}" alt="" >
+                {% endif %}
             </a>
         </div>
         
@@ -26,10 +29,13 @@
                 <p>({{competitor.posts}} posts)</p>
             </div>
             <div class="participant_bio">
+                {% if competitor.user.biography %}
                 <p >{{ competitor.user.biography }}</p>
+                {% endif %}
             </div>
         </div>
     </div>
+    {% endif %}
     {% endfor %}
 
 </div>

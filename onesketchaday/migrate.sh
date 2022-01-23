@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python3 manage.py makemigrations app
-python3 manage.py migrate --run-syncdb
+/venv/bin/python manage.py makemigrations app
+/venv/bin/python manage.py migrate --run-syncdb
