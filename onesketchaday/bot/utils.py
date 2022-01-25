@@ -45,7 +45,7 @@ async def save_post(post : Post):
 async def get_todays_posts():
     timestamp = await sync_to_async(getTodaysTimestamp)()
     posts = await sync_to_async(Post.objects.filter)(timestamp=timestamp)
-    return posts, len(posts)
+    return posts, await sync_to_async(len)(posts)
 
 async def delete_post(onwer, id):
     post = await get_post(onwer, id) 
