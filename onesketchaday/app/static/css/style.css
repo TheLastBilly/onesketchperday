@@ -217,9 +217,12 @@ body {
 /* Page content. The value of the margin-left property should match the value of the sidebar's width property */
 div.content {
     padding: 1px 16px;
-    width: 80%;
     margin-left: 150px;
     display: inline-block;
+
+    width: -webkit-calc(100% - 190px);
+    width:    -moz-calc(100% - 190px);
+    width:         calc(100% - 190px);
 }
 
 .textPosts {
