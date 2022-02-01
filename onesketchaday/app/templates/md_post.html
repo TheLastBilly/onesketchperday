@@ -2,7 +2,9 @@
 {% load static %}
 
 {% block content %}
-<div class="textPost">
-    {{ html|safe }}
+<div class="textPosts" style="border-bottom: none; border-top: none;">
+    <div class="textPost">
+        {{ html|safe }}
+    </div>
 </div>
 {% endblock %}

@@ -153,7 +153,7 @@ class Variable(models.Model):
     
 class MarkdownPost(models.Model):
     title               = models.CharField(max_length=100, null=True, unique=True)
-    label               = models.CharField(max_length=100, null=True)
+    label               = models.CharField(max_length=100, null=True, blank=True)
     
     contents            = models.TextField(null=True)
     date                = models.DateTimeField(auto_now_add=True)
