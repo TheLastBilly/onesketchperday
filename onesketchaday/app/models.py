@@ -166,7 +166,7 @@ class MarkdownPost(models.Model):
 
     def get_html(self):
         try:
-            html = markdown.markdown("# " + self.title + "\n" + "*" + self.date.strftime("%B, %A %d, %Y") + "*" + "\n\n" + self.contents)
+            html = markdown.markdown("# " + self.title + "\n" + "*" + self.date.strftime("%A %d, %B %Y") + "*" + "\n\n" + self.contents)
         except Exception as e:
             html = "Cannot convert post to html: " + str(e)
         
