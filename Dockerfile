@@ -1,5 +1,7 @@
 FROM python
 
+LABEL maintainer="TheLastBilly jtmonegro@gmail.com"
+
 ENV DEFAULT_PASSWORD=pass
 ENV APP_NAME=onesketchaday
 

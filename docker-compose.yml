@@ -30,7 +30,7 @@ services:
             - onesketchaday_media:/onesketchaday/media
             - onesketchaday_static:/onesketchaday/static
             - ./django-token:/onesketchaday/django-token
-            - ./docker-token:/onesketchaday/docker-token
+            - ./discord-token:/onesketchaday/discord-token
         depends_on:
             - "db"
         networks:
