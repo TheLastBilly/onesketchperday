@@ -95,6 +95,13 @@ class Post(models.Model):
         self.timestamp = getTimeStampFromDate(timezone.localtime(self.date))
         if save:
             super(Post, self).save()
+
+    def increase_click_count(self):
+        if not self.clicks:
+            self.clicks = 0
+        self.clicks += 1
+
+        super(Post, self).save()
         
     def save(self, *args, **kwargs):
         if not self.timestamp:

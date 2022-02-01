@@ -62,6 +62,7 @@
             {% endif %}
         </a>
         <p>Uploaded by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a>  on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date }}</a></p>
+        <p>({{ post.clicks }} view{% if post.clicks > 1 %}s{% endif %})</p>
     </div>
 
     {% if previous or next %}

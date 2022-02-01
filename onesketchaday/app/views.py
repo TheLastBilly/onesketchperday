@@ -154,6 +154,7 @@ def getPost(request, pk):
 
     try:
         post = Post.objects.get(id=pk)
+        post.increase_click_count()
     except Exception as e:
         logger.error(str(e))
         return redirect('pageNotFound')
@@ -188,6 +189,8 @@ def getFocusedPost(request, transition_url, pk, posts):
             next_page = posts[i+1].id
         if i > 0 and len(posts) > i:
             previous_page = posts[i-1].id
+        
+        post.increase_click_count()
     except Exception as e:
         logger.error(str(e))
         return redirect('pageNotFound')
