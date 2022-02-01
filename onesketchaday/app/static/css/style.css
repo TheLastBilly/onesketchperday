@@ -222,9 +222,24 @@ div.content {
     display: inline-block;
 }
 
+.textPosts {
+    margin-top: 2em;
+}
+
 .textPost {
     width: 70%;
     margin-left: 15%;
+    margin-bottom: 1em;
+    text-align: justify;
+    border-bottom: .1em solid #ccc;
+    border-top: .1em solid #ccc;
+}
+.textPost * {
+    text-align: justify;
+}
+.textPost h1 {
+    margin-bottom: .2em;
+    margin-top: .2em;
 }
 
 .post_list {

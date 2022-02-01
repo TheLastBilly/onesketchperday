@@ -9,16 +9,16 @@ urlpatterns = [
 
     path('post/<str:pk>', views.getPost, name='getPost'),
     
-    path('focused/month/<str:pk>', views.getFocusedMonthPost, name='getFocusedMonthPost'),
-    path('focused/user/<str:pk>', views.getFocusedUserPost, name='getFocusedUserPost'),
-    path('focused/day/<str:pk>', views.getFocusedDayPost, name='getFocusedDayPost'),
+    path('post/month/<str:pk>', views.getFocusedMonthPost, name='getFocusedMonthPost'),
+    path('post/user/<str:pk>', views.getFocusedUserPost, name='getFocusedUserPost'),
+    path('post/day/<str:pk>', views.getFocusedDayPost, name='getFocusedDayPost'),
 
     path('', views.getTodaysPosts, name='getTodaysPosts'),
     path('404/', views.pageNotFound, name='pageNotFound'),
     path('500/', views.internalError, name='internalError'),
     path('day/<int:timestamp>', views.getPostsOfDay, name='getPostsOfDay'),
     
-    path('month/active/<int:index>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
+    path('month/<int:index>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
 
     path('month/gallery/<int:index>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
     path('month/gallery/<int:index>/<int:page>', views.getGalleryOfMonth, name='getGalleryOfMonth'),

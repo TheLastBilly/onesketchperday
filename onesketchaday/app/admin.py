@@ -88,7 +88,7 @@ admin.site.register(User, UserAdmin)
 admin.site.unregister(Group)
 
 class PostAdmin(admin.ModelAdmin):
-    readonly_fields = ['timestamp', 'id', 'likes', 'date']
+    readonly_fields = ['timestamp', 'id', 'likes', 'date', 'clicks']
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Variable)

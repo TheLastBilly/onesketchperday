@@ -276,10 +276,11 @@ class OnesketchadayBot(commands.Bot):
             file_name = str(attachment.id) + ext
 
             i = i + 1
+            post_title = ""
             if attachment_count > 1:
-                title = title + " (" + str(i) + "/" + str(attachment_count)+ ")"
+                post_title = title + " (" + str(i) + "/" + str(attachment_count)+ ")"
             
-            await self.create_post_from_user(user, title, file_name, context, attachment, is_video=is_video, is_nsfw=is_nsfw)
+            await self.create_post_from_user(user, post_title, file_name, context, attachment, is_video=is_video, is_nsfw=is_nsfw)
 
     # Delete the users post based on the link provided to that post. Only the owner of those posts can delete them.
     # TODO: Maybe allow the admins to delete any posts also

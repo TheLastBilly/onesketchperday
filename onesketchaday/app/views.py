@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse, response
 from django.core.exceptions import *
 from django.urls import reverse
+from django.db.models.functions import Length
 from .models import *
 import logging
 import base64
@@ -55,21 +56,39 @@ def renderMarkdownPost(request, title):
             return redirect('pageNotFound')
         
     context = {
-        "html" : str(post.html),
+        "html" : str(post.get_html()),
     }
     context.update(getGlobalContext())
-    return render(request, "md.html", context)
+    return render(request, "md_post.html", context)
+
+def renderMarkdownPosts(request, label):
+    try:
+        objects = MarkdownPost.objects.filter(label=label)
+        if not objects:
+            return redirect('pageNotFound')
+        posts = []
+        for object in objects:
+            posts.append({"html" : object.get_html(), "date" : object.date})
+    except Exception as e:
+            return redirect('internalError')
+        
+        
+    context = {
+        "posts" : posts,
+    }
+    context.update(getGlobalContext())
+    return render(request, "md_posts.html", context)
     
 def getAboutPage(request):
     return renderMarkdownPost(request, 'About')
 def getUpdatesPage(request):
-    return renderMarkdownPost(request, 'Updates')
+    return renderMarkdownPosts(request, 'update')
 
 def getParticipantsPage(request):
     competitors = []
 
     try:
-        users = User.objects.all()
+        users = User.objects.all().order_by(Length('biography').asc())
         max_bio_len = getMaxCharactersPerBiography()
 
         for user in users:
@@ -150,13 +169,14 @@ def getPost(request, pk):
 def getFocusedPost(request, transition_url, pk, posts):
     post = None
     next_page = None
+    focused_url = None
     previous_page = None
 
     try:
         post = Post.objects.get(id=pk)
 
         if post.is_nsfw:
-            transition_url = "getPost"
+            focused_url = "getPost"
 
         i = 0
         for p in posts:
@@ -178,7 +198,7 @@ def getFocusedPost(request, transition_url, pk, posts):
         "next" : next_page,
         "previous": previous_page,
         "transition_url" : transition_url,
-        "focused_url" : transition_url
+        "focused_url" : focused_url
 
     }
     context.update(getGlobalContext())
@@ -277,6 +297,7 @@ def getActiveDaysOfMonth(request, index):
             return redirect('internalError')
     
     for post in posts:
+        post.date = post.get_local_time()
         if post and post.date >= startDate and post.date.month == month:
             if lastTimestamp < post.timestamp:
                 lastTimestamp = post.timestamp

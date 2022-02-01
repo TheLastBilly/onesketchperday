@@ -1,4 +1,5 @@
 import base64, uuid, os
+from time import strftime
 
 from django.conf import settings
 from django.db import models
@@ -83,6 +84,7 @@ class Post(models.Model):
     image               = models.ImageField(null=True, blank=True)
     video               = models.FileField(null=True, blank=True)
     likes               = models.ManyToManyField(User, blank=True)
+    clicks              = models.BigIntegerField(null=True, blank=True)
 
     is_nsfw             = models.BooleanField(default=False)
 
@@ -97,6 +99,8 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if not self.timestamp:
             self.update_timestamp(save=False)
+        if not self.clicks:
+            self.clicks = 0
 
         super(Post, self).save(*args, **kwargs)
 
@@ -142,21 +146,24 @@ class Variable(models.Model):
     
 class MarkdownPost(models.Model):
     title               = models.CharField(max_length=100, null=True, unique=True)
+    label               = models.CharField(max_length=100, null=True)
     
     contents            = models.TextField(null=True)
-    html                = models.TextField(null=True, editable=False)
     date                = models.DateTimeField(auto_now_add=True)
 
     id                  = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 
     def save(self, *args, **kwargs):
-        try:
-            self.html = markdown.markdown(self.contents)
-        except Exception as e:
-            self.html = "Cannot convert post to html: " + str(e)
-
         super(MarkdownPost, self).save(*args, **kwargs)
+
+    def get_html(self):
+        try:
+            html = markdown.markdown("# " + self.title + "\n" + "*" + self.date.strftime("%B, %A %d, %Y") + "*" + "\n\n" + self.contents)
+        except Exception as e:
+            html = "Cannot convert post to html: " + str(e)
+        
+        return html
 
     def __str__(self):
         return str(self.title)
