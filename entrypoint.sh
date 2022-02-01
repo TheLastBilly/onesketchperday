@@ -12,7 +12,7 @@ else
 fi
 
 if [ ! -f /config/initialized ]; then
-    /$APP_NAME/setupDB.sh
+    /$APP_NAME/setupdb.sh
     A="$?"
     B="$?"
     if [ $A -eq 0 ] && [ $B -eq 0 ]; then
