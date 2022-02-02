@@ -45,7 +45,7 @@ In order to upload content to your website, you will need to generate a Discord 
 
 Once you get your key you will need to paste it into a file named `discord-token` located in the same directory as the `django-token` file.
 
-### Running the server
+## Running the server
 Once all the preparations are completed, just use the following command to start the server:
 ```bash
 docker-compose up
