@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block content %}
 {% if non_gallery  %}
 <div class="post_gallery_title post_gallery_title_center">
@@ -9,7 +8,6 @@
 {% endif %}
     <h1>{{ title }}</h1>
 </div>
-
 {% if non_gallery  %}
 <div class="post_list">
 {% else %}
@@ -18,7 +16,6 @@
     {% if previous or next or page %}
     {% include "posts_pages_list.html" %}
     {% endif %}
-
     {% for post in posts %}
     {% if non_gallery is None %}
     <div class="post" style="margin-top: 2em;">
@@ -28,7 +25,6 @@
         {% if post.is_nsfw %}
         <p style="margin-top: 1em; font-weight: bolder;">NSFW</p>
         {% endif %}
-
         <a href="{% url focused_url pk=post.id %}">
             {% if post.image %}
                 <img src="{{ media_url }}{{ post.image.name }}" alt="" {% if post.is_nsfw %} class="add_blur" {% endif %}>
@@ -38,7 +34,6 @@
                 </video>
             {% endif %}
         </a>
-
         <a href="{% url focused_url pk=post.id %}">
             {% if post.title %}
             <p class="post_title">{{ post.title }}</p>
@@ -46,11 +41,9 @@
             <p class="post_title">{{ post.date|date:"l" }}</p>
             {% endif %}
         </a>
-
         <p class="post_description">by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a> on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date|date:"M jS, h:i a" }}</a></p>
     </div>
     {% endfor %}
-
     {% if previous or next or page %}
     {% include "posts_pages_list.html" %}
     {% endif %}
