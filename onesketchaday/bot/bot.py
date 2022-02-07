@@ -279,6 +279,8 @@ class OnesketchadayBot(commands.Bot):
             post_title = ""
             if attachment_count > 1:
                 post_title = title + " (" + str(i) + "/" + str(attachment_count)+ ")"
+            else:
+                post_title = title
             
             await self.create_post_from_user(user, post_title, file_name, context, attachment, is_video=is_video, is_nsfw=is_nsfw)
 
