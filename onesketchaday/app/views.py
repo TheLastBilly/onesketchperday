@@ -63,7 +63,7 @@ def renderMarkdownPost(request, title):
 
 def renderMarkdownPosts(request, label):
     try:
-        objects = MarkdownPost.objects.filter(label=label)
+        objects = MarkdownPost.objects.filter(label=label).order_by('date')
         if not objects:
             return redirect('pageNotFound')
         posts = []
