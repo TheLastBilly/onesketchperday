@@ -201,7 +201,7 @@ class OnesketchadayBot(commands.Bot):
         
         try:
             hours, minutes, seconds = await get_session_time_remaining()
-            await self.send_reply_to_user("You still have **{:02d} hours**, **{:02d} minutes** and **{:02d} seconds** left to submit your post".format(hours, minutes, seconds), context)
+            await self.send_reply_to_user("You still have **{:02d} hours**, **{:02d} minutes** and **{:02d} seconds** left to submit your post!".format(hours, minutes, seconds), context)
 
         except Exception as e:
             logger.error("Cannot retrieve remaining time on todays session for user {}: {}".format(user.username, str(e)))
