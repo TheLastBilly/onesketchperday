@@ -1,4 +1,6 @@
+from email import utils
 from glob import escape
+from nis import cat
 from urllib.parse import urlparse
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -48,6 +50,11 @@ class OnesketchadayBot(commands.Bot):
         async def clear_bio_command(context):
             await self.clear_user_bio(context)
         self.add_command(clear_bio_command)
+
+        @commands.command(name="time_left", brief="time_left", description="Shows the time left before the end of the current session")
+        async def time_left_command(context):
+            await self.time_left(context)
+        self.add_command(time_left_command)
 
         @commands.command(name="commands", brief="commands [COMMAND]", description="Send a list of all the available commands")
         async def commands_command(context, command=None):
@@ -185,6 +192,20 @@ class OnesketchadayBot(commands.Bot):
         except Exception as e:
             logger.error("Cannot clear biography for {}: {}".format(user.username, str(e)))
             await self.send_reply_to_user("Sorry, I couldn't clear your biography due to an internal error", context)
+
+    async def time_left(self, context):
+        username = str(context.message.author)
+        user = await self.validate_user(username, context)
+        if not user:
+            return
+        
+        try:
+            hours, minutes, seconds = await get_session_time_remaining()
+            await self.send_reply_to_user("You still have **{:02d} hours**, **{:02d} minutes** and **{:02d} seconds** left to submit your post".format(hours, minutes, seconds), context)
+
+        except Exception as e:
+            logger.error("Cannot retrieve remaining time on todays session for user {}: {}".format(user.username, str(e)))
+            await self.send_reply_to_user("Sorry, but I couldn't show you time left on today's session due to an internal error", context)
 
     # Set the user biography and profile picture
     async def set_user_bio(self, context, arg=None):

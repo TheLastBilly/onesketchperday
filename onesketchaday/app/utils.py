@@ -1,3 +1,5 @@
+from datetime import date, time
+from email.utils import localtime
 from django.core.exceptions import *
 from django.utils import timezone
 import os, base64
@@ -15,6 +17,26 @@ def getStartDate():
 
 def getDaysFromStartDate():
     return getDaysFromStartDateToTimestamp(getTimeStampFromDate(timezone.localdate()))
+
+def getTimeRemainingForSession():
+    currentTime = timezone.localtime()
+    endTime = getStartDate()
+    endTime.replace(day=currentTime.day, month=currentTime.month, year=currentTime.year)
+    
+    if currentTime > endTime:
+        endTime += timezone.timedelta(days=1)
+
+    secondsRemaining = (endTime - currentTime).seconds
+
+    hours = int(secondsRemaining/3600)
+    secondsRemaining -= hours*3600
+    
+    minutes = int(secondsRemaining/60)
+    secondsRemaining -= minutes*60
+
+    seconds = secondsRemaining
+
+    return hours, minutes, seconds
 
 def getDaysFromStartDateToTimestamp(timestamp):
     start = getStartDate()

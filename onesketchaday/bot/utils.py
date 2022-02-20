@@ -8,6 +8,12 @@ from app.utils import *
 import logging, os
 import asyncio
 
+async def get_days_from_start_date():
+    return await sync_to_async(getDaysFromStartDate)()
+
+async def get_session_time_remaining():
+    return await sync_to_async(getTimeRemainingForSession)()
+
 async def get_post_page(post : Post):
     return await sync_to_async(post.get_page)()
 
