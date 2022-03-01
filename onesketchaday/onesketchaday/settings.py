@@ -194,4 +194,5 @@ if os.environ.get('ADMIN_PAGE') is not None:
 else:
     ADMIN_PAGE = "admin"
 
-DEFAULT_VARIABLES = ["StartDate", "PageIcon", "ReminderMessage", "PostCountMessage", "PostsPerPage", "MaxBiographyCharacters"]
+START_DATE_VARIABLE = "StartDate"
+DEFAULT_VARIABLES = [START_DATE_VARIABLE, "PageIcon", "ReminderMessage", "PostCountMessage", "PostsPerPage", "MaxBiographyCharacters"]

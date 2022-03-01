@@ -1,2 +1,3 @@
-- Add next/previous day/post buttons
-- Add updates page
+- Generalize catchers for bot exceptions
+- Fucking fix that goddam css file already
+- Add proper zoom for image focus
