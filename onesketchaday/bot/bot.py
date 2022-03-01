@@ -49,6 +49,11 @@ class OnesketchadayBot(commands.Bot):
             await self.clear_user_bio(context)
         self.add_command(clear_bio_command)
 
+        @commands.command(name="schedule", brief="schedule [DAY/MONTH/YEAR,HOUR:MINUTE:SECOND] [ATTACHMENT]")
+        async def schedule_post_command(context, *, arg=None):
+            await self.schedule_post(context, arg)
+        self.add_command(schedule_post)
+
         @commands.command(name="commands", brief="commands [COMMAND]", description="Send a list of all the available commands")
         async def commands_command(context, command=None):
             await self.send_commands(context, command)
@@ -64,19 +69,31 @@ class OnesketchadayBot(commands.Bot):
     # Creates the scheduler and adds the scheduled messages to it
     async def on_ready(self):
         try:
-            scheduler = AsyncIOScheduler()
+            self.scheduler = AsyncIOScheduler()
             reminder = await get_reminder()
             post_count_message = await get_variable("PostCountMessage")
 
             reminder.date = timezone.localtime(reminder.date)
             post_count_message.date = timezone.localtime(post_count_message.date)
 
-            scheduler.add_job(self.send_reminder, CronTrigger(hour=reminder.date.hour, minute=reminder.date.minute, second=reminder.date.second)) 
-            logger.info("Reminder message set to be sent every day at {}:{}:{}".format(reminder.date.hour, reminder.date.minute, reminder.date.second))
-            scheduler.add_job(self.send_todays_post_count, CronTrigger(hour=post_count_message.date.hour, minute=post_count_message.date.minute, second=post_count_message.date.second)) 
-            logger.info("Post count message set to be sent every day at {}:{}:{}".format(post_count_message.date.hour, post_count_message.date.minute, post_count_message.date.second))
+            self.scheduler.add_job(self.send_reminder, CronTrigger(
+                hour=reminder.date.hour, minute=reminder.date.minute, second=reminder.date.second)
+            ) 
+            logger.info("Reminder message set to be sent every day at {}:{}:{}".format(
+                reminder.date.hour, reminder.date.minute, reminder.date.second
+            ))
+            self.scheduler.add_job(self.send_todays_post_count, CronTrigger(
+                hour=post_count_message.date.hour, minute=post_count_message.date.minute, second=post_count_message.date.second
+            )) 
+            logger.info("Post count message set to be sent every day at {}:{}:{}".format(
+                post_count_message.date.hour, post_count_message.date.minute, post_count_message.date.second
+            ))
 
-            scheduler.start()
+            async def ping():
+                await self.get_all_channels()
+            self.scheduler.add_job(ping, "ping", hours=1)
+
+            self.scheduler.start()
         except Exception as e:
             logger.error("Cannot setup reminder: {}".format(str(e)))
 
@@ -90,7 +107,8 @@ class OnesketchadayBot(commands.Bot):
         if arg:
             for command in self.walk_commands():
                 if command.name == arg:
-                    await self.send_reply_to_user("```{}{} \n{}```".format(self.command_prefix, command.brief, command.description), context)
+                    await self.send_reply_to_user("```{}{} \n{}```".format(
+                        self.command_prefix, command.brief, command.description), context)
                     return
             await self.send_reply_to_user("\"{}\" is not an available command".format(arg), context)
             return
@@ -158,7 +176,8 @@ class OnesketchadayBot(commands.Bot):
                 post.image = file_name
             await save_post(post)
 
-            await self.send_reply_to_user("File succesfully uploaded!\nHere's the link to your new post: " + await get_post_page(post), context)
+            await self.send_reply_to_user("File succesfully uploaded!\nHere's the link to your new post: " 
+                    + await get_post_page(post), context)
         
         except Exception as e:
             logger.error("Cannot create image post for user {}: {}".format(user.username, str(e)))
@@ -181,7 +200,9 @@ class OnesketchadayBot(commands.Bot):
 
             await save_user(user)
         
-            await self.send_reply_to_user("Done!, your biography has been cleared. It will no longer show up in the participants page", context)
+            await self.send_reply_to_user(
+                "Done!, your biography has been cleared. It will no longer show up in the participants page", context
+            )
         except Exception as e:
             logger.error("Cannot clear biography for {}: {}".format(user.username, str(e)))
             await self.send_reply_to_user("Sorry, I couldn't clear your biography due to an internal error", context)
@@ -206,7 +227,8 @@ class OnesketchadayBot(commands.Bot):
         file_name = ""
         if attachment_count > 0:
             if attachment_count > 1:
-                await self.send_reply_to_user('I can only use one attachment, so I will only use the first one your provided ;)', context)
+                await self.send_reply_to_user(
+                    'I can only use one attachment, so I will only use the first one your provided ;)', context)
 
             attachment = context.message.attachments[0]
             file_name = attachment.filename
@@ -305,6 +327,28 @@ class OnesketchadayBot(commands.Bot):
         except Exception as e:
             logger.error("Cannot delete post on link \"{}\" from user {}: {}".format(link, username, str(e)))
             await self.send_reply_to_user('Sorry, but none of your posts match that link', context)
+    
+    async def schedule_post(self, context, arg):
+        username = str(context.message.author)
+        user = await self.validate_user(username, context)
+
+        if not user:
+            return
+        
+        scheduled_date = await sync_to_async(timezone.strptime)(arg, "%Y-%m-%d %H:%M:%S.%f") 
+        scheudled_date = await sync_to_async(timezone.localtime)(scheduled_date)
+
+        current_date = await sync_to_async(timezone.localtime)()
+        if (current_date > scheduled_date):
+            await self.send_reply_to_user("I'm a bot not a Delorean", context)
+            return
+
+        async def send_scheduled_post():
+            await self.create_post(context)
+        self.scheduler.add_job(send_scheduled_post, CronTrigger(scheduled_date)) 
+        message = "Post scheduled for {}".format(scheduled_date)
+        self.send_reply_to_user(message, arg)
+        logger.info(message)        
 
     # Set the reminder message
     async def send_reminder(self):
