@@ -56,7 +56,7 @@ class OnesketchadayBot(commands.Bot):
             await self.clear_user_bio(context)
         self.add_command(clear_bio_command)
 
-        @commands.command(name="schedule", brief="schedule [DAY/MONTH/YEAR,HOUR:MINUTE:SECOND] [ATTACHMENT]")
+        @commands.command(name="schedule", brief="schedule [DAY/MONTH/YEAR,HOUR:MINUTE:SECOND] [ATTACHMENT]", description="Program posts to be uploaded at a later time")
         async def schedule_post_command(context, *, arg=None):
             await self.schedule_post(context, arg)
         self.add_command(schedule_post_command)
