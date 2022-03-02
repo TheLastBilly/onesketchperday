@@ -5,8 +5,13 @@ from urllib.parse import urlparse
 from discord.ext import commands
 from dotenv import load_dotenv
 
+import asyncio
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+
+from django.utils import timezone
 
 from .globals import *
 from .utils import *
@@ -54,7 +59,7 @@ class OnesketchadayBot(commands.Bot):
         @commands.command(name="schedule", brief="schedule [DAY/MONTH/YEAR,HOUR:MINUTE:SECOND] [ATTACHMENT]")
         async def schedule_post_command(context, *, arg=None):
             await self.schedule_post(context, arg)
-        self.add_command(schedule_post)
+        self.add_command(schedule_post_command)
         
         @commands.command(name="time_left", brief="time_left", description="Shows the time left before the end of the current session")
         async def time_left_command(context):
@@ -97,8 +102,9 @@ class OnesketchadayBot(commands.Bot):
             ))
 
             async def ping():
-                await self.get_all_channels()
-            self.scheduler.add_job(ping, "ping", hours=1)
+                self.get_all_channels()
+            await ping()
+            self.scheduler.add_job(ping, "interval", minutes=1)
 
             self.scheduler.start()
         except Exception as e:
@@ -355,21 +361,27 @@ class OnesketchadayBot(commands.Bot):
 
         if not user:
             return
-        
-        scheduled_date = await sync_to_async(timezone.strptime)(arg, "%Y-%m-%d %H:%M:%S.%f") 
-        scheudled_date = await sync_to_async(timezone.localtime)(scheduled_date)
+       
+        message = ""
+        try: 
+            fmt = "%Y/%m/%d %H:%M:%S"
 
-        current_date = await sync_to_async(timezone.localtime)()
-        if (current_date > scheduled_date):
-            await self.send_reply_to_user("I'm a bot not a Delorean", context)
-            return
+            scheduled_date = await sync_to_async(timezone.datetime.strptime)(arg, fmt) 
+            scheduled_date = await sync_to_async(timezone.make_aware)(scheduled_date)
 
-        async def send_scheduled_post():
-            await self.create_post(context)
-        self.scheduler.add_job(send_scheduled_post, CronTrigger(scheduled_date)) 
-        message = "Post scheduled for {}".format(scheduled_date)
-        self.send_reply_to_user(message, arg)
-        logger.info(message)        
+            current_date = await sync_to_async(timezone.localtime)()
+            if (current_date > scheduled_date):
+                await self.send_reply_to_user("I'm a bot not a Delorean", context)
+                return
+
+            async def send_scheduled_post():
+                await self.create_post(context)
+            self.scheduler.add_job(send_scheduled_post, DateTrigger(scheduled_date)) 
+            message = "Post scheduled for {}".format(scheduled_date.strftime(fmt)) 
+        except Exception as e:
+            message = "Sorry, but I coulnd't schedule your post, this is the date format you should use:\n`{}`".format(fmt)
+            logger.error("Error scheduling post: {}".format(str(e)))
+        await self.send_reply_to_user(message, context)
 
     # Set the reminder message
     async def send_reminder(self):
