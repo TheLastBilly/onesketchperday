@@ -1,3 +1,2 @@
-- Generalize catchers for bot exceptions
+- Generalize THE MESS THAT YOU DARE CALL CODE IN BOT.PY
 - Fucking fix that goddam css file already
-- Add proper zoom for image focus

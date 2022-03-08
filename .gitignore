@@ -5,3 +5,4 @@ onesketchaday/media/
 *db.sqlite3
 *-token
 onesketchaday/static/
+*.swp

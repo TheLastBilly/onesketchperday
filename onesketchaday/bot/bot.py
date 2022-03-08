@@ -166,12 +166,15 @@ class OnesketchadayBot(commands.Bot):
     # Download attachment on MEDIA_ROOT
     async def download_file(self, file_path, attachment):
         absolute_path = settings.MEDIA_ROOT + "/" + file_path
+        logger.info("Starting download for \"{}\"".format(absolute_path))
         await attachment.save(open(absolute_path, "wb"))
+        logger.info("Done downloading \"{}\"".format(absolute_path))
         return absolute_path
 
     # Create an user post based on an attachment
     async def create_post_from_user(self, user, title, file_name, context, attachment, is_video=False, is_nsfw=False):
         logger.info('Received post request from user {}'.format(user.username))
+        post = None
 
         if title:
             title = title[:Post._meta.get_field('title').max_length]
@@ -258,12 +261,13 @@ class OnesketchadayBot(commands.Bot):
                     'I can only use one attachment, so I will only use the first one your provided ;)', context)
 
             attachment = context.message.attachments[0]
-            file_name = attachment.filename
+            file_name = str(attachment.filename).lower()
             for e in IMAGE_EXTENSIONS:
-                if e in file_name:
+                if file_name.endswith(e):
                     ext = e
                     break
             if ext == "":
+                logger.info("File \"{}\" declined due to bad extension".format(file_name)) 
                 await self.send_reply_to_user('Can only accept attachments with the following extensions: {}'.format(', '.join(IMAGE_EXTENSIONS)), context)
                 return
             file_name = str(attachment.id) + ext
@@ -305,21 +309,22 @@ class OnesketchadayBot(commands.Bot):
         i = 0
         for attachment in context.message.attachments:
             is_nsfw = attachment.is_spoiler()
-            file_name = attachment.filename
+            file_name = str(attachment.filename).lower()
             ext = ""
 
             for e in IMAGE_EXTENSIONS:
-                if e in file_name:
+                if file_name.endswith(e):
                     ext = e
                     break
 
             for e in VIDEO_EXTENSIONS:
-                if e in file_name:
+                if file_name.endswith(e):
                     ext = e
                     is_video = True
                     break
             
             if ext == "":
+                logger.info("File \"{}\" declined due to bad extension".format(file_name)) 
                 await self.send_reply_to_user('Can only accept attachments with the following extensions: {}'.format(', '.join(IMAGE_EXTENSIONS)), context)
                 return
             file_name = str(attachment.id) + ext
