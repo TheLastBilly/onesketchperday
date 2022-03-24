@@ -390,11 +390,12 @@ def getGalleryOfMonth(request, index, page=0):
             post.date = post.get_local_time()
             curatedPosts.append(post)
 
+    posts = getPostsAfterStartedOn(curatedPosts)
     title = MONTHS[month-1]
     context = {
         "title" : title
     }
-    return getGallery(request, curatedPosts, page, "getGalleryOfMonth", month-1, context, focused_url="getFocusedMonthPost")
+    return getGallery(request, posts, page, "getGalleryOfMonth", month-1, context, focused_url="getFocusedMonthPost")
     
 
 def getTodaysPosts(request):
