@@ -37,6 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     username            = models.CharField(max_length=20, unique=True)
     profile_picture     = models.ImageField(null=True, blank=True)
     biography           = models.TextField(null=True, blank=True)
+    started_on          = models.DateTimeField(default=None, null=True, blank=True, verbose_name=u'start date')
 
     discord_username    = models.CharField(max_length=255, blank=True)
 
@@ -79,7 +80,7 @@ class Post(models.Model):
     description         = models.TextField(null=True, blank=True)
 
     owner               = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE, null=False)
-    date                = models.DateTimeField(auto_now_add=True)
+    date                = models.DateTimeField(auto_now_add=True, null=True)
 
     image               = models.ImageField(null=True, blank=True)
     video               = models.FileField(null=True, blank=True)

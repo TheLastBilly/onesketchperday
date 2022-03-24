@@ -262,6 +262,7 @@ def getPostsOfDay(request, timestamp):
     try:
         # This is done to validate the timestamp, I'm doing it this way because I need timeStampDate
         posts = Post.objects.filter(timestamp=getTimeStampFromDate(timeStampDate)).order_by('date')
+        posts = getPostsAfterStartedOn(posts)
     except Exception as e:
         logger.error(str(e))
         return redirect('internalError')
@@ -296,6 +297,7 @@ def getActiveDaysOfMonth(request, index):
 
     try:
         posts = Post.objects.all().order_by('date')
+        posts = getPostsAfterStartedOn(posts)
     except Exception as e:
             return redirect('internalError')
     

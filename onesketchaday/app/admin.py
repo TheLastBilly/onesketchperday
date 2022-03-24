@@ -13,7 +13,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'discord_username', 'is_staff', 'is_a_participant')
+        fields = ('username', 'discord_username', 'is_staff', 'is_a_participant', 'started_on')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -37,7 +37,7 @@ class UserChangeForm(UserCreationForm):
     """
     class Meta:
         model = User
-        fields = ('username', 'profile_picture', 'biography', 'discord_username', 'is_staff', 'is_a_participant')
+        fields = ('username', 'profile_picture', 'biography', 'discord_username', 'is_staff', 'is_a_participant', 'started_on')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -65,12 +65,13 @@ class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    list_display = ('username', 'is_superuser', 'is_staff', 'is_a_participant', 'is_competing')
+    list_display = ('username', 'is_superuser', 'is_staff', 'is_a_participant', 'is_competing','started_on')
     list_filter = ('is_a_participant', 'is_competing', 'is_superuser')
     fieldsets = (
         (None, {'fields': default_fields}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser')}),
         ('Status', {'fields': ('is_a_participant',)}),
+        ('Date', {'fields':('started_on',)})
     )
     
     add_fieldsets = (
@@ -78,7 +79,7 @@ class UserAdmin(BaseUserAdmin):
             'classes': ('wide',),
             'fields': default_fields},
         ),
-        ('Permissions', {'fields': ('is_staff', 'is_superuser', 'is_a_participant')}),
+        ('Permissions', {'fields': ('is_staff', 'is_superuser', 'is_a_participant', 'started_on')}),
     )
     search_fields = ('username',)
     ordering = ('username',)

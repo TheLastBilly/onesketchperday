@@ -11,7 +11,7 @@ class AppConfig(AppConfig):
 
     def ready(self):
         try:
-            from .models import Post, MarkdownPost, Variable
+            from .models import User, Post, MarkdownPost, Variable
             posts = Post.objects.all()
             for post in posts:
                 post.update_timestamp()
@@ -25,5 +25,10 @@ class AppConfig(AppConfig):
             for variable in settings.DEFAULT_VARIABLES:
                 if not Variable.objects.filter(name=variable).exists():
                     Variable.objects.create(name=variable)
+
+            from .utils import getStartDate
+            for user in User.objects.all():
+                if not user.started_on:
+                    user.started_on = getStartDate()
         except Exception as e:
             logger.error("Cannot apply initial db setup: {}".format(str(e)))
