@@ -15,6 +15,14 @@ def getStartDate():
     
     return start.date
 
+def getPostsAfterStartedOn(q):
+    posts = []
+    for post in q:
+        if post.owner.started_on <= post.date:
+            posts.append(post)
+    
+    return posts
+
 def getDaysFromStartDate():
     return getDaysFromStartDateToTimestamp(getTimeStampFromDate(timezone.localdate()))
 
