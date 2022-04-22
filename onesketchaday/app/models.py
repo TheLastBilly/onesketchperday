@@ -1,4 +1,5 @@
 import base64, uuid, os
+from typing import Type
 from time import strftime
 
 from django.conf import settings
@@ -130,6 +131,45 @@ class Post(models.Model):
                 os.remove(absolutePath)
         super(Post, self).delete()
 
+    # Get's focused template context
+    def getFocusedContext(self,
+        title : str             = None, 
+        transition_url : str    = None,
+        posts                   = None
+    ):
+        if posts:
+            next, previous = findPreviousAndLastPosts(posts, self)
+        else:
+            next, previous = None, None
+
+        return self.getContext(
+            title = title, 
+            next = next, 
+            previous = previous,
+            transition_url = transition_url
+        )
+
+    # Get's template context
+    def getContext(self,
+        title : str             = None,
+        next : 'Post'           = None, 
+        previous : 'Post'       = None,
+        show_nsfw : bool        = None,
+        transition_url : str    = None, 
+        focused_url : str       = None
+    ):
+        context = {
+            "post" : self,
+            "title" : self.title if not title else title,
+            "show_nsfw" : show_nsfw,
+            "next" : next,
+            "previous": previous,
+            "transition_url" : transition_url,
+            "focused_url" : focused_url
+        }
+
+        return context
+
     def __str__(self):
         if self.title and len(self.title) > 0:
             return str(self.title)
@@ -149,6 +189,21 @@ class Variable(models.Model):
 
     text                = models.TextField(null=True, blank=True)
 
+    def read(self, type):
+        if type is int and self.integer:
+            return self.integer
+        
+        elif type is str:
+            if self.label:
+                return self.label
+            elif self.text:
+                return self.text
+        
+        elif type is timezone.datetime and self.date:
+            return self.date
+        
+        raise TypeError
+
     def __str__(self):
         return str(self.name)
     
@@ -160,7 +215,6 @@ class MarkdownPost(models.Model):
     date                = models.DateTimeField(auto_now_add=True)
 
     id                  = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
 
     def save(self, *args, **kwargs):
         super(MarkdownPost, self).save(*args, **kwargs)

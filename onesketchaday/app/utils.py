@@ -13,7 +13,7 @@ def getStartDate():
     if not start:
         raise ObjectDoesNotExist("Variable \"StartDate\" was not defined")
     
-    return start.date
+    return start.read(timezone.datetime)
 
 def getPostsAfterStartedOn(q):
     posts = []
@@ -86,6 +86,23 @@ def getDateFromTimestamp(timestamp):
 
 def validateTimeStamp(timestamp):
     return getTimeStampFromDate(getDateFromTimestamp(timestamp))
+
+def findPreviousAndLastPosts(posts, post):
+    posts_len = len(posts)
+    previous_page = next_page = None
+
+    i = 0
+    for p in posts:
+        if post == p:
+            break
+        i += 1
+    
+    if i < posts_len-1:
+        previous_page = posts[i+1].id
+    if i > 0 and posts_len > i:
+        next_page = posts[i-1].id
+    
+    return previous_page, next_page
 
 def getRandomBase64String(lenght=ID_LENGTH):
     new_id = base64.b64encode(os.urandom(lenght))
