@@ -41,7 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     started_on          = models.DateTimeField(default=None, null=True, blank=True, verbose_name=u'start date')
 
     discord_username    = models.CharField(max_length=255, blank=True)
-    discord_id          = models.IntegerField(null=True, blank=True)
+    discord_id          = models.BigIntegerField(null=True, blank=True)
 
     is_staff            = models.BooleanField(default=False)
 
