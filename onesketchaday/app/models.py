@@ -158,6 +158,8 @@ class Post(models.Model):
         transition_url : str    = None, 
         focused_url : str       = None
     ):
+        post = self
+        post.date = timezone.localtime(self.date)
         context = {
             "post" : self,
             "title" : self.title if not title else title,
