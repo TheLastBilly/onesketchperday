@@ -41,6 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     started_on          = models.DateTimeField(default=None, null=True, blank=True, verbose_name=u'start date')
 
     discord_username    = models.CharField(max_length=255, blank=True)
+    discord_id          = models.IntegerField(null=True, blank=True)
 
     is_staff            = models.BooleanField(default=False)
 
@@ -53,7 +54,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS     = ['password']
     
     id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
-    
 
     def delete(self):
         self.delete_profile_picture()
@@ -199,7 +199,7 @@ class Variable(models.Model):
             elif self.text:
                 return self.text
         
-        elif type is timezone.datetime and self.date:
+        elif type is date:
             return self.date
         
         raise TypeError

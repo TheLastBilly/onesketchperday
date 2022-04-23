@@ -13,7 +13,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'discord_username', 'is_staff', 'is_a_participant', 'started_on')
+        fields = ('username', 'discord_username', 'discord_id', 'is_staff', 'is_a_participant', 'started_on')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -37,7 +37,7 @@ class UserChangeForm(UserCreationForm):
     """
     class Meta:
         model = User
-        fields = ('username', 'profile_picture', 'biography', 'discord_username', 'is_staff', 'is_a_participant', 'started_on')
+        fields = ('username', 'profile_picture', 'biography', 'discord_username', 'discord_id', 'is_staff', 'is_a_participant', 'started_on')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -60,7 +60,7 @@ class UserChangeForm(UserCreationForm):
 
 
 class UserAdmin(BaseUserAdmin):
-    default_fields = ('username', 'discord_username', 'profile_picture', 'biography', 'password1', 'password2')
+    default_fields = ('username', 'discord_username', 'discord_id', 'profile_picture', 'biography', 'password1', 'password2')
 
     form = UserChangeForm
     add_form = UserCreationForm

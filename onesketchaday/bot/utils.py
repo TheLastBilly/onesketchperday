@@ -57,8 +57,8 @@ async def delete_post(onwer, id):
     post = await get_post(onwer, id) 
     await sync_to_async(post.delete)()
 
-async def get_user(discord_username : str):
+async def get_user(discord_id : int):
     try:
-        return await sync_to_async(User.objects.get)(discord_username=discord_username)
+        return await sync_to_async(User.objects.get)(discord_id=discord_id)
     except ObjectDoesNotExist as e:
         return None

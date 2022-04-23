@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core import exceptions
 from django.utils import timezone
 from django.shortcuts import redirect, render
-from django.http import HttpResponse, response
+from django.http import HttpResponse, response, HttpRequest
 from django.core.exceptions import *
 from django.urls import reverse
 from django.db.models.functions import Length
@@ -43,6 +43,10 @@ def getGlobalContext():
         "site_url" : settings.SITE_URL + "/",
     }
 
+def renderWithContext(request : HttpRequest, template : str, context : dict):
+    context.update(getGlobalContext())
+    return render(request, template, context)
+
 def renderMarkdownPost(request, title):
     try:
         post = MarkdownPost.objects.get(title=title)
@@ -54,8 +58,7 @@ def renderMarkdownPost(request, title):
     context = {
         "html" : str(post.get_html()),
     }
-    context.update(getGlobalContext())
-    return render(request, "md_post.html", context)
+    return renderWithContext(request, "md_post.html", context)
 
 def renderMarkdownPosts(request, label):
     try:
@@ -72,8 +75,7 @@ def renderMarkdownPosts(request, label):
     context = {
         "posts" : posts,
     }
-    context.update(getGlobalContext())
-    return render(request, "md_posts.html", context)
+    return renderWithContext(request, "md_posts.html", context)
     
 def getAboutPage(request):
     return renderMarkdownPost(request, 'About')
@@ -110,15 +112,13 @@ def getParticipantsPage(request):
         "competitors": competitors,
         "title": "Participants"
     }
-    context.update(getGlobalContext())
-    return render(request, "participants.html", context)
+    return renderWithContext(request, "participants.html", context)
 
 def returnError(request, code, message=""):
     context = {
         "title" : str(code),
         "message" : message
     }
-    context.update(getGlobalContext())
     response = render(request, "error.html", context)
     response.status_code = code
     return response
@@ -127,7 +127,7 @@ def pageNotFound(request, *args, **argv):
     return returnError(request, 404, "Sorry, but I can't find what you were looking for :p")
 
 def internalError(request, *args, **argv):
-    return returnError(request, 500, "Something went wrong... I wish I know what it was")
+    return returnError(request, 500, "Something went wrong... I wish I knew what it was")
 
 def getFavicon(request):
     icon = None
@@ -156,8 +156,7 @@ def getPost(request, pk):
         return redirect('pageNotFound')
     
     context = post.getContext(show_nsfw = True)
-    context.update(getGlobalContext())
-    return render(request, "post.html", context)
+    return renderWithContext(request, "post.html", context)
 
 def getFocusedPost(request, transition_url, pk, posts):
     post = None
@@ -170,8 +169,7 @@ def getFocusedPost(request, transition_url, pk, posts):
         return redirect('pageNotFound')
     
     context = post.getFocusedContext(transition_url = transition_url, posts = posts)
-    context.update(getGlobalContext())
-    return render(request, "post.html", context)
+    return renderWithContext(request, "post.html", context)
     
 def getFocusedMonthPost(request, pk):
     posts = []
@@ -224,8 +222,7 @@ def getPostsOfDay(request, timestamp):
     title = title + " (Day " + str(getDaysFromStartDateToTimestamp(timestamp)) + ")"
 
     context = posts.getContext(title = title, focused_url = "getFocusedDayPost", gallery = False)
-    context.update(getGlobalContext())
-    return render(request, "posts.html", context)
+    return renderWithContext(request, "posts.html", context)
 
 def getActiveDaysOfMonth(request, index):
     month = index
@@ -244,19 +241,7 @@ def getActiveDaysOfMonth(request, index):
         "title" : title,
         "month" : month
     }
-    context.update(getGlobalContext())
-    return render(request, "month.html", context)
-
-def getGallery(request, posts : PostsGroup, page, transition_url, transition_index, extra, focused_url=None):
-    pages = []
-
-    maxPostPerPage = getMaxPostsPerPage()
-    if len(posts) < page * maxPostPerPage:
-        return redirect('pageNotFound')
-    else:
-        context = posts.getContext(title)
-    context.update(getGlobalContext())
-    return render(request, "posts.html", context)
+    return renderWithContext(request, "month.html", context)
 
 def getPostsFromUser(request, index, page=0):
     
@@ -270,9 +255,8 @@ def getPostsFromUser(request, index, page=0):
     title = username
 
     context = posts.getContext(title = title, page = page, transition_index = username, focused_url = "getFocusedUserPost", gallery = True)
-    context.update(getGlobalContext())
 
-    return render(request, "posts.html", context)
+    return renderWithContext(request, "posts.html", context)
 
 def getGalleryOfMonth(request, index, page=0):
     initialPosts = []
@@ -284,11 +268,11 @@ def getGalleryOfMonth(request, index, page=0):
         return redirect('pageNotFound')
         
     posts = PostsGroup(all=True).filter(month = month, made_after = getStartDate())
+
     title = MONTHS[month]
     context = posts.getContext(title = title, page = page, transition_url= "getGalleryOfMonth", transition_index = month - 1, focused_url = "getFocusedMonthPost")
-    context.update(getGlobalContext())
     
-    return render(request, "posts.html", context)
+    return renderWithContext(request, "posts.html", context)
     
 def getTodaysPosts(request):
     return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))

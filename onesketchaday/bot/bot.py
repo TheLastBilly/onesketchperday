@@ -85,9 +85,9 @@ class OnesketchadayBot(commands.Bot):
             reminder = await get_reminder()
             post_count_message = await get_variable("PostCountMessage")
 
+            # Setup reminders
             reminder.date = timezone.localtime(reminder.date)
             post_count_message.date = timezone.localtime(post_count_message.date)
-
             self.scheduler.add_job(self.send_reminder, CronTrigger(
                 hour=reminder.date.hour, minute=reminder.date.minute, second=reminder.date.second)
             ) 
@@ -101,11 +101,6 @@ class OnesketchadayBot(commands.Bot):
                 post_count_message.date.hour, post_count_message.date.minute, post_count_message.date.second
             ))
 
-            async def ping():
-                self.get_all_channels()
-            await ping()
-            self.scheduler.add_job(ping, "interval", minutes=1)
-
             self.scheduler.start()
         except Exception as e:
             logger.error("Cannot setup reminder: {}".format(str(e)))
@@ -113,7 +108,7 @@ class OnesketchadayBot(commands.Bot):
     # Send a message with all the available commands
     async def send_commands(self, context, arg=None):
         username = str(context.message.author)
-        user = await self.validate_user(username, context)
+        user = await self.validate_user(context)
         if not user:
             return
 
@@ -143,11 +138,11 @@ class OnesketchadayBot(commands.Bot):
     
     # See if user is authorized to use this bot. If they are not, return None.
     # If they are, return an user object for that username
-    async def validate_user(self, discord_username, context):
-        user = await get_user(discord_username)
+    async def validate_user(self, context):
+        user = await get_user(context.author.id)
         if not user or not user.is_a_participant:
             await self.send_reply_to_user("Sorry, but you are not allowed to interact with this bot", context)
-            logger.error("Rejected request from {}: Not in the registered list".format(discord_username))
+            logger.error("Rejected request from {}: Not in the registered list".format(str(context.author)))
             return None
         
         return user
@@ -203,8 +198,7 @@ class OnesketchadayBot(commands.Bot):
 
     # Remove the biography and profile picture from the user
     async def clear_user_bio(self, context):
-        username = str(context.message.author)
-        user = await self.validate_user(username, context)
+        user = await self.validate_user(context)
         if not user:
             return
         
@@ -225,7 +219,7 @@ class OnesketchadayBot(commands.Bot):
 
     async def time_left(self, context):
         username = str(context.message.author)
-        user = await self.validate_user(username, context)
+        user = await self.validate_user(context)
         if not user:
             return
         
@@ -247,7 +241,7 @@ class OnesketchadayBot(commands.Bot):
         if not bio:
             await self.send_reply_to_user('Kinda hard to set your bio if you don\'t say what your bio is first', context)
             return
-        user = await self.validate_user(username, context)
+        user = await self.validate_user(context)
         if not user:
             return
         
@@ -297,7 +291,7 @@ class OnesketchadayBot(commands.Bot):
 
         if not title:
             title = ""
-        user = await self.validate_user(username, context)
+        user = await self.validate_user(context)
         if not user:
             return
 
@@ -342,7 +336,7 @@ class OnesketchadayBot(commands.Bot):
     # TODO: Maybe allow the admins to delete any posts also
     async def delete_post(self, context, link):
         username = str(context.message.author)
-        user = await self.validate_user(username, context)
+        user = await self.validate_user(context)
 
         if not user:
             return
@@ -362,7 +356,7 @@ class OnesketchadayBot(commands.Bot):
     
     async def schedule_post(self, context, arg):
         username = str(context.message.author)
-        user = await self.validate_user(username, context)
+        user = await self.validate_user(context)
 
         if not user:
             return

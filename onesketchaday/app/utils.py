@@ -13,7 +13,7 @@ def getStartDate():
     if not start:
         raise ObjectDoesNotExist("Variable \"StartDate\" was not defined")
     
-    return start.read(timezone.datetime)
+    return start.read(date)
 
 def getPostsAfterStartedOn(q):
     posts = []
@@ -28,7 +28,7 @@ def getDaysFromStartDate():
 
 def getTimeRemainingForSession():
     currentTime = timezone.localtime()
-    endTime = getStartDate()
+    endTime = timezone.localtime(getStartDate())
     endTime.replace(day=currentTime.day, month=currentTime.month, year=currentTime.year)
     
     if currentTime > endTime:
