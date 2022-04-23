@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-{% if non_gallery  %}
-<div class="post_gallery_title post_gallery_title_center">
+{% if display_type == "gallery"  %}
+<div class="title left">
 {% else %}
-<div class="post_gallery_title" style="margin-bottom: 0em;">
+<div class="title left">
 {% endif %}
     <h1>{{ title }}</h1>
 </div>
-{% if non_gallery  %}
-<div class="post_list">
+{% if display_type == "list"  %}
+<div class="list">
 {% else %}
-<div class="post_gallery">
+<div class="gallery">
 {% endif %}
     {% if previous or next or page %}
     {% include "posts_pages_list.html" %}
     {% endif %}
     {% for post in posts %}
-    {% if non_gallery is None %}
+    {% if display_type == "list" %}
     <div class="post" style="margin-top: 2em;">
     {% else %}
     <div class="post">

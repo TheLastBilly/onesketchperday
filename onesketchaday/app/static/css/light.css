@@ -1,0 +1,37 @@
+a { 
+    color: #ffffff;
+}
+
+.sidebar {
+    background-color: #121414;
+}
+
+.sidebar a.active {
+    background-color: #04AA6D;
+    color: white;
+}
+
+.sidebar a:hover:not(.active) {
+    background-color: #555;
+    color: white;
+}
+
+.title {
+    border-color: #121414;
+}
+
+.title a {
+    color: #121414;
+}
+
+.gallery .post {
+    border-color: #121414;
+}
+
+.gallery .post a {
+    color: #121414;
+}
+
+.gallery .post img, .gallery .post img {
+    border-color: #121414;
+}

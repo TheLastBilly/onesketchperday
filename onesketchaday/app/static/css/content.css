@@ -1,0 +1,30 @@
+div.content {
+    padding: 1px 16px;
+    margin-left: 150px;
+
+    width: -webkit-calc(100% - 190px);
+    width:    -moz-calc(100% - 190px);
+    width:         calc(100% - 190px);
+}
+
+h1, h2, h3 {
+    white-space: initial;
+    word-wrap: break-word;
+}
+
+.title a {
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.left {
+    text-align: left;
+}
+
+.blur * {
+    /* filter: blur(20px);
+    -webkit-filter: blur(20px);
+    width: 80%;
+    margin-top: 3em;
+    margin-bottom: 3em; */
+}

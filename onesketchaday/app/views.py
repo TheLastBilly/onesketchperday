@@ -36,11 +36,11 @@ def getGlobalContext():
     return {
         "media_url" : settings.MEDIA_URL,
         "static_url" : settings.STATIC_URL,
-        "sidebar_title" : "Day " + str(getDaysFromStartDate()),
+        "sidebar_title" : str(getDaysFromStartDate()),
         "sidebar_months": MONTHS,
         "page_title" : "onesketchaday",
         "site_name" : "onesketchaday",
-        "site_url" : settings.SITE_URL + "/",
+        "site_url" : settings.SITE_URL + "/"
     }
 
 def renderWithContext(request : HttpRequest, template : str, context : dict):
@@ -219,7 +219,7 @@ def getPostsOfDay(request, timestamp):
     else:
         title = timeStampDate.strftime("%B %d, %Y")
 
-    title = title + " (Day " + str(getDaysFromStartDateToTimestamp(timestamp)) + ")"
+    title = title + "\n(Day " + str(getDaysFromStartDateToTimestamp(timestamp)) + ")"
 
     context = posts.getContext(title = title, focused_url = "getFocusedDayPost", gallery = False)
     return renderWithContext(request, "posts.html", context)
@@ -239,7 +239,8 @@ def getActiveDaysOfMonth(request, index):
     context = {
         "days" : days,
         "title" : title,
-        "month" : month
+        "month" : month,
+        "display" : "gallery"
     }
     return renderWithContext(request, "month.html", context)
 

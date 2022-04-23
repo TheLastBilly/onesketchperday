@@ -3,8 +3,17 @@
 <html>
 <head>
     <meta charset="utf-8">
+    
+    <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+
     <link rel="icon" type="image/png" href="{% url 'favicon' %}"/>
     <link rel="stylesheet" href="{{ static_url }}css/style.css">
+    <link rel="stylesheet" href="{{ static_url }}css/sidebar.css">
+    <link rel="stylesheet" href="{{ static_url }}css/content.css">
+
+    <link rel="stylesheet" href="{{ static_url }}css/light.css">
+
+    <link rel="stylesheet" href="{{ static_url }}css/{{display}}.css">
 
     {% block meta %}
     {% endblock %}
@@ -17,8 +26,9 @@
 </head>
 <body>
     <div class="sidebar">
-    <a href="/">
-        <h2>{{ sidebar_title }}</h2>
+    <a href="/" class="top">
+        <h2>Day</h2>
+        <h2>{{sidebar_title}}</h2>
     </a>
     {% for month in sidebar_months %}
     <a href="{% url 'getActiveDaysOfMonth' index=forloop.counter|add:"-1" %}">{{ month }}</a>

@@ -100,13 +100,14 @@ class PostsGroup:
                 "previous" : previous,
                 "next" : next,
                 "focused_url" : focused_url,
+                "display_type" : "gallery" if gallery else "list"
             }
 
         else:
             return {
                 "posts" : posts,
                 "title" : title,
-                "non_gallery" : not gallery,
+                "display_type" : "gallery" if gallery else "list",
                 "focused_url" : focused_url
             }
 
