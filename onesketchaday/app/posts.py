@@ -2,7 +2,7 @@ from datetime import date
 from .models import Post
 from .models import User
 
-from django.utils.timezone import datetime
+from django.utils import timezone
 
 from . import utils
 
@@ -21,7 +21,7 @@ class PostsGroup:
     def made_in_month(self, month : int):
         return self.filter(month = month)
 
-    def was_made_on_date(self, date : datetime):
+    def was_made_on_date(self, date : date):
         return self.filter(date = date)
 
     def has_timestamp(self, timestamp : int):
@@ -40,7 +40,13 @@ class PostsGroup:
         ):
         posts = []
 
+        if date:
+            date = timezone.localtime(date)
+        if month:
+            month = month +1
+
         for post in self.posts:
+            post.date = timezone.localtime(post.date)
             if                                                                  \
                 (True if not made_after else post.date >= made_after)       and \
                 (True if not date else post.date == date)                   and \
@@ -49,7 +55,7 @@ class PostsGroup:
                 (True if not username else post.owner.username == username) and \
                 (True if not owner else post.owner == owner):
                 posts.append(post)
-        
+
         return PostsGroup(posts)
 
     def getContext(self, 
