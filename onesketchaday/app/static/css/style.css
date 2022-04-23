@@ -4,11 +4,11 @@ html, body {
     margin:auto;
     /* padding:1em; */
     /* max-width:60em; */
-    background: #232b2b;
+    background: #ffffff;
 }
 
 body {
-    color: #b9c7c6;
+    color: #ffffff;
 /*line-height: 1.4;*/
     text-align: justify;
 }
@@ -79,8 +79,8 @@ code {
     font-size: .9em;
 }
 pre {
-    border: 2em solid #b9c7c6;
-    background: #b9c7c6;
+    border: 2em solid #ffffff;
+    background: #ffffff;
     background-clip: content-box;
     color: black;
     overflow-x: auto;
@@ -95,15 +95,7 @@ a {
 a:hover {
     text-decoration: underline;
 }
-img, video {
-    display: block;
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 1em;
-    margin-bottom: 1em;
-    width: 100%;
-}
+
 h1 a, h1 a:hover {
 /*    color: #333;*/
     text-decoration: none;
@@ -251,6 +243,7 @@ div.content {
 }
 
 .post_gallery {
+    margin-top: 2.5em;
     float: left;
     width: 100%;
 }
@@ -264,8 +257,8 @@ div.content {
 }
 
 .post_gallery .post img, .post_gallery .post video {
-    max-height: 10em;
-    width: auto;
+    max-height: 100%;
+    width: 100%;
     max-width: 90%;
 }
 
@@ -281,21 +274,23 @@ div.content {
 
 .post {
     width: 100%;
-    background-color: #374444;
     display: inline-block;
     margin-bottom: 2em;
-    border-radius: .75em;
     text-align: center;
     overflow-wrap: break-word;
     overflow: hidden;
+    color: #121414;
+    border-bottom: 5px solid #121414;
 }
 
 .post * {
-    width: 90%;
+    color: #121414;
 }
 
 .post img, .post video {
-    border-radius: .75em;
+    border: 5px solid #121414;
+    height: 100%;
+    max-height: 100%;
 }
 
 .post p {
@@ -328,7 +323,7 @@ div.content {
 }
 
 .participants_title {
-    background-color: #374444;
+    background-color: #121414;
     width: 80%;
     margin-left: 10%;
     margin-top: 1em;
@@ -354,7 +349,7 @@ div.content {
 
 .participant {
     width: 100%;
-    background-color: #374444;
+    background-color: #121414;
     margin-bottom: 2em;
     border-radius: .75em;
     text-align: center;
@@ -453,18 +448,25 @@ div.content {
 }
 
 .post_gallery_title {
-    background-color: #374444;
-    width: 45%;
-    margin-left: 27.5%;
+    color: #121414;
+    font-weight: bolder;
+    width: 20%;
     margin-top: 1em;
-    border-radius: .75em;
     display: inline-block;
-    text-align: center;
+    text-align: left;
     margin-bottom: 2em;
+    border-bottom: 10px solid #121414;
+}
+
+.post_gallery_title a {
+    color: #121414;
+}
+.post_gallery_title h1 {
+    text-align: left;
 }
 
 .post_single_title {
-    background-color: #374444;
+    background-color: #121414;
     width: 100%;
     margin-top: 2em;
     border-radius: .75em;
