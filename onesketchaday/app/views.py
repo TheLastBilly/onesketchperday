@@ -231,7 +231,7 @@ def getActiveDaysOfMonth(request, index):
         return redirect('pageNotFound')
     
     try:
-        days = PostsGroup(all=True).filter(month = month, made_after = getStartDate()).posts
+        days = PostsGroup(all=True).filter(month = month, made_after = getStartDate(), first_of_month = True).posts
     except Exception as e:
             return redirect('internalError')
 
@@ -260,10 +260,7 @@ def getPostsFromUser(request, index, page=0):
     return renderWithContext(request, "posts.html", context)
 
 def getGalleryOfMonth(request, index, page=0):
-    initialPosts = []
-    curatedPosts = []
 
-    startDate = getStartDate()
     month = index
     if month > 11 or month < 0:
         return redirect('pageNotFound')
@@ -271,7 +268,15 @@ def getGalleryOfMonth(request, index, page=0):
     posts = PostsGroup(all=True).filter(month = month, made_after = getStartDate())
 
     title = MONTHS[month]
-    context = posts.getContext(title = title, page = page, transition_url= "getGalleryOfMonth", transition_index = month - 1, focused_url = "getFocusedMonthPost")
+    context = posts.getContext(
+        title = title, 
+        page = page, 
+        transition_url= "getGalleryOfMonth", 
+        transition_index = month - 1 if month > 0 else 0, 
+        focused_url = "getFocusedMonthPost", 
+        gallery = True,
+        post_per_age = getMaxPostsPerPage()
+    )
     
     return renderWithContext(request, "posts.html", context)
     

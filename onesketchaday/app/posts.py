@@ -1,4 +1,5 @@
 from datetime import date
+from xmlrpc.client import boolean
 from .models import Post
 from .models import User
 
@@ -36,13 +37,16 @@ class PostsGroup:
             month           : int = None,
             timestamp       : str = None,
             owner           : User = None,
-            username        : str = None
+            username        : str = None,
+            first_of_month  : boolean = None
         ):
+        months_buffer = []
         posts = []
 
         if date:
             date = timezone.localtime(date)
-        if month:
+
+        if month is not None:
             month = month +1
 
         for post in self.posts:
@@ -54,6 +58,12 @@ class PostsGroup:
                 (True if not timestamp else post.timestamp == timestamp)    and \
                 (True if not username else post.owner.username == username) and \
                 (True if not owner else post.owner == owner):
+
+                if(first_of_month and post.date.month in months_buffer):
+                    continue
+                else:
+                    months_buffer.append(post.date.month)
+
                 posts.append(post)
 
         return PostsGroup(posts)
@@ -82,7 +92,9 @@ class PostsGroup:
             post.date = post.get_local_time()
             posts.append(post)
 
-        if gallery and page and transition_url:
+        if gallery and page is not None and transition_url is not None and post_per_age is not None:
+            previous = next = 0
+
             pages = range(int(len(posts)/post_per_age) + (1 if len(posts) % post_per_age > 0 else 0))
             if len(pages) < 2:
                 pages = []
