@@ -68,9 +68,13 @@ class PostsGroup:
 
             transition_index = None
         ):
+
+        display = "gallery" if gallery else "list"
+
         if not self.posts:
             return {
-                "title" : title
+                "title" : title,
+                "display" : display
             }
 
         posts = []
@@ -100,14 +104,14 @@ class PostsGroup:
                 "previous" : previous,
                 "next" : next,
                 "focused_url" : focused_url,
-                "display_type" : "gallery" if gallery else "list"
+                "display" : display
             }
 
         else:
             return {
                 "posts" : posts,
                 "title" : title,
-                "display_type" : "gallery" if gallery else "list",
+                "display" : display,
                 "focused_url" : focused_url
             }
 

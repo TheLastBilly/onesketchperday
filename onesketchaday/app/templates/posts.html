@@ -1,18 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-{% if display_type == "gallery"  %}
-<div class="title left">
-{% else %}
-<div class="title left">
-{% endif %}
+<div class="title">
     <h1>{{ title }}</h1>
 </div>
-{% if display_type == "list"  %}
-<div class="list">
-{% else %}
-<div class="gallery">
-{% endif %}
+<div class="{{display}}">
     {% if previous or next or page %}
     {% include "posts_pages_list.html" %}
     {% endif %}
@@ -22,18 +14,18 @@
     {% else %}
     <div class="post">
     {% endif %}
-        {% if post.is_nsfw %}
-        <p style="margin-top: 1em; font-weight: bolder;">NSFW</p>
-        {% endif %}
-        <a href="{% url focused_url pk=post.id %}">
-            {% if post.image %}
-                <img src="{{ media_url }}{{ post.image.name }}" alt="" {% if post.is_nsfw %} class="add_blur" {% endif %}>
-            {% elif post.video %}
-                <video controls>
-                    <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4' {% if post.is_nsfw %} class="add_blur" {% endif %}>
-                </video>
-            {% endif %}
-        </a>
+        <div class="media {% if post.is_nsfw %}blur{% endif %}">
+            <a href="{% url focused_url pk=post.id %}">
+                {% if post.image %}
+                    <img src="{{ media_url }}{{ post.image.name }}" alt="">
+                {% elif post.video %}
+                    <video controls>
+                        <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4'>
+                    </video>
+                {% endif %}
+            </a>
+        </div>
+
         <a href="{% url focused_url pk=post.id %}">
             {% if post.title %}
             <p class="post_title">{{ post.title }}</p>

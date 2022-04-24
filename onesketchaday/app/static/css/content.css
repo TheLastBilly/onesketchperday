@@ -21,10 +21,14 @@ h1, h2, h3 {
     text-align: left;
 }
 
+.blur {
+    overflow: hidden;
+    border: 3px solid;
+    border-radius: 0.25em;
+}
+
 .blur * {
-    /* filter: blur(20px);
+    filter: blur(20px);
     -webkit-filter: blur(20px);
-    width: 80%;
-    margin-top: 3em;
-    margin-bottom: 3em; */
+    max-width: 100%;
 }

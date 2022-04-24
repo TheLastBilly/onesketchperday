@@ -44,7 +44,6 @@
     width: 100%;
     height: 100%;
 
-    overflow: hidden;
     border-bottom: 3px solid;
 }
 
@@ -64,18 +63,14 @@
 
 .gallery .post .media {
     height: 9em;
-    margin-bottom: 0;
-
-    margin-top: 0.5em;
-    border: 3px solid;
-    border-radius: 0.5em;
 }
 
-.gallery .post .media * {
+.gallery .post .media img, .gallery .post .media video {
     object-fit: cover;
     max-width: inherit;
-    height: inherit;
+    height: 100%;
     width: 100%;
 
+    border: 3px solid;
     border-radius: 0.25em;
 }

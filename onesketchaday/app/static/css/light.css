@@ -24,6 +24,10 @@ a {
     color: #121414;
 }
 
+.list p, .list a {
+    color: #121414;
+}
+
 .gallery .post {
     border-color: #121414;
 }
