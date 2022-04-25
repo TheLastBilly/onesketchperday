@@ -5,6 +5,8 @@ div.content {
     width: -webkit-calc(100% - 190px);
     width:    -moz-calc(100% - 190px);
     width:         calc(100% - 190px);
+
+    display: inline-block;
 }
 
 h1, h2, h3 {
@@ -142,4 +144,39 @@ h1, h2, h3 {
 
 .next_previous .next {
     margin-left: auto;
+}
+
+.page_list {
+    display: flex;
+
+    width: inherit;
+    position: fixed;
+
+    bottom: 0;
+    margin-bottom: 2em;
+}
+
+.page_list .next, .page_list .previous {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.page_list ul {
+    list-style: none;
+    list-style-type: none;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    text-align: center;
+}
+
+.page_list ul li {
+    list-style: none;
+    display: inline-block;
+}
+
+.page_list .current_page {
+    border-bottom: 2px solid;
+    font-weight: bolder;
 }

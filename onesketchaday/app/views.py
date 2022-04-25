@@ -247,7 +247,7 @@ def getActiveDaysOfMonth(request, index):
         return redirect('pageNotFound')
     
     try:
-        days = PostsGroup(all=True).filter(month = month, made_after = getStartDate(), first_of_month = True).posts
+        days = PostsGroup(all=True).filter(month = month, made_after = getStartDate(), first_of_day = True).posts
     except Exception as e:
             return redirect('internalError')
 

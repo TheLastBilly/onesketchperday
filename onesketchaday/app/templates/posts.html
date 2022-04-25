@@ -10,10 +10,6 @@
     <h1>{{ title }}</h1>
 </div>
 <div class="{{display}} display">
-    {% if display == "gallery" %}
-        {% include "page_list.html" %}
-    {% endif %}
-
     {% for post in posts %}
     {% if display_type == "list" %}
     <div class="post" style="margin-top: 2em;">
@@ -44,5 +40,9 @@
     {% endfor %}
 
 </div>
+
+{% if display == "gallery" %}
+{% include "page_list.html" %}
+{% endif %}
 
 {% endblock %}

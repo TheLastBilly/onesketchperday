@@ -1,9 +1,17 @@
-a { 
-    color: #ffffff;
+body {
+    border-color: #121414;
+}
+
+a, p { 
+    color: #121414;
 }
 
 .sidebar {
     background-color: #121414;
+}
+
+.sidebar a {
+    color: #ffffff;
 }
 
 .sidebar a.active {
@@ -22,28 +30,4 @@ a {
 
 .blur .disclaimer p {
     color: white;
-}
-
-.title {
-    border-color: #121414;
-}
-
-.title a {
-    color: #121414;
-}
-
-.display p, .display a {
-    color: #121414;
-}
-
-.display .post {
-    border-color: #121414;
-}
-
-.display .post img, .display .post img {
-    border-color: #121414;
-}
-
-.next_previous a {
-    color: #121414;
 }

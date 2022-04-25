@@ -1,21 +1,21 @@
-<div class="pages_list">
-    <ul>
-        {% if previous is not None %}
-        <li>
-            [<a href="{% url transition_url index=transition_index page=previous %}">previous</a>]
-        </li>
-        {% endif %}
+<div class="page_list">
+    {% if previous is not None %}
+    <a class="previous" href="{% url transition_url index=transition_index page=previous %}">previous</a>
+    {% else %}
+    <p class="previous">previous</a>
+    {% endif %}
 
+    <ul>
         {% for p in pages %}
         <li>
-            [<a href="{% url transition_url index=transition_index page=p %}" {% if page == p %} style="color:lightslategray;" {% endif %}>{{p}}</a>]
+            <a href="{% url transition_url index=transition_index page=p %}" {% if page == p %} class="current_page" {% endif %}>{{p}}</a>
         </li>
         {% endfor %}
-
-        {% if next is not None %}
-        <li>
-            [<a href="{% url transition_url index=transition_index page=next %}">next</a>]
-        </li>
-        {% endif %}
     </ul>
+
+    {% if next is not None %}
+    <a class="next" href="{% url transition_url index=transition_index page=next %}">next</a>
+    {% else %}
+    <p class="next">next</a>
+    {% endif %}
 </div>

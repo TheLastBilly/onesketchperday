@@ -1,6 +1,7 @@
 from datetime import date
 from sqlite3 import Timestamp
 from xmlrpc.client import boolean
+
 from .models import Post
 from .models import User
 
@@ -45,9 +46,11 @@ class PostsGroup:
             timestamp       : str = None,
             owner           : User = None,
             username        : str = None,
-            first_of_month  : boolean = None
+            first_of_month  : boolean = None,
+            first_of_day    : boolean = None
         ):
         months_buffer = []
+        days_buffer = []
         posts = []
 
         if date:
@@ -70,6 +73,11 @@ class PostsGroup:
                     continue
                 else:
                     months_buffer.append(post.date.month)
+                
+                if(first_of_day and post.date.day in days_buffer):
+                    continue
+                else:
+                    days_buffer.append(post.date.day)
 
                 posts.append(post)
 
