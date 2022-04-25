@@ -8,7 +8,22 @@
 
 <div class="title">
     <h1>{{ title }}</h1>
+
+    {% if has_search_bar %}
+    <div class="search_bar">
+        <form action="{% url 'getGallery' %}" method="get">
+            <input name="search_bar" type="text" {% if placeholder %} placeholder={{placeholder}} {% else %}placeholder="Search"{% endif %}>
+        </form>
+    </div>
+    {% elif display == "gallery" %}
+    <div class="link">
+        <p>
+            <a href="{% url transition_url index=transition_index page=page %}">Gallery</a>        
+        </p>
+    </div>
+    {% endif %}
 </div>
+
 <div class="{{display}} display">
     {% for post in posts %}
     {% if display_type == "list" %}
@@ -28,14 +43,16 @@
             </a>
         </div>
 
-        <a href="{% url focused_url pk=post.id %}">
-            {% if post.title %}
-            <p class="post_title">{{ post.title }}</p>
-            {% else %}
-            <p class="post_title">{{ post.date|date:"l" }}</p>
-            {% endif %}
-        </a>
-        <p class="post_description">by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a> on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date|date:"M jS, h:i a" }}</a></p>
+        <p>
+            <a href="{% url focused_url pk=post.id %}">
+                {% if post.title %}
+                {{ post.title }}
+                {% else %}
+                {{ post.date|date:"l" }}
+                {% endif %}
+            </a>
+        </p>
+        <p>by <a href="{% url 'getUserGallery' index=post.owner.username %}">{{ post.owner.username }}</a> on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date|date:"M jS, h:i a" }}</a></p>
     </div>
     {% endfor %}
 

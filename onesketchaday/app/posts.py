@@ -1,4 +1,5 @@
 from datetime import date
+from pydoc import resolve
 from sqlite3 import Timestamp
 from xmlrpc.client import boolean
 
@@ -19,7 +20,10 @@ class PostsGroup:
             self.posts = posts
     
     def __len__(self):
-        return len(self.posts)
+        if self.posts:
+            return len(self.posts)
+        else:
+            return 0
     
     def __str__(self):
         return str(self.posts)
@@ -38,6 +42,9 @@ class PostsGroup:
 
     def made_by_user(self, user : User):
         return self.filter(owner = user)
+    
+    def revert(self):
+        return PostsGroup(self.posts[::-1])
 
     def filter(self, 
             made_after      : date = None,
@@ -82,6 +89,24 @@ class PostsGroup:
                 posts.append(post)
 
         return PostsGroup(posts)
+    
+    def search(self, search):
+        matching_posts = []
+
+        if not search or len(search) < 1 or search == "all":
+            print(search)
+            return self
+
+        tags = search.split()
+        for post in self.posts:
+            if search in post.title and post not in matching_posts:
+                matching_posts.append(post)
+            
+            for tag in post.tags.all():
+                if tag.title in tags and post not in matching_posts:
+                    matching_posts.append(post)
+
+        return PostsGroup(matching_posts)
 
     def getContext(self, 
             title           : str = None, 
@@ -90,6 +115,8 @@ class PostsGroup:
             page            : int = None,
             transition_url  : str = None,
             post_per_age    : int = None,
+            has_search_bar  : boolean = None,
+            placeholder     : str = None,
 
             next            : int = None,
             previous        : int = None,
@@ -101,40 +128,45 @@ class PostsGroup:
         for post in self.posts:
             post.date = post.get_local_time()
             posts.append(post)
+        
+        context = {
+            "posts" : posts,
+            "title" : title,
+            "display" : display,
+            "focused_url" : focused_url,
+            "next" : next,
+            "previous" : previous,
+            "transition_url" : transition_url,
+            "transition_index" : transition_index,
+            "has_search_bar" : has_search_bar,
+            "placeholder" : placeholder
+        }
 
         if display == "gallery" and page is not None and transition_url is not None and post_per_age is not None:
             pages = range(int(len(posts)/post_per_age) + (1 if len(posts) % post_per_age > 0 else 0))
-            if len(pages) < 2:
+            pages_len = len(pages)
+            if pages_len < 2:
                 pages = []
+
+            if page >= pages_len-1:
+                page = pages_len-1
             
             if page > 0 and previous is None:
                 previous = page - 1
-            if len(pages) > page+1 and next is None:
+            if pages_len > page+1 and next is None:
                 next = page + 1
             
             posts = posts[page*post_per_age:]
             posts = posts[:post_per_age]
             
-            return {
+            context.update({
                 "posts" : posts,
                 "pages" : pages,
                 "page" : page,
-                "transition_url" : transition_url,
-                "transition_index" : transition_index,
                 "previous" : previous,
                 "next" : next,
-                "focused_url" : focused_url,
-                "display" : display,
-                "title" : title
-            }
+            })
+            return context
         else:
-            return {
-                "posts" : posts,
-                "title" : title,
-                "display" : display,
-                "focused_url" : focused_url,
-                "next" : next,
-                "previous" : previous,
-                "transition_url" : transition_url
-            }
+            return context
 

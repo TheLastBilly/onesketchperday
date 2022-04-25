@@ -1,21 +1,69 @@
-.title {
-    width: 40%;
-
-    margin-bottom: 2em;
-
-    margin-right: auto;
-    margin-left: auto;
-}
-
-.title * {
-    text-align: center;
-}
-
 .list {
-    width: 40%;
-
-    grid-template-columns: repeat(1, 1fr);
-
+    width: 100%;
     margin-right: auto;
     margin-left: auto;
+}
+
+.list .participant {
+    margin-top: 1em;
+    display: flex;
+    height: 20em;
+}
+
+.list .participant * {
+    margin-top: 0em;
+    margin-bottom: 0em;
+}
+
+.list .participant .picture {
+    width: 35%;
+    height: 100%;
+}
+
+.list .participant .picture img {
+    width: 100%;
+    height: 100%;
+    border: 5px solid;
+
+    object-fit: cover;
+    box-sizing: border-box;
+}
+
+.list .participant .info {
+    margin-left: 2em;
+    margin-top: 0em;
+
+    width: -moz-available;
+    width: -webkit-fill-available;
+    width: fill-available;
+    
+    display: inline-block;
+}
+
+.list .participant .name {
+    border-bottom: 5px solid;
+
+    margin-top: 0em;
+    margin-bottom: 0em;
+
+    font-size: 2em;
+
+    text-transform: uppercase;
+
+    display: flex;
+}
+
+.list .participant .name p {
+    margin-top: 0em;
+}
+
+.list .participant .count {
+    text-transform: uppercase;
+    font-weight: bolder;
+
+    margin-left: auto;
+}
+
+.list .participant .bio {
+    margin-top: 1em;
 }

@@ -3,30 +3,32 @@
 
 {% block content %}
 
-<div class="participants_title">
+<div class="title">
     <h1>{{ title }}</h1>
 </div>
 
-<div class="participants_list">
+<div class="list">
     {% for competitor in competitors %}
     {% if competitor.user.profile_picture.name and competitor.user.biography %}
     <div class="participant">
-        <div class="participant_picture">
-            <a href="{% url 'getPostsFromUser' index=competitor.user.username %}">
+        <div class="picture">
+            <a href="{% url 'getUserGallery' index=competitor.user.username %}">
                 <img src="{{ media_url }}{{ competitor.user.profile_picture.name }}" alt="" >
             </a>
         </div>
         
-        <div class="participant_info">
-            <div class="participant_name" >
-                <a href="{% url 'getPostsFromUser' index=competitor.user.username %}">
-                    <p>{{ competitor.user.username }}<p>
-                </a>
+        <div class="info">
+            <div class="name" >
+                <p>
+                    <a href="{% url 'getUserGallery' index=competitor.user.username %}">{{ competitor.user.username }}</a>
+                <p>
+                
+                <div class = "count">
+                    <p>Score: {{competitor.posts}}</p>
+                </div>
             </div>
-            <div class = "participant_post_count">
-                <p>({{competitor.posts}} posts)</p>
-            </div>
-            <div class="participant_bio">
+
+            <div class="bio">
                 <p >{{ competitor.user.biography }}</p>
             </div>
         </div>

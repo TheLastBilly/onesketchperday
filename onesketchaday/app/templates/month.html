@@ -4,10 +4,13 @@
 {% block content %}
 <div class="title">
     <h1>{{ title }}</h1>
-    <a href="{% url 'getGalleryOfMonth' index=month %}">
-        <p>Gallery</p>
-    </a>
+    <div class="link">
+        <p>
+            <a href="{% url 'getGalleryOfMonth' index=month %}">Gallery</a>        
+        </p>
+    </div>
 </div>
+
 <div class="gallery display">    
     {% for day in days %}
     <div class="grid">
@@ -24,9 +27,11 @@
                 </a>
             </div>
             <div class="title">
-                <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">
-                    <p class="post_title"> {{ day.date|date:"l" }} the {{ day.date|date:" jS" }} </p>
-                </a>
+                <p>
+                    <a href="{% url 'getPostsOfDay' timestamp=day.timestamp %}">
+                        {{ day.date|date:"l" }} the {{ day.date|date:" jS" }}    
+                    </a>
+                </p>
             </div>
         </div>
     </div>

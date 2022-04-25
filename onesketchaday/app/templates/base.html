@@ -30,6 +30,11 @@
         <h2>Day</h2>
         <h2>{{sidebar_title}}</h2>
     </a>
+
+    <div class="gallery_button">
+        <a href="{% url 'getGallery' %}">Gallery</a>
+    </div>
+
     {% for month in sidebar_months %}
     <a href="{% url 'getActiveDaysOfMonth' index=forloop.counter|add:"-1" %}">{{ month }}</a>
     {% endfor %}

@@ -2,6 +2,10 @@ body {
     border-color: #121414;
 }
 
+input::placeholder {
+    color: #555;
+}
+
 a, p { 
     color: #121414;
 }

@@ -31,23 +31,25 @@
 <div class="focused display">
 
     <div class="title">
-        {% if focused_url %}
-        <a href="{% url focused_url pk=post.id %}">
-        {% else %}
-        <a href="{% url 'getPost' pk=post.id %}">
-        {% endif %}
-            {% if title  %}
-            <h1>{{ title }}</h1>
+        <h1>
+            {% if focused_url %}
+            <a href="{% url focused_url pk=post.id %}">
             {% else %}
-            <h1>{{ post.date|date:"l" }}</h1>
+            <a href="{% url 'getPost' pk=post.id %}">
             {% endif %}
-        </a>
+                {% if title  %}
+                {{ title }}
+                {% else %}
+                {{ post.date|date:"l" }}
+                {% endif %}
+            </a>
+        </h1>
     </div>
     
     <div class="post">
         <div class="media {% if post.is_nsfw and not show_nsfw %}blur{% endif %}">
             {% if focused_url %}
-                {% if post.is_nsfw or not nature%}
+                {% if post.is_nsfw %}
                     <a href="{% url focused_url pk=post.id nature='explicit' %}">
                 {% else %}
                     <a href="{% url focused_url pk=post.id %}">
@@ -71,7 +73,7 @@
             </div>
         </div>
         
-        <p>Uploaded by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a>  on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date }}</a></p>
+        <p>Uploaded by <a href="{% url 'getUserGallery' index=post.owner.username %}">{{ post.owner.username }}</a>  on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date }}</a></p>
         <p>({{ post.clicks }} view{% if post.clicks > 1 %}s{% endif %})</p>
     </div>
 </div>

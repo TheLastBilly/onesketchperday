@@ -6,6 +6,11 @@
     height: 100%;
     overflow: auto;
     text-align: justify;
+    float: left;
+}
+
+.sidebar .gallery_button {
+    margin-bottom: 1em;
 }
 
 .sidebar .top {
@@ -32,7 +37,7 @@
 }
 
 .sidebar_bottom {
-    margin-top: 2em;
+    margin-top: 1em;
     bottom: 0;
     text-align: center;
     display: block;

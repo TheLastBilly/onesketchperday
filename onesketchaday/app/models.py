@@ -76,6 +76,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return str(self.username)
 
+class Tag(models.Model):
+    name                = models.CharField(max_length=100, primary_key=True)
+
+    def __str__(self):
+        return str(self.name)
+
 class Post(models.Model):
     title               = models.CharField(max_length=100, null=True)
     description         = models.TextField(null=True, blank=True)
@@ -86,6 +92,7 @@ class Post(models.Model):
     image               = models.ImageField(null=True, blank=True)
     video               = models.FileField(null=True, blank=True)
     likes               = models.ManyToManyField(User, blank=True)
+    tags                = models.ManyToManyField(Tag, blank=True)
     clicks              = models.BigIntegerField(null=True, blank=True)
 
     is_nsfw             = models.BooleanField(default=False)

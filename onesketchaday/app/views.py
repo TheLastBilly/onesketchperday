@@ -110,7 +110,8 @@ def getParticipantsPage(request):
 
     context = {
         "competitors": competitors,
-        "title": "Participants"
+        "title": "Participants",
+        "display" : "participants"
     }
     return renderWithContext(request, "participants.html", context)
 
@@ -176,7 +177,10 @@ def getFocusedPost(request, transition_url, pk, posts, nature):
         focused_url = path
     )
     return renderWithContext(request, "post.html", context)
-    
+
+def getFocusedGalleryPost(request, pk, nature = ""):
+    return getFocusedPost(request, "getFocusedGalleryPost", pk, PostsGroup(all=True), nature)
+
 def getFocusedMonthPost(request, pk, nature = ""):
     posts = None
 
@@ -266,7 +270,7 @@ def getActiveDaysOfMonth(request, index):
     }
     return renderWithContext(request, "month.html", context)
 
-def getPostsFromUser(request, index, page=0):
+def getUserGallery(request, index, page=0):
     
     username = index
     try:
@@ -280,7 +284,7 @@ def getPostsFromUser(request, index, page=0):
     context = posts.getContext(
         title = title, 
         page = page, 
-        transition_url= "getPostsFromUser", 
+        transition_url= "getUserGallery", 
         transition_index = username, 
         focused_url = "getFocusedUserPost", 
         display = "gallery",
@@ -312,3 +316,28 @@ def getGalleryOfMonth(request, index, page=0):
     
 def getTodaysPosts(request):
     return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
+
+def getGallery(request, index = None, page = 0):
+    search_bar_value = request.GET.get("search_bar")
+    if search_bar_value:
+        index = search_bar_value
+
+    posts = PostsGroup(all=True).search(index)
+    max_posts_per_page = getMaxPostsPerPage()
+
+    if index is None and page == 0 and len(posts) > 0:
+        page = len(posts) % max_posts_per_page
+
+    context = posts.getContext(
+        title = "Gallery", 
+        page = page, 
+        transition_url= "getGallery",
+        transition_index= "all" if not index else index,
+        focused_url = "getFocusedGalleryPost", 
+        display = "gallery",
+        post_per_age = max_posts_per_page,
+        has_search_bar = True,
+        placeholder = index,
+    )
+    
+    return renderWithContext(request, "posts.html", context)

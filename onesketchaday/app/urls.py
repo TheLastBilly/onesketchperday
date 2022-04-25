@@ -12,10 +12,12 @@ urlpatterns = [
     path('post/month/<str:pk>', views.getFocusedMonthPost, name='getFocusedMonthPost'),
     path('post/user/<str:pk>', views.getFocusedUserPost, name='getFocusedUserPost'),
     path('post/day/<str:pk>', views.getFocusedDayPost, name='getFocusedDayPost'),
+    path('post/gallery/<str:pk>', views.getFocusedGalleryPost, name='getFocusedGalleryPost'),
 
     path('post/month/<str:pk>/<str:nature>', views.getFocusedMonthPost, name='getFocusedMonthPost'),
     path('post/user/<str:pk>/<str:nature>', views.getFocusedUserPost, name='getFocusedUserPost'),
     path('post/day/<str:pk>/<str:nature>', views.getFocusedDayPost, name='getFocusedDayPost'),
+    path('post/gallery/<str:pk>/<str:nature>', views.getFocusedGalleryPost, name='getFocusedGalleryPost'),
 
     path('', views.getTodaysPosts, name='getTodaysPosts'),
     path('404/', views.pageNotFound, name='pageNotFound'),
@@ -29,8 +31,12 @@ urlpatterns = [
     path('month/gallery/<int:index>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
     path('month/gallery/<int:index>/<int:page>', views.getGalleryOfMonth, name='getGalleryOfMonth'),
 
-    path('user/<str:index>', views.getPostsFromUser, name='getPostsFromUser'),
-    path('user/<str:index>/<int:page>', views.getPostsFromUser, name='getPostsFromUser'),
+    path('user/<str:index>', views.getUserGallery, name='getUserGallery'),
+    path('user/<str:index>/<int:page>', views.getUserGallery, name='getUserGallery'),
+
+    path('gallery', views.getGallery, name='getGallery'),
+    path('gallery/<int:index>', views.getGallery, name='getGallery'),
+    path('gallery/<str:index>/<int:page>', views.getGallery, name='getGallery'),
 
     path('favicon', views.getFavicon, name='favicon'),
     
