@@ -214,7 +214,13 @@ def getPostsOfDay(request, pk):
     return getPostsOfDay(request, pk)
 
 def getPostsOfDay(request, timestamp):
+    startDateTimestamp = getTimeStampFromDate(getStartDate())
     timeStampDate = getDateFromTimestamp(timestamp)
+
+    if timestamp < startDateTimestamp:
+        return redirect('getPostsOfDay', startDateTimestamp)
+    elif timestamp > getTimeStampFromDate(timezone.localtime()):
+        return redirect('getTodaysPosts')
 
     try:
         posts = PostsGroup(all=True).filter(timestamp = timestamp)

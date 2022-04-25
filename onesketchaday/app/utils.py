@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, time, tzinfo
 from email.utils import localtime
 from nis import cat
 from django.core.exceptions import *
@@ -83,6 +83,7 @@ def getDateFromTimestamp(timestamp):
     if day < 1:
         day = 1
 
+    # See if we can make this aware in the future
     return timezone.datetime(year, month, day)
 
 def validateTimeStamp(timestamp):
@@ -106,22 +107,22 @@ def findPreviousAndNextPosts(posts, post):
     return previous_page, next_page
 
 def findPreviousAndNextTimestamps(timestamp):
-    next = previous = None
+    timestampDate = getDateFromTimestamp(timestamp)
 
-    from .models import Post
-    posts = Post.objects.all().order_by('date')
-    for post in posts:
-        if post.timestamp == timestamp:
-            break
-        elif post.timestamp < timestamp:
-            previous = post.timestamp
+    previous = timestampDate - timezone.timedelta(days=1)
+    next = timestampDate + timezone.timedelta(days=1)
+    
+    if timezone.localtime() < timezone.make_aware(next, timezone=timezone.get_current_timezone()):
+        next = None
 
-    for post in posts[::-1]:
-        if post.timestamp == timestamp:
-            break
-        elif post.timestamp > timestamp:
-            next = post.timestamp
-        
+    if getStartDate() > timezone.make_aware(previous, timezone=timezone.get_current_timezone()):
+        previous = None
+
+    if previous:
+        previous = getTimeStampFromDate(previous)
+    if next:
+        next = getTimeStampFromDate(next)
+
     return previous, next
 
 def getRandomBase64String(lenght=ID_LENGTH):
