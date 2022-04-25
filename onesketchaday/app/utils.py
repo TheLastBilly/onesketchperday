@@ -106,24 +106,22 @@ def findPreviousAndNextPosts(posts, post):
     return previous_page, next_page
 
 def findPreviousAndNextTimestamps(timestamp):
-    next = previous = current = None
+    next = previous = None
 
     from .models import Post
-    posts = Post.objects.all().order_by('timestamp')
+    posts = Post.objects.all().order_by('date')
     for post in posts:
         if post.timestamp == timestamp:
-            continue
-        
-        if current is not None and post.timestamp != current:
-            if current < timestamp:
-                previous = current
-            
-            if not next and current > timestamp:
-                next = current
-                break
-        
-        current = post.timestamp
+            break
+        elif post.timestamp < timestamp:
+            previous = post.timestamp
 
+    for post in posts[::-1]:
+        if post.timestamp == timestamp:
+            break
+        elif post.timestamp > timestamp:
+            next = post.timestamp
+        
     return previous, next
 
 def getRandomBase64String(lenght=ID_LENGTH):
