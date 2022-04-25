@@ -274,6 +274,7 @@ def getPostsFromUser(request, index, page=0):
     context = posts.getContext(
         title = title, 
         page = page, 
+        transition_url= "getPostsFromUser", 
         transition_index = username, 
         focused_url = "getFocusedUserPost", 
         display = "gallery",
