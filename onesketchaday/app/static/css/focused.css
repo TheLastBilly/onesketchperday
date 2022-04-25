@@ -23,3 +23,7 @@
 .focused .post {
     width: 100%;
 }
+
+.content .focused {
+    margin-top: 2em;
+}

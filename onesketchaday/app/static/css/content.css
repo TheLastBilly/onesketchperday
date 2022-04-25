@@ -226,7 +226,3 @@ h1, h2, h3 {
     border-bottom: 2px solid;
     font-weight: bolder;
 }
-
-.content .focused {
-    margin-top: 3em;
-}
