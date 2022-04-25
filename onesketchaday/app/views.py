@@ -271,7 +271,14 @@ def getPostsFromUser(request, index, page=0):
     
     title = username
 
-    context = posts.getContext(title = title, page = page, transition_index = username, focused_url = "getFocusedUserPost", display = "gallery")
+    context = posts.getContext(
+        title = title, 
+        page = page, 
+        transition_index = username, 
+        focused_url = "getFocusedUserPost", 
+        display = "gallery",
+        post_per_age = getMaxPostsPerPage()
+    )
 
     return renderWithContext(request, "posts.html", context)
 

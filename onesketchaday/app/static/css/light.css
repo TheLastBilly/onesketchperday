@@ -31,3 +31,7 @@ a, p {
 .blur .disclaimer p {
     color: white;
 }
+
+.page_list {
+    background-color: white;
+}
