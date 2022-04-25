@@ -135,10 +135,12 @@ class Post(models.Model):
     def getFocusedContext(self,
         title : str             = None, 
         transition_url : str    = None,
-        posts                   = None
+        posts                   = None,
+        show_nsfw : bool        = None,
+        focused_url : str       = None
     ):
         if posts:
-            next, previous = findPreviousAndLastPosts(posts, self)
+            next, previous = findPreviousAndNextPosts(posts, self)
         else:
             next, previous = None, None
 
@@ -146,7 +148,10 @@ class Post(models.Model):
             title = title, 
             next = next, 
             previous = previous,
-            transition_url = transition_url
+            transition_url = transition_url,
+            display = "focused",
+            show_nsfw = show_nsfw,
+            focused_url = focused_url
         )
 
     # Get's template context
@@ -156,7 +161,8 @@ class Post(models.Model):
         previous : 'Post'       = None,
         show_nsfw : bool        = None,
         transition_url : str    = None, 
-        focused_url : str       = None
+        focused_url : str       = None,
+        display : str           = None
     ):
         post = self
         post.date = timezone.localtime(self.date)
@@ -167,7 +173,8 @@ class Post(models.Model):
             "next" : next,
             "previous": previous,
             "transition_url" : transition_url,
-            "focused_url" : focused_url
+            "focused_url" : focused_url,
+            "display" : display
         }
 
         return context

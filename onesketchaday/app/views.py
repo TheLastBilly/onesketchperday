@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, response, HttpRequest
 from django.core.exceptions import *
-from django.urls import reverse
+from django.urls import resolve
 from django.db.models.functions import Length
 
 from .posts import PostsGroup
@@ -155,10 +155,10 @@ def getPost(request, pk):
         logger.error(str(e))
         return redirect('pageNotFound')
     
-    context = post.getContext(show_nsfw = True)
+    context = post.getContext(show_nsfw = True, display="focused")
     return renderWithContext(request, "post.html", context)
 
-def getFocusedPost(request, transition_url, pk, posts):
+def getFocusedPost(request, transition_url, pk, posts, nature):
     post = None
 
     try:
@@ -168,22 +168,27 @@ def getFocusedPost(request, transition_url, pk, posts):
         logger.error(str(e))
         return redirect('pageNotFound')
     
-    context = post.getFocusedContext(transition_url = transition_url, posts = posts)
+    path = resolve(request.path_info).url_name
+    context = post.getFocusedContext(
+        transition_url = transition_url, 
+        posts = posts if not isinstance(posts, PostsGroup) else posts.posts, 
+        show_nsfw = nature == "explicit", 
+        focused_url = path
+    )
     return renderWithContext(request, "post.html", context)
     
-def getFocusedMonthPost(request, pk):
-    posts = []
+def getFocusedMonthPost(request, pk, nature = ""):
+    posts = None
 
     try:
-        posts = PostsGroup(all=True).filter(month = Post.objects.get(id = pk).date.month, date=getStartDate())
-        
+        posts = PostsGroup(all=True).filter(month = Post.objects.get(id = pk).get_local_time().month -1, made_after = getStartDate())
     except Exception as e:
         logger.error(str(e))
         return redirect('internalError')
     
-    return getFocusedPost(request, "getFocusedMonthPost", pk, posts)
+    return getFocusedPost(request, "getFocusedMonthPost", pk, posts, nature)
 
-def getFocusedDayPost(request, pk):
+def getFocusedDayPost(request, pk, nature = ""):
     timestamp = None
 
     try:
@@ -192,9 +197,9 @@ def getFocusedDayPost(request, pk):
         logger.error(str(e))
         return redirect('pageNotFound')
     
-    return getFocusedPost(request, "getFocusedDayPost", pk, Post.objects.filter(timestamp=timestamp).order_by('date'))
+    return getFocusedPost(request, "getFocusedDayPost", pk, Post.objects.filter(timestamp=timestamp).order_by('date'), nature)
 
-def getFocusedUserPost(request, pk):
+def getFocusedUserPost(request, pk, nature = ""):
     owner = None
 
     try:
@@ -203,7 +208,10 @@ def getFocusedUserPost(request, pk):
         logger.error(str(e))
         return redirect('pageNotFound')
 
-    return getFocusedPost(request, "getFocusedUserPost", pk, Post.objects.filter(owner=owner).order_by('date'))
+    return getFocusedPost(request, "getFocusedUserPost", pk, Post.objects.filter(owner=owner).order_by('date'), nature)
+
+def getPostsOfDay(request, pk):
+    return getPostsOfDay(request, pk)
 
 def getPostsOfDay(request, timestamp):
     timeStampDate = getDateFromTimestamp(timestamp)
@@ -221,7 +229,15 @@ def getPostsOfDay(request, timestamp):
 
     title = title + "\n(Day " + str(getDaysFromStartDateToTimestamp(timestamp)) + ")"
 
-    context = posts.getContext(title = title, focused_url = "getFocusedDayPost", gallery = False)
+    previous, next = findPreviousAndNextTimestamps(timestamp)
+    context = posts.getContext(
+        title = title,
+        focused_url = "getFocusedDayPost",
+        display = "list",
+        transition_url = "getPostsOfDay",
+        previous = previous, 
+        next = next
+    )
     return renderWithContext(request, "posts.html", context)
 
 def getActiveDaysOfMonth(request, index):
@@ -255,7 +271,7 @@ def getPostsFromUser(request, index, page=0):
     
     title = username
 
-    context = posts.getContext(title = title, page = page, transition_index = username, focused_url = "getFocusedUserPost", gallery = True)
+    context = posts.getContext(title = title, page = page, transition_index = username, focused_url = "getFocusedUserPost", display = "gallery")
 
     return renderWithContext(request, "posts.html", context)
 
@@ -274,7 +290,7 @@ def getGalleryOfMonth(request, index, page=0):
         transition_url= "getGalleryOfMonth", 
         transition_index = month - 1 if month > 0 else 0, 
         focused_url = "getFocusedMonthPost", 
-        gallery = True,
+        display = "gallery",
         post_per_age = getMaxPostsPerPage()
     )
     

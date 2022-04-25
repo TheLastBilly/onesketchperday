@@ -13,10 +13,16 @@ urlpatterns = [
     path('post/user/<str:pk>', views.getFocusedUserPost, name='getFocusedUserPost'),
     path('post/day/<str:pk>', views.getFocusedDayPost, name='getFocusedDayPost'),
 
+    path('post/month/<str:pk>/<str:nature>', views.getFocusedMonthPost, name='getFocusedMonthPost'),
+    path('post/user/<str:pk>/<str:nature>', views.getFocusedUserPost, name='getFocusedUserPost'),
+    path('post/day/<str:pk>/<str:nature>', views.getFocusedDayPost, name='getFocusedDayPost'),
+
     path('', views.getTodaysPosts, name='getTodaysPosts'),
     path('404/', views.pageNotFound, name='pageNotFound'),
     path('500/', views.internalError, name='internalError'),
+    
     path('day/<int:timestamp>', views.getPostsOfDay, name='getPostsOfDay'),
+    path('day/<int:pk>', views.getPostsOfDay, name='getPostsOfDay'),
     
     path('month/<int:index>', views.getActiveDaysOfMonth, name='getActiveDaysOfMonth'),
 

@@ -16,6 +16,14 @@ a {
     color: white;
 }
 
+.blur .disclaimer {
+    background-color: #121414;
+}
+
+.blur .disclaimer p {
+    color: white;
+}
+
 .title {
     border-color: #121414;
 }
@@ -24,18 +32,18 @@ a {
     color: #121414;
 }
 
-.list p, .list a {
+.display p, .display a {
     color: #121414;
 }
 
-.gallery .post {
+.display .post {
     border-color: #121414;
 }
 
-.gallery .post a {
+.display .post img, .display .post img {
+    border-color: #121414;
+}
+
+.next_previous a {
     color: #121414;
-}
-
-.gallery .post img, .gallery .post img {
-    border-color: #121414;
 }

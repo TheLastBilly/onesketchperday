@@ -22,14 +22,15 @@
 <meta property="og:url" content="{{ site_url }}{% url 'getPost' pk=post.id %}" />
 {% endblock %}
 
-
 {% block content %}
-<div class="post_single">
-    {% if previous or next %}
-    {% include "post_pages_list.html" %}
-    {% endif %}
 
-    <div class="post_single_title">
+{% if previous or next %}
+{% include "next_previous.html" %}
+{% endif %}
+
+<div class="focused display">
+
+    <div class="title">
         {% if focused_url %}
         <a href="{% url focused_url pk=post.id %}">
         {% else %}
@@ -44,29 +45,34 @@
     </div>
     
     <div class="post">
-        {% if post.is_nsfw and not show_nsfw %}
-        <p style="margin-top: 1em; font-weight: bolder;">Click on content and/or title to view NSFW</p>
-        {% endif %}
-
-        {% if focused_url %}
-        <a href="{% url focused_url pk=post.id %}">
-        {% else %}
-        <a href="{% url 'getPost' pk=post.id %}">
-        {% endif %}
-            {% if post.image %}
-                <img src="{{ media_url }}{{ post.image.name }}" alt="" {% if post.is_nsfw and not show_nsfw %} class="add_blur" {% endif %}>
-            {% elif post.video %}
-                <video controls>
-                    <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4' {% if post.is_nsfw and not show_nsfw %} class="add_blur" {% endif %}>
-                </video>
+        <div class="media {% if post.is_nsfw and not show_nsfw %}blur{% endif %}">
+            {% if focused_url %}
+                {% if post.is_nsfw or not nature%}
+                    <a href="{% url focused_url pk=post.id nature='explicit' %}">
+                {% else %}
+                    <a href="{% url focused_url pk=post.id %}">
+                {% endif %}
+            {% else %}
+            <a href="{% url 'getPost' pk=post.id %}">
             {% endif %}
-        </a>
+                {% if post.image %}
+                    <img src="{{ media_url }}{{ post.image.name }}" alt="">
+                {% elif post.video %}
+                    <video controls>
+                        <source src="{{ media_url }}{{ post.video.name }}" type='video/mp4'>
+                    </video>
+                {% endif %}
+            </a>
+
+            <div class="disclaimer">
+                {% if post.is_nsfw and not show_nsfw %}
+                <p>Click to view NSFW content</p>
+                {% endif %}
+            </div>
+        </div>
+        
         <p>Uploaded by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a>  on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date }}</a></p>
         <p>({{ post.clicks }} view{% if post.clicks > 1 %}s{% endif %})</p>
     </div>
-
-    {% if previous or next %}
-    {% include "post_pages_list.html" %}
-    {% endif %}
 </div>
 {% endblock %}

@@ -1,6 +1,12 @@
 body {
     margin: auto;
 }
+
 * {
     font-family: 'Montserrat';
+    text-decoration: none;
+}
+
+a {
+    font-weight: bolder;
 }

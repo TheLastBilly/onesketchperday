@@ -1,13 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
+
+{% if display == "list" %}
+{% include "next_previous.html" %}
+{% endif %}
+
 <div class="title">
     <h1>{{ title }}</h1>
 </div>
-<div class="{{display}}">
-    {% if previous or next or page %}
-    {% include "posts_pages_list.html" %}
+<div class="{{display}} display">
+    {% if display == "gallery" %}
+        {% include "page_list.html" %}
     {% endif %}
+
     {% for post in posts %}
     {% if display_type == "list" %}
     <div class="post" style="margin-top: 2em;">
@@ -36,8 +42,7 @@
         <p class="post_description">by <a href="{% url 'getPostsFromUser' index=post.owner.username %}">{{ post.owner.username }}</a> on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date|date:"M jS, h:i a" }}</a></p>
     </div>
     {% endfor %}
-    {% if previous or next or page %}
-    {% include "posts_pages_list.html" %}
-    {% endif %}
+
 </div>
+
 {% endblock %}

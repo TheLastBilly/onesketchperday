@@ -1,5 +1,6 @@
 from datetime import date, time
 from email.utils import localtime
+from nis import cat
 from django.core.exceptions import *
 from django.utils import timezone
 import os, base64
@@ -87,7 +88,7 @@ def getDateFromTimestamp(timestamp):
 def validateTimeStamp(timestamp):
     return getTimeStampFromDate(getDateFromTimestamp(timestamp))
 
-def findPreviousAndLastPosts(posts, post):
+def findPreviousAndNextPosts(posts, post):
     posts_len = len(posts)
     previous_page = next_page = None
 
@@ -103,6 +104,27 @@ def findPreviousAndLastPosts(posts, post):
         next_page = posts[i-1].id
     
     return previous_page, next_page
+
+def findPreviousAndNextTimestamps(timestamp):
+    next = previous = current = None
+
+    from .models import Post
+    posts = Post.objects.all().order_by('timestamp')
+    for post in posts:
+        if post.timestamp == timestamp:
+            continue
+        
+        if current is not None and post.timestamp != current:
+            if current < timestamp:
+                previous = current
+            
+            if not next and current > timestamp:
+                next = current
+                break
+        
+        current = post.timestamp
+
+    return previous, next
 
 def getRandomBase64String(lenght=ID_LENGTH):
     new_id = base64.b64encode(os.urandom(lenght))

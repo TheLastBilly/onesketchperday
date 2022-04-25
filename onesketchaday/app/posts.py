@@ -1,4 +1,5 @@
 from datetime import date
+from sqlite3 import Timestamp
 from xmlrpc.client import boolean
 from .models import Post
 from .models import User
@@ -15,6 +16,12 @@ class PostsGroup:
             self.posts = Post.objects.all().order_by('date')
         else:
             self.posts = posts
+    
+    def __len__(self):
+        return len(self.posts)
+    
+    def __str__(self):
+        return str(self.posts)
     
     def made_after_start_date(self):
         return self.filter(made_after = utils.getStartDate())
@@ -71,37 +78,30 @@ class PostsGroup:
     def getContext(self, 
             title           : str = None, 
             focused_url     : str = None, 
-            gallery         : bool = None,
+            display         : str = None,
             page            : int = None,
             transition_url  : str = None,
             post_per_age    : int = None,
 
+            next            : int = None,
+            previous        : int = None,
+
             transition_index = None
         ):
-
-        display = "gallery" if gallery else "list"
-
-        if not self.posts:
-            return {
-                "title" : title,
-                "display" : display
-            }
 
         posts = []
         for post in self.posts:
             post.date = post.get_local_time()
             posts.append(post)
 
-        if gallery and page is not None and transition_url is not None and post_per_age is not None:
-            previous = next = 0
-
+        if display == "gallery" and page is not None and transition_url is not None and post_per_age is not None:
             pages = range(int(len(posts)/post_per_age) + (1 if len(posts) % post_per_age > 0 else 0))
             if len(pages) < 2:
                 pages = []
             
-            if page > 0:
+            if page > 0 and previous is None:
                 previous = page - 1
-            if len(pages) > page+1:
+            if len(pages) > page+1 and next is None:
                 next = page + 1
             
             posts = posts[page*post_per_age:]
@@ -116,14 +116,17 @@ class PostsGroup:
                 "previous" : previous,
                 "next" : next,
                 "focused_url" : focused_url,
-                "display" : display
+                "display" : display,
+                "title" : title
             }
-
         else:
             return {
                 "posts" : posts,
                 "title" : title,
                 "display" : display,
-                "focused_url" : focused_url
+                "focused_url" : focused_url,
+                "next" : next,
+                "previous" : previous,
+                "transition_url" : transition_url
             }
 
