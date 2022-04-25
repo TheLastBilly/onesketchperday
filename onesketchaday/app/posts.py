@@ -90,20 +90,30 @@ class PostsGroup:
 
         return PostsGroup(posts)
     
-    def search(self, search):
+    def search(self, search : str):
         matching_posts = []
 
+        if search:
+            search = search.lower()
+
         if not search or len(search) < 1 or search == "all":
-            print(search)
             return self
 
         tags = search.split()
         for post in self.posts:
-            if search in post.title and post not in matching_posts:
+            if len(matching_posts) >= len(self):
+                break
+
+            if search in str(post.title).lower() and post not in matching_posts:
                 matching_posts.append(post)
             
             for tag in post.tags.all():
-                if tag.title in tags and post not in matching_posts:
+                if str(tag.title).lower() in tags and post not in matching_posts:
+                    matching_posts.append(post)
+            
+            username = str(post.owner.username).lower()
+            for tag in tags:
+                if tag in username and post not in matching_posts:
                     matching_posts.append(post)
 
         return PostsGroup(matching_posts)

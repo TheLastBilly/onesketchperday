@@ -326,7 +326,7 @@ def getGallery(request, index = None, page = 0):
     max_posts_per_page = getMaxPostsPerPage()
 
     if index is None and page == 0 and len(posts) > 0:
-        page = len(posts) % max_posts_per_page
+        page = int(len(posts) / max_posts_per_page)
 
     context = posts.getContext(
         title = "Gallery", 
