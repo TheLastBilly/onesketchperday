@@ -185,7 +185,7 @@ h1, h2, h3 {
     position: fixed;
     display: flex;
 
-    margin-top: 0em;
+    margin-top: 1em;
     width: inherit;
 
     height: 2em;
