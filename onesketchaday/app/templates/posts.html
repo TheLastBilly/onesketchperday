@@ -42,7 +42,6 @@
                 {% endif %}
             </a>
         </div>
-
         <p>
             <a href="{% url focused_url pk=post.id %}">
                 {% if post.title %}
@@ -52,7 +51,10 @@
                 {% endif %}
             </a>
         </p>
-        <p>by <a href="{% url 'getUserGallery' index=post.owner.username %}">{{ post.owner.username }}</a> on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date|date:"M jS, h:i a" }}</a></p>
+
+        <div class="info">
+            <p>by <a href="{% url 'getUserGallery' index=post.owner.username %}">{{ post.owner.username }}</a> on <a href="{% url 'getPostsOfDay' timestamp=post.timestamp %}">{{ post.date|date:"M jS, h:i a" }}</a></p>
+        </div>
     </div>
     {% endfor %}
 

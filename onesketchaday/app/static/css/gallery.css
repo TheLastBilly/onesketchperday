@@ -23,3 +23,9 @@
 .gallery .post .media {
     height: 9em;
 }
+
+.page_list ul {
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+}

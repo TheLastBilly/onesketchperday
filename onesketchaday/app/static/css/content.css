@@ -115,6 +115,9 @@ h1, h2, h3 {
 .display .title {
     width: 100%;
     margin-bottom: 0em;
+    
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 .display {
@@ -131,6 +134,10 @@ h1, h2, h3 {
     border-bottom: 3px solid;
 
     overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-all;
+
+    display: grid;
 }
 
 .display .post .title {
@@ -147,6 +154,15 @@ h1, h2, h3 {
     text-align: center;
     font-weight: normal;
     text-decoration: none;
+}
+
+.display .post .info {
+    margin-top: auto;
+    margin-bottom: 0em;
+}
+
+.display .post .info p {
+    margin-top: 0em;
 }
 
 .display .post .media {
@@ -175,17 +191,21 @@ h1, h2, h3 {
     margin-top: 0em;
     width: inherit;
 
-    height: 3em;
+    height: 2em;
 }
 
 .next_previous div {
     text-align: center;
     display: inline-block;
+
+    height: 100%;
+    overflow: hidden;
 }
 
 .next_previous div h1 {
     text-align: center;
-    margin-top: .5em;
+    margin: 0em;
+    height: 100%;
 }
 
 .next_previous .next {

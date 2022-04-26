@@ -1,13 +1,13 @@
 <div class="next_previous">
     {% if previous is not None %}
     <div class="previous">
-        <a href="{% url transition_url pk=previous %}"><h1>previous</h1></a>
+        <h1><a href="{% url transition_url pk=previous %}">previous</a></h1>
     </div>
     {% endif %}
 
     {% if next is not None %}
     <div class="next">
-        <a href="{% url transition_url pk=next %}"><h1>next</h1></a>
+        <h1><a href="{% url transition_url pk=next %}">next</a></h1>
     </div>
     {% endif %}
 </div>
