@@ -220,22 +220,25 @@ def getPostsOfDay(request, pk):
 def getPostsOfDay(request, timestamp):
     startDateTimestamp = getTimeStampFromDate(getStartDate())
     timeStampDate = getDateFromTimestamp(timestamp)
+    check_strikes = False
 
     if timestamp < startDateTimestamp:
         return redirect('getPostsOfDay', startDateTimestamp)
     elif timestamp > getTimeStampFromDate(timezone.localtime()):
         return redirect('getTodaysPosts')
+        
+    if timestamp == getTimeStampFromDate(timezone.localdate()):
+        title = "Today"
+        check_strikes = True
+    else:
+        title = timeStampDate.strftime("%B %d, %Y")
+        check_strikes = False
 
     try:
-        posts = PostsGroup(all=True).filter(timestamp = timestamp)
+        posts = PostsGroup(all=True).filter(timestamp = timestamp, check_strikes = check_strikes)
     except Exception as e:
         logger.error(str(e))
         return redirect('internalError')
-    
-    if timestamp == getTimeStampFromDate(timezone.localdate()):
-        title = "Today"
-    else:
-        title = timeStampDate.strftime("%B %d, %Y")
 
     title = title + "\n(Day " + str(getDaysFromStartDateToTimestamp(timestamp)) + ")"
 
@@ -315,6 +318,7 @@ def getGalleryOfMonth(request, index, page=0):
     return renderWithContext(request, "posts.html", context)
     
 def getTodaysPosts(request):
+    print(User.objects.all()[0].get_missed_days())
     return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
 
 def getGallery(request, index = None, page = 0):

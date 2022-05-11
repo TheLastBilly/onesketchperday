@@ -36,7 +36,7 @@ class OnesketchadayBot(commands.Bot):
         @commands.command(name="set_reminder", brief="set_reminder REMINDER", description="Sets the reminder message that will be sent every day by the bot (not the posts count message)")
         async def set_reminder_command(context, *, arg):
             try:
-                if not await self.validate_user(str(context.message.author), context):
+                if not await self.validate_user(context):
                     return
 
                 await set_reminder(arg)
@@ -70,6 +70,11 @@ class OnesketchadayBot(commands.Bot):
         async def commands_command(context, command=None):
             await self.send_commands(context, command)
         self.add_command(commands_command)
+
+        @commands.command(name="strikes", brief="strikes", description="Shows the amount of misses during the current month")
+        async def strikes_command(context):
+            await self.show_strikes(context)
+        self.add_command(strikes_command)
 
     # Internals
     def __init__(self):
@@ -230,6 +235,42 @@ class OnesketchadayBot(commands.Bot):
         except Exception as e:
             logger.error("Cannot retrieve remaining time on todays session for user {}: {}".format(user.username, str(e)))
             await self.send_reply_to_user("Sorry, but I couldn't show you time left on today's session due to an internal error", context)
+
+    async def show_strikes(self, context):
+        user = await self.validate_user(context)
+        if not user:
+            return
+        
+        # try:
+        msg = ""
+        max_strikes = await get_max_strikes()
+        misses = await sync_to_async(user.get_missed_days)()
+        miss_count = await sync_to_async(len)(misses)
+        
+        if miss_count < max_strikes:
+            msg += "You are still in the game!"
+        else:
+            msg += "Aaaaaaaand you're out!"
+
+        msg += f" (you've got {miss_count} strikes out of a max of {max_strikes})"
+
+        if miss_count > 1:
+            msg += "\n```\n"
+            msg += "Days missed:\n"
+            i = 0
+
+            for miss in misses:
+                s = await sync_to_async(miss.strftime)("%d %B, %Y")
+                msg += f"{i}: {s}\n"
+                i += 1
+            
+            msg += "\n```"
+
+        await self.send_reply_to_user(msg, context)
+        
+        # except Exception as e:
+        #     logger.error("Cannot retrieve strikes for \"{}\": {}".format(user.username, str(e)))
+        #     await self.send_reply_to_user("Sorry, but I couldn't retrieve how many strikes you've got right now", context)
 
     # Set the user biography and profile picture
     async def set_user_bio(self, context, arg=None):

@@ -54,7 +54,8 @@ class PostsGroup:
             owner           : User = None,
             username        : str = None,
             first_of_month  : boolean = None,
-            first_of_day    : boolean = None
+            first_of_day    : boolean = None,
+            check_strikes   : boolean = None
         ):
         months_buffer = []
         days_buffer = []
@@ -75,6 +76,9 @@ class PostsGroup:
                 (True if not timestamp else post.timestamp == timestamp)    and \
                 (True if not username else post.owner.username == username) and \
                 (True if not owner else post.owner == owner):
+
+                if(check_strikes and post.owner.is_striked_out()):
+                    continue
 
                 if(first_of_month and post.date.month in months_buffer):
                     continue

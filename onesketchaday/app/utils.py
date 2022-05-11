@@ -1,6 +1,7 @@
 from datetime import date, time, tzinfo
 from email.utils import localtime
 from nis import cat
+from tkinter import getint
 from django.core.exceptions import *
 from django.utils import timezone
 import os, base64
@@ -8,13 +9,28 @@ from calendar import monthrange
 
 ID_LENGTH = 10
 
-def getStartDate():
+def getVariable(name : str):
     from .models import Variable
-    start = Variable.objects.filter(name="StartDate").first()
-    if not start:
-        raise ObjectDoesNotExist("Variable \"StartDate\" was not defined")
+    var = Variable.objects.filter(name=name).first()
+    if not var:
+        raise ObjectDoesNotExist(f"Variable \"{name}\" was not defined")
     
-    return start.read(date)
+    return var
+
+def getDateVariable(name : str):
+    return getVariable(name).read(date)
+
+def getIntegerVariable(name : str):
+    return getVariable(name).read(int)
+
+def getMaxStrikes():
+    return getIntegerVariable("MaxStrikes")
+
+def getStrikeStartDate():
+    return getDateVariable("StrikeStartDate")
+
+def getStartDate():
+    return getDateVariable("StartDate")
 
 def getPostsAfterStartedOn(q):
     posts = []

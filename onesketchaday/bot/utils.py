@@ -8,6 +8,9 @@ from app.utils import *
 import logging, os
 import asyncio
 
+async def get_max_strikes():
+    return await sync_to_async(getMaxStrikes)()
+
 async def get_days_from_start_date():
     return await sync_to_async(getDaysFromStartDate)()
 

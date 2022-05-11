@@ -1,4 +1,5 @@
 import base64, uuid, os
+from ctypes import util
 from typing import Type
 from time import strftime
 
@@ -71,7 +72,41 @@ class User(AbstractBaseUser, PermissionsMixin):
             os.remove(absolutePath)
         self.profile_picture = None
         self.save()
-        
+    
+    def get_missed_days(self):
+        today = timezone.localtime().date()
+        first_of_month = today.replace(day=1)
+
+        start_date = timezone.localtime(getStrikeStartDate()).date()
+        if start_date < first_of_month:
+            start_date = first_of_month
+
+        end_date = today - timezone.timedelta(days=1)
+        delta = timezone.timedelta(days=1)
+
+        from .models import Post
+        posts = Post.objects.filter(owner=self)
+
+        dates = []
+        for p in posts:
+            dates.append(p.get_local_time().date())
+
+        misses = []
+        while start_date <= end_date:
+            if start_date not in dates:
+                misses.append(start_date)
+            
+            start_date += delta
+
+        return misses
+    
+    def is_striked_out(self):
+        misses = self.get_missed_days()
+
+        if misses:
+            return len(misses) >= getMaxStrikes()
+        else:
+            return False
 
     def __str__(self):
         return str(self.username)

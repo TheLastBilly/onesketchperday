@@ -195,4 +195,4 @@ else:
     ADMIN_PAGE = "admin"
 
 START_DATE_VARIABLE = "StartDate"
-DEFAULT_VARIABLES = [START_DATE_VARIABLE, "PageIcon", "ReminderMessage", "PostCountMessage", "PostsPerPage", "MaxBiographyCharacters"]
+DEFAULT_VARIABLES = [START_DATE_VARIABLE, "PageIcon", "ReminderMessage", "PostCountMessage", "PostsPerPage", "MaxBiographyCharacters", "StrikeStartDate", "MaxStrikes"]
