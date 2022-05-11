@@ -1,7 +1,4 @@
 from datetime import date, time, tzinfo
-from email.utils import localtime
-from nis import cat
-from tkinter import getint
 from django.core.exceptions import *
 from django.utils import timezone
 import os, base64
