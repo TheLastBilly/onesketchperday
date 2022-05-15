@@ -318,7 +318,6 @@ def getGalleryOfMonth(request, index, page=0):
     return renderWithContext(request, "posts.html", context)
     
 def getTodaysPosts(request):
-    print(User.objects.all()[0].get_missed_days())
     return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
 
 def getGallery(request, index = None, page = 0):

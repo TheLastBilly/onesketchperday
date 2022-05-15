@@ -94,3 +94,4 @@ class PostAdmin(admin.ModelAdmin):
 admin.site.register(Post, PostAdmin)
 admin.site.register(Variable)
 admin.site.register(MarkdownPost)
+admin.site.register(Pardon)

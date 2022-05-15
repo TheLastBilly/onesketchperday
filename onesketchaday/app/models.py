@@ -91,11 +91,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         for p in posts:
             dates.append(p.get_local_time().date())
 
+        pardons = []
+        for pardon in Pardon.objects.filter(user=self):
+            pardons.append(pardon.date)
+
         misses = []
         while start_date <= end_date:
-            if start_date not in dates:
+            if start_date not in dates and start_date not in pardons:
                 misses.append(start_date)
-            
+
             start_date += delta
 
         return misses
@@ -107,6 +111,9 @@ class User(AbstractBaseUser, PermissionsMixin):
             return len(misses) >= getMaxStrikes()
         else:
             return False
+
+    def has_pardon_for_date(self, date : timezone.datetime):
+        return Pardon.objects.filter(user = self, date = date).exists()
 
     def __str__(self):
         return str(self.username)
@@ -292,3 +299,16 @@ class Comment(models.Model):
 
     def __str__(self):
         return str(self.content)
+
+class Pardon(models.Model):
+    user                = models.ForeignKey(User, related_name='pardons', on_delete=models.CASCADE, null=False)
+    date                = models.DateField(null=False, blank=False)
+
+    def date_str(self):
+        return self.date.strftime(f"%-d{getDaySuffix(self.date.day)} of %b %Y")
+
+    def __str__(self):
+        return f"{self.user}, {self.date_str()}"
+
+    def save(self, *args, **kwargs):
+        super(Pardon, self).save(*args, **kwargs)

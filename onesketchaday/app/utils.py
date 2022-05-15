@@ -14,6 +14,10 @@ def getVariable(name : str):
     
     return var
 
+# Taken from https://stackoverflow.com/questions/5891555/display-the-date-like-may-5th-using-pythons-strftime
+def getDaySuffix(day : int):
+    return 'th' if 11<=day<=13 else {1:'st',2:'nd',3:'rd'}.get(day%10, 'th')
+
 def getDateVariable(name : str):
     return getVariable(name).read(date)
 
@@ -99,6 +103,7 @@ def getDateFromTimestamp(timestamp):
     # See if we can make this aware in the future
     return timezone.datetime(year, month, day)
 
+# What?
 def validateTimeStamp(timestamp):
     return getTimeStampFromDate(getDateFromTimestamp(timestamp))
 
@@ -119,16 +124,19 @@ def findPreviousAndNextPosts(posts, post):
     
     return previous_page, next_page
 
+def makeDatetimeAware(timedate):
+    return timezone.make_aware(timedate, timezone=timezone.get_current_timezone())
+
 def findPreviousAndNextTimestamps(timestamp):
     timestampDate = getDateFromTimestamp(timestamp)
 
     previous = timestampDate - timezone.timedelta(days=1)
     next = timestampDate + timezone.timedelta(days=1)
     
-    if timezone.localtime() < timezone.make_aware(next, timezone=timezone.get_current_timezone()):
+    if timezone.localtime() < makeDatetimeAware(next):
         next = None
 
-    if getStartDate() > timezone.make_aware(previous, timezone=timezone.get_current_timezone()):
+    if getStartDate() > makeDatetimeAware(previous):
         previous = None
 
     if previous:

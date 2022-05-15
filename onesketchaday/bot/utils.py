@@ -8,6 +8,12 @@ from app.utils import *
 import logging, os
 import asyncio
 
+async def get_day_suffix(day):
+    return await sync_to_async(getDaySuffix)(day)
+
+async def get_start_date():
+    return await sync_to_async(getStartDate)()
+
 async def get_max_strikes():
     return await sync_to_async(getMaxStrikes)()
 
@@ -33,6 +39,15 @@ async def get_variable(name : str):
     return await sync_to_async(Variable.objects.get)(name=name)
 async def set_variable(variable : Variable):
     return await sync_to_async(variable.save)()
+
+async def get_date_from_timestamp(timestamp : int):
+    return await sync_to_async(getDateFromTimestamp)(timestamp)
+
+async def make_datetime_aware(datetime : timezone.datetime):
+    return await sync_to_async(makeDatetimeAware)(datetime)
+
+async def get_date():
+    return await sync_to_async(timezone.localdate)()
 
 async def get_reminder():
     return await sync_to_async(Variable.objects.get)(name="ReminderMessage")
@@ -60,8 +75,21 @@ async def delete_post(onwer, id):
     post = await get_post(onwer, id) 
     await sync_to_async(post.delete)()
 
-async def get_user(discord_id : int):
+async def get_user_from_id(discord_id : int):
     try:
         return await sync_to_async(User.objects.get)(discord_id=discord_id)
     except ObjectDoesNotExist as e:
         return None
+
+async def get_user_from_name(username : str):
+    try:
+        return await sync_to_async(User.objects.get)(username=username)
+    except ObjectDoesNotExist as e:
+        return None
+
+async def get_user(id : int = None, username : str = None):
+    if id:
+        return await get_user_from_id(id)
+    if username:
+        return await get_user_from_name(username)
+    return None

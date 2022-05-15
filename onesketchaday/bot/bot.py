@@ -76,6 +76,20 @@ class OnesketchadayBot(commands.Bot):
             await self.show_strikes(context)
         self.add_command(strikes_command)
 
+        @commands.command(name="pardon", brief="pardon [USERNAME] [TIMESTAMP]", description="Allows an user to skip a day (can only be used by staff). Timestamp must be on numeric [YEAR][MONTH][FORMAT].")
+        async def pardon_command(context, *, arg=None):
+            username, timestamp = None, None
+
+            if arg:    
+                args = arg.split()
+                if len(args) > 0:
+                    username = args[0]
+                if len(args) > 1:
+                    timestamp = args[1]
+
+            await self.pardon_user(context, username=username, timestamp=timestamp)
+        self.add_command(pardon_command)
+
     # Internals
     def __init__(self):
         super().__init__(command_prefix='.', description="A bot for the https://onesketchaday.art website")
@@ -151,6 +165,19 @@ class OnesketchadayBot(commands.Bot):
             return None
         
         return user
+    
+    async def validate_staff_user(self, context):
+        user = await self.validate_user(context)
+
+        if not user:
+            return user
+        
+        if not user.is_staff:
+            await self.send_reply_to_user("Slow down there bucko!, only staff members can use this command", context)
+            return None
+        
+        return user
+
 
     # Send message on the specified channel
     async def send_message_on_channel(self, channel : str, message : str):
@@ -181,10 +208,8 @@ class OnesketchadayBot(commands.Bot):
         else:
             title = ""
 
-        absolute_path = ""
         try:
-            absolute_path = await self.download_file(file_name, attachment)
-
+            await self.download_file(file_name, attachment)
             post = await create_post(owner = user, title = title, is_nsfw = is_nsfw)
             if is_video:
                 post.video = file_name
@@ -223,7 +248,6 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user("Sorry, I couldn't clear your biography due to an internal error", context)
 
     async def time_left(self, context):
-        username = str(context.message.author)
         user = await self.validate_user(context)
         if not user:
             return
@@ -241,40 +265,79 @@ class OnesketchadayBot(commands.Bot):
         if not user:
             return
         
-        # try:
-        msg = ""
-        max_strikes = await get_max_strikes()
-        misses = await sync_to_async(user.get_missed_days)()
-        miss_count = await sync_to_async(len)(misses)
-        
-        if miss_count < max_strikes:
-            msg += "You are still in the game!"
-        else:
-            msg += "Aaaaaaaand you're out!"
-
-        msg += f" (you've got {miss_count} strikes out of a max of {max_strikes})"
-
-        if miss_count > 1:
-            msg += "\n```\n"
-            msg += "Days missed:\n"
-            i = 0
-
-            for miss in misses:
-                s = await sync_to_async(miss.strftime)("%d %B, %Y")
-                msg += f"{i}: {s}\n"
-                i += 1
+        try:
+            msg = ""
+            max_strikes = await get_max_strikes()
+            misses = await sync_to_async(user.get_missed_days)()
+            miss_count = await sync_to_async(len)(misses)
             
-            msg += "\n```"
+            if miss_count < max_strikes:
+                msg += "You are still in the game!"
+            else:
+                msg += "Aaaaaaaand you're out!"
 
-        await self.send_reply_to_user(msg, context)
+            msg += f" (you've got {miss_count} strikes out of a max of {max_strikes})"
+
+            if miss_count > 1:
+                msg += "\n```\n"
+                msg += "Days missed:\n"
+                i = 0
+
+                for miss in misses:
+                    s = await sync_to_async(miss.strftime)("%d %B, %Y")
+                    msg += f"{i}: {s}\n"
+                    i += 1
+                
+                msg += "\n```"
+
+            await self.send_reply_to_user(msg, context)
         
-        # except Exception as e:
-        #     logger.error("Cannot retrieve strikes for \"{}\": {}".format(user.username, str(e)))
-        #     await self.send_reply_to_user("Sorry, but I couldn't retrieve how many strikes you've got right now", context)
+        except Exception as e:
+            logger.error("Cannot retrieve strikes for \"{}\": {}".format(user.username, str(e)))
+            await self.send_reply_to_user("Sorry, but I couldn't retrieve how many strikes you've got right now", context)
+
+    async def pardon_user(self, context, username = None, timestamp = None):
+        user = await self.validate_staff_user(context)
+        if not user:
+            return
+        
+        if not username:
+            await self.send_reply_to_user("Who do you want to pardon?", context)
+            return
+
+        recipient = await get_user(username = username)
+        if not recipient:
+            await self.send_reply_to_user(f"Sorry, but I don't know who {username} is", context)
+            return
+        discord_recipient = await self.fetch_user(int(recipient.discord_id))
+
+        if not timestamp:
+            await self.send_reply_to_user(f"For which day would you like to pardon {username}?", context)
+            return
+
+        try:
+            date = await make_datetime_aware(await get_date_from_timestamp(int(timestamp)))
+
+            pardon = await sync_to_async(Pardon)(user = recipient, date = date)
+            date_str = await sync_to_async(pardon.date_str)()
+            
+            if date < await get_start_date():
+                await self.send_reply_to_user(f"Sorry, but the {date_str} happened before the challenge started", context)
+                return
+
+            if await sync_to_async(recipient.has_pardon_for_date)(date):
+                await self.send_reply_to_user(f"Looks like {discord_recipient.mention} has already received a pardon for the {date_str}!", context)
+                return
+            
+            await sync_to_async(pardon.save)()
+            await self.send_reply_to_user(f"Done! {discord_recipient.mention} you will no longer have to worry about making a post on the {date_str}!", context)
+
+        except Exception as e:
+            logger.error(f"Cannot pardon {recipient} for {timestamp}: {str(e)}")
+            await self.send_reply_to_user("Sorry, but I cannot give pardons right now", context)
 
     # Set the user biography and profile picture
     async def set_user_bio(self, context, arg=None):
-        username = str(context.message.author)
         attachment = None
         bio = arg
 
@@ -396,7 +459,6 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user('Sorry, but none of your posts match that link', context)
     
     async def schedule_post(self, context, arg):
-        username = str(context.message.author)
         user = await self.validate_user(context)
 
         if not user:
@@ -439,3 +501,6 @@ class OnesketchadayBot(commands.Bot):
             await self.send_message_on_channel(post_count_message.label, "@everyone I have received a grand total of {} {}!, and with that we conclude today's session.\nSee you tomorrow!".format(posts_size, "posts" if posts_size != 1 else "post"))
         except Exception as e:
             logger.error("Cannot send post count: {}".format(str(e)))
+
+    async def get_username_from_id(self, id : int):
+        return await self.get_user(id)
