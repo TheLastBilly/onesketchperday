@@ -8,6 +8,9 @@ from app.utils import *
 import logging, os
 import asyncio
 
+async def get_nsfw_channel_name():
+    return (await sync_to_async(getVariable)(name="NSFWChannel")).label
+
 async def get_day_suffix(day):
     return await sync_to_async(getDaySuffix)(day)
 

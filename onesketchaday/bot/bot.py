@@ -393,6 +393,9 @@ class OnesketchadayBot(commands.Bot):
         title = arg
         is_video = False
 
+        channel_name = context.channel.name
+        nsfw_channel_name = await get_nsfw_channel_name()
+
         if not title:
             title = ""
         user = await self.validate_user(context)
@@ -406,7 +409,7 @@ class OnesketchadayBot(commands.Bot):
         
         i = 0
         for attachment in context.message.attachments:
-            is_nsfw = attachment.is_spoiler()
+            is_nsfw = attachment.is_spoiler() or channel_name == nsfw_channel_name
             file_name = str(attachment.filename).lower()
             ext = ""
 
