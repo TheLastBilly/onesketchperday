@@ -2,6 +2,8 @@ from email import utils
 from glob import escape
 from nis import cat
 from urllib.parse import urlparse
+
+import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -15,6 +17,9 @@ from django.utils import timezone
 
 from .globals import *
 from .utils import *
+
+NEW_MEMBER_TAG="NEW_MEMBER"
+MAX_DISCORD_MESSAGE_LEN = 2000
 
 class OnesketchadayBot(commands.Bot):
     # Commands
@@ -33,7 +38,7 @@ class OnesketchadayBot(commands.Bot):
                 await self.send_reply_to_user("Sorry, but I couldn't delete your post due to an internal error, please try again later", context)
         self.add_command(delete_command)
 
-        @commands.command(name="set_reminder", brief="set_reminder REMINDER", description="Sets the reminder message that will be sent every day by the bot (not the posts count message)")
+        @commands.command(name="reminder", brief="reminder REMINDER", description="Sets the reminder message that will be sent every day by the bot (not the posts count message)")
         async def set_reminder_command(context, *, arg):
             try:
                 if not await self.validate_user(context):
@@ -46,22 +51,17 @@ class OnesketchadayBot(commands.Bot):
                 await self.send_reply_to_user('Sorry, but I couldn\'t change the reminder message due to an internal errror', context)
         self.add_command(set_reminder_command)
     
-        @commands.command(name="set_bio", brief="set_bio BIOGRAPHY [ATTACHMENT]", description="Sets your biography and profile picture based on the provided message and attachment. Only the first attachment will be used for your bio. Your biography will only show up in the participants page if you set both your bio and profile picture")
+        @commands.command(name="bio", brief="bio BIOGRAPHY [ATTACHMENT]", description="Sets your biography and profile picture based on the provided message and attachment. Only the first attachment will be used for your bio. Your biography will only show up in the participants page if you set both your bio and profile picture")
         async def set_bio_command(context, *, arg=None):
             await self.set_user_bio(context, arg)
         self.add_command(set_bio_command)
 
-        @commands.command(name="clear_bio", brief="clear_bio", description="Clears your biography. If you don't have a biography, your name won't show up on the participants page (you will still be able to make posts however)")
+        @commands.command(name="incognito", brief="incognito", description="Clears your biography. If you don't have a biography, your name won't show up on the participants page (you will still be able to make posts however)")
         async def clear_bio_command(context):
             await self.clear_user_bio(context)
         self.add_command(clear_bio_command)
-
-        @commands.command(name="schedule", brief="schedule [DAY/MONTH/YEAR,HOUR:MINUTE:SECOND] [ATTACHMENT]", description="Program posts to be uploaded at a later time")
-        async def schedule_post_command(context, *, arg=None):
-            await self.schedule_post(context, arg)
-        self.add_command(schedule_post_command)
         
-        @commands.command(name="time_left", brief="time_left", description="Shows the time left before the end of the current session")
+        @commands.command(name="hurry", brief="hurry", description="Shows the time left before the end of the current session")
         async def time_left_command(context):
             await self.time_left(context)
         self.add_command(time_left_command)
@@ -76,53 +76,231 @@ class OnesketchadayBot(commands.Bot):
             await self.show_strikes(context)
         self.add_command(strikes_command)
 
-        @commands.command(name="pardon", brief="pardon [USERNAME] [TIMESTAMP]", description="Allows an user to skip a day (can only be used by staff). Timestamp must be on numeric [YEAR][MONTH][FORMAT].")
+        @commands.command(name="junior", brief="junior [MESSAGE]", description="Sets the role that will be assigned to new members b default (only for staff)")
+        async def set_new_member_role_command(context, *, arg):
+            await self.set_variable_from_command(context, "NewMemberDefaultRole", arg)
+        self.add_command(set_new_member_role_command)
+
+        @commands.command(name="welcome", brief="welcome [MESSAGE]", description="Sets message that will be sent to new memebers on arrival (only for staff)")
+        async def set_new_member_message_command(context, *, arg):
+            await self.set_variable_from_command(context, "NewMembersWelcomeMessage", arg)
+        self.add_command(set_new_member_message_command)
+
+        @commands.command(name="greeting", brief="greeting [MESSAGE]", description="Sets message that will be sent on the announcements channel when a new member arrives (only for staff)")
+        async def set_new_member_announcement_message_command(context, *, arg):
+            await self.set_variable_from_command(context, "NewMembersAnnouncementMessage", arg)
+        self.add_command(set_new_member_announcement_message_command)
+
+        @commands.command(name="announcements", brief="announcements [MESSAGE]", description="Sets the channel that will be used for sending announcements")
+        async def set_announcements_channel_command(context, *, arg):
+            await self.set_variable_from_command(context, "AnnouncementsChannel", arg)
+        self.add_command(set_announcements_channel_command)
+
+        @commands.command(name="schedule", brief=f"schedule [CHANNEL] [{DATETIME_STRING_FORMAT}] [MESSAGE]", description="Schedules message to be send on channel at a future date")
+        async def schedule_message_command(context, *, arg):
+            user = await self.validate_staff_user(context)
+
+            args = arg.split() if arg else []
+            if not user or len(args) < 3:
+                return
+
+            print(args)
+            channel = args[0]
+            datetime = await get_datetime_from_string(args[1])
+            message = " ".join(args[2:])
+
+            if datetime < timezone.now():
+                await self.send_reply_to_user(f"Sorry, but I cannot set reminders for past dates", context)
+                return
+
+            event = await self.schedule_message_on_channel(channel, message, datetime)
+            await self.send_reply_to_user(f"Message scheduled for {await sync_to_async(event.programmed_date_str)()}", context)
+        self.add_command(schedule_message_command)
+
+        @commands.command(name="scheduled", brief="scheduled", description="Lists scheduled events/messages")
+        async def scheduled_command(context):
+            user = await self.validate_user(context)
+
+            if not user:
+                return
+            
+            programmed_events = []
+            try:
+                programmed_events = await get_programmed_events()
+            except:
+                await self.send_reply_to_user("Looks like something went wrong, please try again later", context)
+                return
+            
+            message = ""
+
+            if len(programmed_events):     
+                message = "```\n"
+                for i, scheduled in enumerate(programmed_events):
+                    message += f"{i+1}.- [{await sync_to_async(scheduled.programmed_date_str)()}] {scheduled.message[:20]}"
+                    if len(scheduled.message) > 20:
+                        message += "..."
+                    message += "\n"
+                message += "```"
+            else:
+                message = "No events have been scheduled so far"
+
+            await self.send_reply_to_user(message, context)
+        self.add_command(scheduled_command)
+
+        @commands.command(name="nevermind", brief="nevermind [EVENT_NUM]", description="Removes scheduled message. Please use \"scheduled\" to see a list of all the scheduled messages.")
+        async def nevermind_command(context, arg):
+            user = await self.validate_staff_user(context)
+
+            if not user or not arg:
+                return
+
+            index = 0
+            try:
+                index = int(arg)
+            except:
+                pass
+            
+            programmed_events = []
+            try:
+                programmed_events = await get_programmed_events()
+            except:
+                await self.send_reply_to_user("Looks like something went wrong, please try again later", context)
+                return
+            
+            if index < 1 or index > len(programmed_events):
+                await self.send_reply_to_user("Wrong event number, please check the scheduled events")
+                return
+            
+            datetime_str = await sync_to_async(programmed_events[index-1].programmed_date_str)()
+            await sync_to_async(programmed_events[index-1].delete)()
+
+            await self.send_reply_to_user(f"The event scheduled for {datetime_str} has been deleted!", context)
+        self.add_command(nevermind_command)
+
+        @commands.command(name="pardon", brief=f"pardon [USERNAME] [{DATE_STRING_FORMAT}]", description="Allows an user to skip a day (can only be used by staff). Timestamp must be on numeric [YEAR][MONTH][FORMAT].")
         async def pardon_command(context, *, arg=None):
-            username, timestamp = None, None
+            username = None
+            date_str = ""
 
             if arg:    
                 args = arg.split()
                 if len(args) > 0:
                     username = args[0]
                 if len(args) > 1:
-                    timestamp = args[1]
+                    date_str = args[1]
 
-            await self.pardon_user(context, username=username, timestamp=timestamp)
+            await self.pardon_user(context, username=username, date_str=date_str)
         self.add_command(pardon_command)
+    
+    async def on_member_join(self, member):
+        role_name = await get_new_member_role()
+        announcements_channel = await get_announcements_channel()
+
+        new_member_message = await get_new_member_message()
+        announcements_message = await get_new_member_announcement_message()
+
+        try:
+            new_member_message = new_member_message.replace(NEW_MEMBER_TAG, f"{member.mention}")
+        except:
+            pass
+
+        try:
+            announcements_message = announcements_message.replace(NEW_MEMBER_TAG, f"{member.mention}")
+        except:
+            pass
+
+        role = discord.utils.get(member.guild.roles, name=role_name)
+        await member.add_roles(role)
+
+        await self.send_message_on_channel(announcements_channel, announcements_message)
+        await member.send(new_member_message)
 
     # Internals
     def __init__(self):
-        super().__init__(command_prefix='.', description="A bot for the https://onesketchaday.art website")
+        intents = discord.Intents.default()
+        intents.members = True
+
+        super().__init__(command_prefix='.', description="A bot for the https://onesketchaday.art website", intents=intents)
 
         load_dotenv()
         self.add_commands()
 
     # Creates the scheduler and adds the scheduled messages to it
     async def on_ready(self):
+        self.scheduled_messages_jobs = {}
+
+        self.message_scheduler = AsyncIOScheduler()
+        self.announcements_scheduler = AsyncIOScheduler()
+
+        reminder = await get_reminder()
+        post_count_message = await get_variable("PostCountMessage")
+
+        # Setup reminders
+        reminder.date = timezone.localtime(reminder.date)
+        post_count_message.date = timezone.localtime(post_count_message.date)
+        self.announcements_scheduler.add_job(self.send_reminder, CronTrigger(
+            hour=reminder.date.hour, minute=reminder.date.minute, second=reminder.date.second)
+        ) 
+        logger.info("Reminder message set to be sent every day at {}:{}:{}".format(
+            reminder.date.hour, reminder.date.minute, reminder.date.second
+        ))
+        self.announcements_scheduler.add_job(self.send_todays_post_count, CronTrigger(
+            hour=post_count_message.date.hour, minute=post_count_message.date.minute, second=post_count_message.date.second
+        )) 
+        logger.info("Post count message set to be sent every day at {}:{}:{}".format(
+            post_count_message.date.hour, post_count_message.date.minute, post_count_message.date.second
+        ))
+
+        self.announcements_scheduler.start()
+        self.message_scheduler.start()
+
+        await self.update_scheduled_messages()
+    
+    async def set_variable_from_command(self, context, variable, arg):
+        user = await self.validate_staff_user(context)
+
+        if not user or not arg:
+            return
+        
+        def set_message():
+            message = Variable.objects.get(name=variable)
+            message.text = arg
+
+            message.save()
+        
         try:
-            self.scheduler = AsyncIOScheduler()
-            reminder = await get_reminder()
-            post_count_message = await get_variable("PostCountMessage")
+            await sync_to_async(set_message)()
+            await self.send_reply_to_user("Done!", context)
+        except:
+            await self.send_reply_to_user("There seems to be a problem with the backend, please try again later", context)
 
-            # Setup reminders
-            reminder.date = timezone.localtime(reminder.date)
-            post_count_message.date = timezone.localtime(post_count_message.date)
-            self.scheduler.add_job(self.send_reminder, CronTrigger(
-                hour=reminder.date.hour, minute=reminder.date.minute, second=reminder.date.second)
-            ) 
-            logger.info("Reminder message set to be sent every day at {}:{}:{}".format(
-                reminder.date.hour, reminder.date.minute, reminder.date.second
-            ))
-            self.scheduler.add_job(self.send_todays_post_count, CronTrigger(
-                hour=post_count_message.date.hour, minute=post_count_message.date.minute, second=post_count_message.date.second
-            )) 
-            logger.info("Post count message set to be sent every day at {}:{}:{}".format(
-                post_count_message.date.hour, post_count_message.date.minute, post_count_message.date.second
+    async def update_scheduled_messages(self):
+        for key in self.scheduled_messages_jobs:
+            try:
+                self.scheduled_messages_jobs[key].remove()
+            except:
+                pass
+        
+        self.scheduled_messages_jobs.clear()
+        
+        scheduled_messages = await get_programmed_events()
+        now = timezone.localtime()
+        for scheduled_message in scheduled_messages:
+            if scheduled_message.programmed_date < now:
+                await sync_to_async(scheduled_message.delete)()
+                continue
+
+            async def sendScheduledMessage():
+                await self.send_message_on_channel(scheduled_message.channel, scheduled_message.message)
+                await sync_to_async(scheduled_message.delete)()
+            
+            datetime = timezone.localtime(scheduled_message.programmed_date)
+
+            job = self.message_scheduler.add_job(sendScheduledMessage, CronTrigger(
+                hour=datetime.hour, minute=datetime.minute, second=datetime.second, year=datetime.year, month=datetime.month, day=datetime.day 
             ))
 
-            self.scheduler.start()
-        except Exception as e:
-            logger.error("Cannot setup reminder: {}".format(str(e)))
+            self.scheduled_messages_jobs.update({scheduled_message.id : job})
 
     # Send a message with all the available commands
     async def send_commands(self, context, arg=None):
@@ -140,16 +318,28 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user("\"{}\" is not an available command".format(arg), context)
             return
         else:
-            command_list = "```\nCommands:\n"
+            command_list = ""
+            messages = []
+            max_len = MAX_DISCORD_MESSAGE_LEN - 8
+
             for command in self.walk_commands():
                 if not command.brief:
                     continue
-                command_list += "{}{}\n".format(self.command_prefix, command.brief)
+
+                c = "Command: {}{}\nDescription:\n\t{}\n\n".format(self.command_prefix, command.brief, command.description)
+                if (len(command_list) + len(c)) >= max_len:
+                    messages.append(command_list)
+                    command_list = c
+                else:
+                    command_list += c
             command_list += "\nNotes:\n"
             command_list += "VAL    Means that including VAL value is mandatory\n"
             command_list += "[VAL]  Means that including VAL value is optional\n"
-            command_list += "```"
-            await self.send_reply_to_user(command_list, context)
+            messages.append(command_list)
+
+            for message in messages:
+                m = "```\n" + message + "\n```"
+                await self.send_reply_to_user(m, context)
 
     # Reply to user message
     async def send_reply_to_user(self, message, context):
@@ -189,6 +379,14 @@ class OnesketchadayBot(commands.Bot):
         if not ch:
             raise IOError("Cannot find channel \"{}\"".format(channel))
         await ch.send(message)
+
+    async def schedule_message_on_channel(self, channel : str, message : str, datetime : timezone.datetime):
+        event = await sync_to_async(ProgrammedEvent)(channel=channel, message=message, programmed_date=datetime)
+        await sync_to_async(event.save)()
+
+        await self.update_scheduled_messages()
+
+        return event
 
     # Download attachment on MEDIA_ROOT
     async def download_file(self, file_path, attachment):
@@ -285,7 +483,7 @@ class OnesketchadayBot(commands.Bot):
 
                 for miss in misses:
                     s = await sync_to_async(miss.strftime)("%d %B, %Y")
-                    msg += f"{i}: {s}\n"
+                    msg += f"{i+1}: {s}\n"
                     i += 1
                 
                 msg += "\n```"
@@ -296,7 +494,7 @@ class OnesketchadayBot(commands.Bot):
             logger.error("Cannot retrieve strikes for \"{}\": {}".format(user.username, str(e)))
             await self.send_reply_to_user("Sorry, but I couldn't retrieve how many strikes you've got right now", context)
 
-    async def pardon_user(self, context, username = None, timestamp = None):
+    async def pardon_user(self, context, username = None, date_str = None):
         user = await self.validate_staff_user(context)
         if not user:
             return
@@ -311,12 +509,12 @@ class OnesketchadayBot(commands.Bot):
             return
         discord_recipient = await self.fetch_user(int(recipient.discord_id))
 
-        if not timestamp:
+        if not date_str:
             await self.send_reply_to_user(f"For which day would you like to pardon {username}?", context)
             return
 
         try:
-            date = await make_datetime_aware(await get_date_from_timestamp(int(timestamp)))
+            date = await get_date_from_string(date_str)
 
             pardon = await sync_to_async(Pardon)(user = recipient, date = date)
             date_str = await sync_to_async(pardon.date_str)()
@@ -333,7 +531,7 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user(f"Done! {discord_recipient.mention} you will no longer have to worry about making a post on the {date_str}!", context)
 
         except Exception as e:
-            logger.error(f"Cannot pardon {recipient} for {timestamp}: {str(e)}")
+            logger.error(f"Cannot pardon {recipient} for {date_str}: {str(e)}")
             await self.send_reply_to_user("Sorry, but I cannot give pardons right now", context)
 
     # Set the user biography and profile picture
@@ -386,10 +584,15 @@ class OnesketchadayBot(commands.Bot):
             if os.path.exists(absolute_path):
                 os.remove(absolute_path)
 
+    async def program_message(self, context, time, channel, message):
+        user = await self.validate_user(context)
+        if not user:
+            return
+
+
     # Create an user based on the user message. The args are going to be used for the
     # post's title
     async def create_post(self, context, arg=None):
-        username = str(context.message.author)
         title = arg
         is_video = False
 
@@ -460,39 +663,13 @@ class OnesketchadayBot(commands.Bot):
         except Exception as e:
             logger.error("Cannot delete post on link \"{}\" from user {}: {}".format(link, username, str(e)))
             await self.send_reply_to_user('Sorry, but none of your posts match that link', context)
-    
-    async def schedule_post(self, context, arg):
-        user = await self.validate_user(context)
-
-        if not user:
-            return
-       
-        message = ""
-        try: 
-            fmt = "%Y/%m/%d %H:%M:%S"
-
-            scheduled_date = await sync_to_async(timezone.datetime.strptime)(arg, fmt) 
-            scheduled_date = await sync_to_async(timezone.make_aware)(scheduled_date)
-
-            current_date = await sync_to_async(timezone.localtime)()
-            if (current_date > scheduled_date):
-                await self.send_reply_to_user("I'm a bot not a Delorean", context)
-                return
-
-            async def send_scheduled_post():
-                await self.create_post(context)
-            self.scheduler.add_job(send_scheduled_post, DateTrigger(scheduled_date)) 
-            message = "Post scheduled for {}".format(scheduled_date.strftime(fmt)) 
-        except Exception as e:
-            message = "Sorry, but I coulnd't schedule your post, this is the date format you should use:\n`{}`".format(fmt)
-            logger.error("Error scheduling post: {}".format(str(e)))
-        await self.send_reply_to_user(message, context)
 
     # Set the reminder message
     async def send_reminder(self):
         try:
             reminder = await get_reminder()
-            await self.send_message_on_channel(reminder.label, "@everyone " + reminder.text + " (Day {})".format(await sync_to_async(getDaysFromStartDate)()))
+            announcements_message = await get_announcements_channel()
+            await self.send_message_on_channel(announcements_message, "@everyone " + reminder.text + " (Day {})".format(await sync_to_async(getDaysFromStartDate)()))
         except Exception as e:
             logger.error("Cannot send reminder: {}".format(str(e)))
 
@@ -501,7 +678,8 @@ class OnesketchadayBot(commands.Bot):
         try:
             post_count_message = await get_variable("PostCountMessage")
             posts, posts_size = await get_todays_posts()
-            await self.send_message_on_channel(post_count_message.label, "@everyone I have received a grand total of {} {}!, and with that we conclude today's session.\nSee you tomorrow!".format(posts_size, "posts" if posts_size != 1 else "post"))
+            announcements_message = await get_announcements_channel()
+            await self.send_message_on_channel(announcements_message, "@everyone I have received a grand total of {} {}!, and with that we conclude today's session.\nSee you tomorrow!".format(posts_size, "posts" if posts_size != 1 else "post"))
         except Exception as e:
             logger.error("Cannot send post count: {}".format(str(e)))
 

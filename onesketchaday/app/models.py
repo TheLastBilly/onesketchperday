@@ -1,4 +1,5 @@
 import base64, uuid, os
+from email import message
 from ctypes import util
 from typing import Type
 from time import strftime
@@ -305,10 +306,30 @@ class Pardon(models.Model):
     date                = models.DateField(null=False, blank=False)
 
     def date_str(self):
-        return self.date.strftime(f"%-d{getDaySuffix(self.date.day)} of %b %Y")
+        return self.date.strftime(f"%-d{getDaySuffix(self.date.day)} of %B %Y")
 
     def __str__(self):
         return f"{self.user}, {self.date_str()}"
 
     def save(self, *args, **kwargs):
         super(Pardon, self).save(*args, **kwargs)
+
+class ProgrammedEvent(models.Model):
+    channel             = models.CharField(max_length=100, null=True)
+    message             = models.TextField(null=True)
+
+    creation_date       = models.DateTimeField(auto_now_add=True, null=True)
+    programmed_date     = models.DateTimeField(null=True, blank=False)
+
+    id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
+    tags                = models.ManyToManyField(Tag, blank=True)
+    
+    def __str__(self):
+        return self.programmed_date_str()
+
+    def programmed_date_str(self):
+        datetime = timezone.localtime(self.programmed_date)
+        return datetime.strftime(f"%-d{getDaySuffix(datetime.day)} of %B %Y, at %-I:%M:%S %p")
+
+    def save(self, *args, **kwargs):
+        super(ProgrammedEvent, self).save(*args, **kwargs)

@@ -1,3 +1,4 @@
+from re import T
 from asgiref.sync import sync_to_async
 from django.core.exceptions import *
 from bot.globals import *
@@ -8,8 +9,44 @@ from app.utils import *
 import logging, os
 import asyncio
 
+DATETIME_STRING_FORMAT      = "%H:%M:%S,%d/%m/%Y"
+DATE_STRING_FORMAT          = "%d/%m/%Y"
+
+async def get_new_member_role():
+    return (await get_variable("NewMemberDefaultRole")).text
+
+async def get_new_member_message():
+    return (await get_variable("NewMembersWelcomeMessage")).text
+    
+async def get_new_member_announcement_message():
+    return (await get_variable("NewMembersAnnouncementMessage")).text
+
+async def get_announcements_channel():
+    return (await get_variable("AnnouncementsChannel")).text
+
+async def get_programmed_events():
+    def get_all():
+        programmed_events = []
+        for p in ProgrammedEvent.objects.all():
+            programmed_events.append(p)
+        return programmed_events
+    
+    return await sync_to_async(get_all)()
+
+async def parse_time_string(fmt : str, time_str : str):
+    t = await sync_to_async(timezone.datetime.strptime)(time_str, fmt) 
+    t = await sync_to_async(timezone.make_aware)(t)
+
+    return t
+
+async def get_datetime_from_string(datetime_str : str):
+    return await parse_time_string(DATETIME_STRING_FORMAT, datetime_str)
+    
+async def get_date_from_string(date_str : str):
+    return await parse_time_string(DATE_STRING_FORMAT, date_str)
+
 async def get_nsfw_channel_name():
-    return (await sync_to_async(getVariable)(name="NSFWChannel")).label
+    return (await get_variable("NSFWChannel")).label
 
 async def get_day_suffix(day):
     return await sync_to_async(getDaySuffix)(day)

@@ -204,5 +204,12 @@ DEFAULT_VARIABLES = [
     "MaxBiographyCharacters", 
     "StrikeStartDate", 
     "MaxStrikes",
-    "NSFWChannel"
+    "NSFWChannel",
+    "AnnouncementsChannel",
+    "NewMembersWelcomeMessage",
+    "NewMemberDefaultRole",
+    "NewMembersAnnouncementMessage"
+]
+DEFAULT_TAGS = [
+    "announcement"
 ]

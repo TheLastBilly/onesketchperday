@@ -11,7 +11,7 @@ class AppConfig(AppConfig):
 
     def ready(self):
         try:
-            from .models import User, Post, MarkdownPost, Variable
+            from .models import User, Post, MarkdownPost, Variable, Tag
             posts = Post.objects.all()
             for post in posts:
                 post.update_timestamp()
@@ -25,6 +25,10 @@ class AppConfig(AppConfig):
             for variable in settings.DEFAULT_VARIABLES:
                 if not Variable.objects.filter(name=variable).exists():
                     Variable.objects.create(name=variable)
+            
+            for tag in settings.DEFAULT_TAGS:
+                if not Tag.objects.filter(name=tag).exists():
+                    Tag.objects.create(name=tag)
 
             from .utils import getStartDate
             for user in User.objects.all():
