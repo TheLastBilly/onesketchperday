@@ -24,12 +24,12 @@ MAX_DISCORD_MESSAGE_LEN = 2000
 class OnesketchadayBot(commands.Bot):
     # Commands
     def add_commands(self):
-        @commands.command(name='post', brief="post [title] ATTACHMENT", description="Creates a post based on the provided attachments. The text provided by the message would be used as the post's title")
+        @commands.command(name='post', brief="post [TITLE] ATTACHMENT", description="Creates a post based on the provided attachments. The text provided by the message would be used as the post's title")
         async def post_command(context, *, arg=None):
             await self.create_post(context, arg)
         self.add_command(post_command)
 
-        @commands.command(name='delete', brief="delete POST_URL", description="Deletes your post from the site. The text provided with the message most be a link to your post")
+        @commands.command(name='delete', brief="delete URL", description="Deletes your post from the site. The text provided with the message most be a link to your post")
         async def delete_command(context, link):
             try:
                 await self.delete_post(context, link)
@@ -71,32 +71,37 @@ class OnesketchadayBot(commands.Bot):
             await self.send_commands(context, command)
         self.add_command(commands_command)
 
+        @commands.command(name="manual", brief="manual", description="Shows a list of all the available commands with their full description")
+        async def manual_commands(context):
+            await self.send_manual(context)
+        self.add_command(manual_commands)
+
         @commands.command(name="strikes", brief="strikes", description="Shows the amount of misses during the current month")
         async def strikes_command(context):
             await self.show_strikes(context)
         self.add_command(strikes_command)
 
-        @commands.command(name="junior", brief="junior [MESSAGE]", description="Sets the role that will be assigned to new members b default (only for staff)")
+        @commands.command(name="junior", brief="junior ROLE", description="Sets the role that will be assigned to new members by default (only for staff)")
         async def set_new_member_role_command(context, *, arg):
             await self.set_variable_from_command(context, "NewMemberDefaultRole", arg)
         self.add_command(set_new_member_role_command)
 
-        @commands.command(name="welcome", brief="welcome [MESSAGE]", description="Sets message that will be sent to new memebers on arrival (only for staff)")
+        @commands.command(name="welcome", brief="welcome MESSAGE", description=f"Sets message that will be sent to new memebers on arrival (only for staff). Use the {NEW_MEMBER_TAG} to tag the new member")
         async def set_new_member_message_command(context, *, arg):
             await self.set_variable_from_command(context, "NewMembersWelcomeMessage", arg)
         self.add_command(set_new_member_message_command)
 
-        @commands.command(name="greeting", brief="greeting [MESSAGE]", description="Sets message that will be sent on the announcements channel when a new member arrives (only for staff)")
+        @commands.command(name="greeting", brief="greeting MESSAGE", description=f"Sets message that will be sent on the announcements channel when a new member arrives (only for staff). Use the {NEW_MEMBER_TAG} to tag the new member")
         async def set_new_member_announcement_message_command(context, *, arg):
             await self.set_variable_from_command(context, "NewMembersAnnouncementMessage", arg)
         self.add_command(set_new_member_announcement_message_command)
 
-        @commands.command(name="announcements", brief="announcements [MESSAGE]", description="Sets the channel that will be used for sending announcements")
+        @commands.command(name="announcements", brief="announcements MESSAGE", description="Sets the channel that will be used for sending announcements")
         async def set_announcements_channel_command(context, *, arg):
             await self.set_variable_from_command(context, "AnnouncementsChannel", arg)
         self.add_command(set_announcements_channel_command)
 
-        @commands.command(name="schedule", brief=f"schedule [CHANNEL] [{DATETIME_STRING_FORMAT}] [MESSAGE]", description="Schedules message to be send on channel at a future date")
+        @commands.command(name="schedule", brief=f"schedule CHANNEL {DATETIME_STRING_FORMAT} MESSAGE", description="Schedules message to be send on channel at a future date")
         async def schedule_message_command(context, *, arg):
             user = await self.validate_staff_user(context)
 
@@ -147,7 +152,7 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user(message, context)
         self.add_command(scheduled_command)
 
-        @commands.command(name="nevermind", brief="nevermind [EVENT_NUM]", description="Removes scheduled message. Please use \"scheduled\" to see a list of all the scheduled messages.")
+        @commands.command(name="nevermind", brief="nevermind EVENT_NUMBER", description="Removes scheduled message. Please use \"scheduled\" to see a list of all the scheduled messages.")
         async def nevermind_command(context, arg):
             user = await self.validate_staff_user(context)
 
@@ -177,7 +182,7 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user(f"The event scheduled for {datetime_str} has been deleted!", context)
         self.add_command(nevermind_command)
 
-        @commands.command(name="pardon", brief=f"pardon [USERNAME] [{DATE_STRING_FORMAT}]", description="Allows an user to skip a day (can only be used by staff). Timestamp must be on numeric [YEAR][MONTH][FORMAT].")
+        @commands.command(name="pardon", brief=f"pardon USERNAME {DATE_STRING_FORMAT}", description="Allows an user to skip a day (can only be used by staff). Timestamp must be on numeric [YEAR][MONTH][FORMAT].")
         async def pardon_command(context, *, arg=None):
             username = None
             date_str = ""
@@ -301,10 +306,37 @@ class OnesketchadayBot(commands.Bot):
             ))
 
             self.scheduled_messages_jobs.update({scheduled_message.id : job})
+    
+    async def send_manual(self, context):
+        user = await self.validate_user(context)
+        if not user:
+            return
+
+        command_list = "[OneSketchADay's Bot User Manual]\n\n"
+        messages = []
+        max_len = MAX_DISCORD_MESSAGE_LEN - 8
+
+        for command in self.walk_commands():
+            if not command.brief:
+                continue
+
+            c = "Command: {}{}\nDescription:\n\t{}\n\n".format(self.command_prefix, command.brief, command.description)
+            if (len(command_list) + len(c)) >= max_len:
+                messages.append(command_list)
+                command_list = c
+            else:
+                command_list += c
+        command_list += "\nNotes:\n"
+        command_list += "VAL    Means that including VAL value is mandatory\n"
+        command_list += "[VAL]  Means that including VAL value is optional\n"
+        messages.append(command_list)
+
+        for message in messages:
+            m = "```\n" + message + "\n```"
+            await self.send_reply_to_user(m, context)
 
     # Send a message with all the available commands
     async def send_commands(self, context, arg=None):
-        username = str(context.message.author)
         user = await self.validate_user(context)
         if not user:
             return
@@ -318,28 +350,14 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user("\"{}\" is not an available command".format(arg), context)
             return
         else:
-            command_list = ""
-            messages = []
-            max_len = MAX_DISCORD_MESSAGE_LEN - 8
-
+            command_list = "```\n[Available Commands]\n\n"
             for command in self.walk_commands():
                 if not command.brief:
                     continue
+                command_list += f"* {self.command_prefix}{command.brief}\n"
+            command_list += "```"
 
-                c = "Command: {}{}\nDescription:\n\t{}\n\n".format(self.command_prefix, command.brief, command.description)
-                if (len(command_list) + len(c)) >= max_len:
-                    messages.append(command_list)
-                    command_list = c
-                else:
-                    command_list += c
-            command_list += "\nNotes:\n"
-            command_list += "VAL    Means that including VAL value is mandatory\n"
-            command_list += "[VAL]  Means that including VAL value is optional\n"
-            messages.append(command_list)
-
-            for message in messages:
-                m = "```\n" + message + "\n```"
-                await self.send_reply_to_user(m, context)
+            await self.send_reply_to_user(command_list, context)
 
     # Reply to user message
     async def send_reply_to_user(self, message, context):
