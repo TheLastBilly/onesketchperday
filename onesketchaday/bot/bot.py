@@ -1,6 +1,3 @@
-from email import utils
-from glob import escape
-from nis import cat
 from urllib.parse import urlparse
 
 import discord
@@ -96,107 +93,66 @@ class OnesketchadayBot(commands.Bot):
             await self.set_variable_from_command(context, "NewMembersAnnouncementMessage", arg)
         self.add_command(set_new_member_announcement_message_command)
 
-        @commands.command(name="announcements", brief="announcements MESSAGE", description="Sets the channel that will be used for sending announcements")
+        @commands.command(name="announcements", brief="announcements CHANNEL", description="Sets the channel that will be used for sending announcements")
         async def set_announcements_channel_command(context, *, arg):
             await self.set_variable_from_command(context, "AnnouncementsChannel", arg)
         self.add_command(set_announcements_channel_command)
 
         @commands.command(name="schedule", brief=f"schedule CHANNEL {DATETIME_STRING_FORMAT} MESSAGE", description="Schedules message to be send on channel at a future date")
         async def schedule_message_command(context, *, arg):
-            user = await self.validate_staff_user(context)
-
-            args = arg.split() if arg else []
-            if not user or len(args) < 3:
-                return
-
-            print(args)
-            channel = args[0]
-            datetime = await get_datetime_from_string(args[1])
-            message = " ".join(args[2:])
-
-            if datetime < timezone.now():
-                await self.send_reply_to_user(f"Sorry, but I cannot set reminders for past dates", context)
-                return
-
-            event = await self.schedule_message_on_channel(channel, message, datetime)
-            await self.send_reply_to_user(f"Message scheduled for {await sync_to_async(event.programmed_date_str)()}", context)
+            await self.schedule_message(context, arg)
         self.add_command(schedule_message_command)
 
         @commands.command(name="scheduled", brief="scheduled", description="Lists scheduled events/messages")
         async def scheduled_command(context):
-            user = await self.validate_user(context)
-
-            if not user:
-                return
-            
-            programmed_events = []
-            try:
-                programmed_events = await get_programmed_events()
-            except:
-                await self.send_reply_to_user("Looks like something went wrong, please try again later", context)
-                return
-            
-            message = ""
-
-            if len(programmed_events):     
-                message = "```\n"
-                for i, scheduled in enumerate(programmed_events):
-                    message += f"{i+1}.- [{await sync_to_async(scheduled.programmed_date_str)()}] {scheduled.message[:20]}"
-                    if len(scheduled.message) > 20:
-                        message += "..."
-                    message += "\n"
-                message += "```"
-            else:
-                message = "No events have been scheduled so far"
-
-            await self.send_reply_to_user(message, context)
+            await self.send_scheduled_messages(context)
         self.add_command(scheduled_command)
+
+        @commands.command(name="challenges", brief="challenges", description="Lists scheduled challenges with their id")
+        async def challenges_command(context):
+            await self.send_scheduled_challenges(context)
+        self.add_command(challenges_command)
 
         @commands.command(name="nevermind", brief="nevermind EVENT_NUMBER", description="Removes scheduled message. Please use \"scheduled\" to see a list of all the scheduled messages.")
         async def nevermind_command(context, arg):
-            user = await self.validate_staff_user(context)
-
-            if not user or not arg:
-                return
-
-            index = 0
-            try:
-                index = int(arg)
-            except:
-                pass
-            
-            programmed_events = []
-            try:
-                programmed_events = await get_programmed_events()
-            except:
-                await self.send_reply_to_user("Looks like something went wrong, please try again later", context)
-                return
-            
-            if index < 1 or index > len(programmed_events):
-                await self.send_reply_to_user("Wrong event number, please check the scheduled events")
-                return
-            
-            datetime_str = await sync_to_async(programmed_events[index-1].programmed_date_str)()
-            await sync_to_async(programmed_events[index-1].delete)()
-
-            await self.send_reply_to_user(f"The event scheduled for {datetime_str} has been deleted!", context)
+            await self.nevermind(context, arg)
         self.add_command(nevermind_command)
+
+        @commands.command(name="challenge", brief="challenge START_DATETIME END_DATETIME TITLE\nDESCRIPTION\n", description="Starts a challenge at the given datetime (can only be used by staff)")
+        async def challenge_command(context, *, arg=None):
+            await self.challenge(context, arg)
+        self.add_command(challenge_command)
+    
+        @commands.command(name="face", brief="face CHALLENGE_ID POST_URL", description="Used to submit a post for (face) a challenge. Posts need to be reated during the challenge's runtime. Challenge IDs can be seen using the \"challenges\" command")
+        async def face_command(context, *, arg=None):
+            await self.face_challenge(context, arg)
+        self.add_command(face_command)
+
+        @commands.command(name="submissions", brief="submissions CHALLENGE_ID", description="Lists all the submissions made for a challenge")
+        async def list_submissions_command(context, *, arg=None):
+            await self.list_submissions(context, arg)
+        self.add_command(list_submissions_command)
 
         @commands.command(name="pardon", brief=f"pardon USERNAME {DATE_STRING_FORMAT}", description="Allows an user to skip a day (can only be used by staff). Timestamp must be on numeric [YEAR][MONTH][FORMAT].")
         async def pardon_command(context, *, arg=None):
-            username = None
-            date_str = ""
-
-            if arg:    
-                args = arg.split()
-                if len(args) > 0:
-                    username = args[0]
-                if len(args) > 1:
-                    date_str = args[1]
-
-            await self.pardon_user(context, username=username, date_str=date_str)
+            await self.pardon(context, arg)
         self.add_command(pardon_command)
-    
+
+        @commands.command(name="refresh", brief=f"refresh", description="Syncs messages and other elements of the bot with the current state of the database (can only be used by staff)")
+        async def refresh_command(context, arg=None):
+            user = await self.validate_staff_user(context)
+
+            if not user:
+                return
+
+            try:
+                await self.update_scheduled_messages()
+                await self.send_reply_to_user("Done!", context)
+            except Exception:
+                await self.send_reply_to_user("There seems to have been an error, please try again later", context)
+
+        self.add_command(refresh_command)
+   
     async def on_member_join(self, member):
         role_name = await get_new_member_role()
         announcements_channel = await get_announcements_channel()
@@ -278,8 +234,154 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user("Done!", context)
         except:
             await self.send_reply_to_user("There seems to be a problem with the backend, please try again later", context)
+    
+    async def list_submissions(self, context, arg):
+        user = await self.validate_user(context)
+
+        if not user:
+            return
+
+        if not arg:
+            await self.send_commands(context, "submissions")
+            return
+        
+        challenge = await sync_to_async(Challenge.objects.filter)(id=arg)
+        challenge = await sync_to_async(challenge.first)()
+        if not challenge:
+            await self.send_reply_to_user(f"Sorry, but I couldn't find any challenges with that ID", context)
+            return
+        
+        submissions = await get_challenge_submissions(challenge)
+
+        if len(submissions) < 1:
+            await self.send_reply_to_user("No submissions have been made yet!", context)
+            return
+
+        message = "```\n"
+        message += f"Submisssions for the {challenge.title} challenge:\n\n"
+        for i,submission in enumerate(submissions):
+            url = await sync_to_async(submission.get_page)()
+            
+            def get_owner():
+                return submission.owner.username
+            owner = await sync_to_async(get_owner)()
+
+            message += f"{i+1}.- {url} by {owner}\n"
+        message += "```"
+
+        await self.send_reply_to_user(message, context)
+
+    async def face_challenge(self, context, arg):
+        user = await self.validate_user(context)
+
+        if not user:
+            return
+            
+        args = []
+        if arg:
+            args = arg.split(" ")
+        if len(args) < 2:
+            await self.send_commands(context, "face")
+            return
+        
+        try:
+            challenge_id = args[0]
+            url = args[1] 
+            
+            post_id = urlparse(url).path.rsplit("/", 1)[-1]
+            
+            post = await sync_to_async(Post.objects.filter)(id=post_id)
+            post = await sync_to_async(post.first)()
+            if not post:
+                await self.send_reply_to_user(f"Sorry, but I couldn't find any posts of yours with that URL", context)
+                return
+            
+            challenge = await sync_to_async(Challenge.objects.filter)(id=challenge_id)
+            challenge = await sync_to_async(challenge.first)()
+            if not challenge:
+                await self.send_reply_to_user(f"Sorry, but I couldn't find any challenges with that ID", context)
+                return
+            
+            if post.date >= challenge.start_date and post.date <= challenge.end_date:
+                await sync_to_async(challenge.add_submission)(post)
+                await self.send_reply_to_user("Done!", context)
+                return
+            else:
+                await self.send_reply_to_user("Sorry, but I can only accept posts created during the challenge's runtime", context)
+                return
+            
+        except Exception as e:
+            await self.send_reply_to_user(f"Cannot add post to challenge submissions: \"{e}\"", context)
+
+    async def send_scheduled_messages(self, context):
+        user = await self.validate_user(context)
+
+        if not user:
+            return
+
+        programmed_events = []
+        try:
+            programmed_events = await get_programmed_events()
+        except:
+            await self.send_reply_to_user("Looks like something went wrong, please try again later", context)
+            return
+        
+        message = ""
+
+        if len(programmed_events):     
+            message = "```\n"
+            for i, scheduled in enumerate(programmed_events):
+                message += f"{i+1}.- [{await sync_to_async(scheduled.programmed_date_str)()}] {scheduled.message[:20]}"
+                if len(scheduled.message) > 20:
+                    message += "..."
+                message += "\n"
+            message += "```"
+        else:
+            message = "No events have been scheduled so far"
+
+        await self.send_reply_to_user(message, context)
+    
+    async def send_scheduled_challenges(self, context):
+        user = await self.validate_user(context)
+
+        if not user:
+            return
+
+        challenges = []
+        try:
+            challenges = await get_challenges()
+        except:
+            await self.send_reply_to_user("Looks like something went wrong, please try again later", context)
+            return
+        
+        message = ""
+        if len(challenges):     
+            message = "```\n"
+            i = 1
+            for scheduled in challenges:
+                if scheduled.end_date < timezone.localtime():
+                    continue
+                
+                def print_challengers():
+                    for challenger in scheduled.get_participants():
+                        print(challenger)
+                await sync_to_async(print_challengers)()
+
+                message += f"{i}.- [{await sync_to_async(scheduled.programmed_date_str)()}] [{scheduled.id}] {scheduled.title[:40]}"
+                i += 1
+                
+                if len(scheduled.title) > 20:
+                    message += "..."
+                message += "\n"
+            message += "```"
+        else:
+            message = "No challenges have been scheduled so far"
+
+        await self.send_reply_to_user(message, context)
 
     async def update_scheduled_messages(self):
+        now = timezone.localtime()
+
         for key in self.scheduled_messages_jobs:
             try:
                 self.scheduled_messages_jobs[key].remove()
@@ -289,7 +391,8 @@ class OnesketchadayBot(commands.Bot):
         self.scheduled_messages_jobs.clear()
         
         scheduled_messages = await get_programmed_events()
-        now = timezone.localtime()
+
+        # Do scheduled messages
         for scheduled_message in scheduled_messages:
             if scheduled_message.programmed_date < now:
                 await sync_to_async(scheduled_message.delete)()
@@ -306,7 +409,183 @@ class OnesketchadayBot(commands.Bot):
             ))
 
             self.scheduled_messages_jobs.update({scheduled_message.id : job})
-    
+        
+        challenges = await get_challenges()
+        announcements_channel = await get_announcements_channel()
+
+        # Do challenges messages
+        for challenge in challenges:
+            challenge.start_date = timezone.localtime(challenge.start_date)
+            challenge.end_date = timezone.localtime(challenge.end_date)
+
+            if challenge.start_date >= now and challenge.start_date < challenge.end_date:
+                start_date_str = await sync_to_async(challenge.get_start_date_str)()
+                end_date_str = await sync_to_async(challenge.get_end_date_str)()
+
+                async def startChallenge():
+                    message = "Hello @everyone, we have a new challenge for you today!\n\n"
+
+                    message += f"**{challenge.title}**\n"
+                    message += f"{challenge.description}\n\n"
+
+                    message += f"This challenge will start on the **{start_date_str}** and will end on the **{end_date_str}**"
+
+                    await self.send_message_on_channel(announcements_channel, message)
+                
+                datetime = challenge.start_date
+
+                job = self.message_scheduler.add_job(startChallenge, CronTrigger(
+                    hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
+                    year=datetime.year, month=datetime.month, day=datetime.day 
+                ))
+                self.scheduled_messages_jobs.update({f"start_{challenge.id}_{datetime}" : job})
+
+                async def endChallenge():
+                    participants = await sync_to_async(challenge.get_participants)()
+                    pardons_per_challenge = await get_variable("PardonsPerChallenge")
+                    pardons_per_challenge = pardons_per_challenge.integer
+        
+                    message = f"@everyone Aaaaaand it's done!, the **{challenge.title}** challenge is over!\n"
+
+                    if len(participants) > 0:
+                        message += f"Here are the winners:\n"
+
+                        for (participant, posts) in participants:
+                            discord_recipient = await self.fetch_user(int(participant.discord_id))
+                            message += f"{discord_recipient.mention} with {len(posts)} submissions!\n"
+
+                        await sync_to_async(challenge.pardon_participants)(pardons_per_challenge)
+
+                        s = "s" if pardons_per_challenge > 0 else ""
+                        message += f"They have all received {pardons_per_challenge} pardon{s} each!"
+
+                    await self.send_message_on_channel(announcements_channel, message)
+
+                datetime = challenge.end_date
+
+                job = self.message_scheduler.add_job(endChallenge, CronTrigger(
+                    hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
+                    year=datetime.year, month=datetime.month, day=datetime.day 
+                ))
+                self.scheduled_messages_jobs.update({f"start_{challenge.id}_{datetime}" : job})
+
+        # Do misc messages
+
+        # First of month message
+        first_of_next_month = await sync_to_async(getFirstOfNextMonth)()
+        first_of_month_message = await get_variable("BeginningOfTheMonthMessage")
+
+        async def sendFirstOfMonthMessage():
+            await self.send_message_on_channel(announcements_channel, first_of_month_message.text)
+        
+        datetime = timezone.localtime(first_of_month_message.date)
+        job = job = self.message_scheduler.add_job(sendFirstOfMonthMessage, CronTrigger(
+            hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
+            year=first_of_next_month.year, month=first_of_next_month.month, day=first_of_next_month.day 
+        ))
+
+        self.scheduled_messages_jobs.update({f"First of Next Month" : job})
+
+    async def challenge(self, context, arg=None):
+        start_date, end_date, title, description = None, None, None, None
+
+        user = await self.validate_staff_user(context)
+        if not user:
+            return
+
+        try:
+            args = arg.split()
+            start_date = await get_datetime_from_string(args[0])
+            end_date = await get_datetime_from_string(args[1])
+
+            text = " ".join(args[2:]).split(":")
+            title = text[0]
+            description = "\n".join(text[1:])
+        except Exception as e:
+            await self.send_commands(context, "challenge")
+            return
+        
+        if start_date < timezone.localtime():
+            await self.send_reply_to_user("Sorry, but I cannot create challenges that start in the past", context)
+            return
+
+        if end_date < start_date:
+            await self.send_reply_to_user("The end date cannot come before the start date bud!", context)
+            return
+        
+        if end_date < await sync_to_async(timezone.localtime)():
+            await self.send_reply_to_user("Sorry, but I can't create challenges that end in the past", context)
+            return
+        
+        challenge = await self.create_challenge(title=title, description=description,
+            start_date=start_date, end_date=end_date)
+        
+        start_date_str = await sync_to_async(challenge.get_start_date_str)()
+        end_date_str = await sync_to_async(challenge.get_end_date_str)()
+        message = f"Done!, your challenge has been scheduled to start on the {start_date_str}, and will end on the {end_date_str}"
+
+        await self.send_reply_to_user(message, context)
+
+    async def nevermind(self, context, arg):
+        user = await self.validate_staff_user(context)
+
+        if not user or not arg:
+            return
+
+        index = 0
+        try:
+            index = int(arg)
+        except:
+            pass
+        
+        programmed_events = []
+        try:
+            programmed_events = await get_programmed_events()
+        except:
+            await self.send_reply_to_user("Looks like something went wrong, please try again later", context)
+            return
+        
+        if index < 1 or index > len(programmed_events):
+            await self.send_reply_to_user("Wrong event number, please check the scheduled events")
+            return
+        
+        datetime_str = await sync_to_async(programmed_events[index-1].programmed_date_str)()
+        await sync_to_async(programmed_events[index-1].delete)()
+
+        await self.send_reply_to_user(f"The event scheduled for {datetime_str} has been deleted!", context)
+
+    async def schedule_message(self, context, arg):
+        user = await self.validate_staff_user(context)
+
+        args = arg.split() if arg else []
+        if not user or len(args) < 3:
+            return
+
+        print(args)
+        channel = args[0]
+        datetime = await get_datetime_from_string(args[1])
+        message = " ".join(args[2:])
+
+        if datetime < timezone.now():
+            await self.send_reply_to_user(f"Sorry, but I cannot set reminders for past dates", context)
+            return
+
+        event = await self.schedule_message_on_channel(channel, message, datetime)
+        await self.send_reply_to_user(f"Message scheduled for {await sync_to_async(event.programmed_date_str)()}", context)
+
+    async def pardon(self, context, arg):
+        username = None
+        date_str = ""
+
+        if arg:    
+            args = arg.split()
+            if len(args) > 0:
+                username = args[0]
+            if len(args) > 1:
+                date_str = args[1]
+
+        await self.pardon_user(context, username=username, date_str=date_str)
+
     async def send_manual(self, context):
         user = await self.validate_user(context)
         if not user:
@@ -326,9 +605,11 @@ class OnesketchadayBot(commands.Bot):
                 command_list = c
             else:
                 command_list += c
-        command_list += "\nNotes:\n"
-        command_list += "VAL    Means that including VAL value is mandatory\n"
-        command_list += "[VAL]  Means that including VAL value is optional\n"
+        command_list += "[Notes]\n"
+        command_list +=f"DATE       Must be in the following format: {DATE_STRING_FORMAT}\n"
+        command_list +=f"DATETIME   Must be in the following format: {DATETIME_STRING_FORMAT}\n"
+        command_list += "VAL        Means that including VAL value is mandatory\n"
+        command_list += "[VAL]      Means that including VAL value is optional\n"
         messages.append(command_list)
 
         for message in messages:
@@ -361,7 +642,13 @@ class OnesketchadayBot(commands.Bot):
 
     # Reply to user message
     async def send_reply_to_user(self, message, context):
-        await context.message.reply(message)
+        if not message or len(message) < 1:
+            return
+
+        m = message
+        while len(m) > 0:
+            await context.message.reply(m[:MAX_DISCORD_MESSAGE_LEN])
+            m = m[MAX_DISCORD_MESSAGE_LEN+1:]
     
     # See if user is authorized to use this bot. If they are not, return None.
     # If they are, return an user object for that username
@@ -374,6 +661,12 @@ class OnesketchadayBot(commands.Bot):
         
         return user
     
+    async def create_challenge(self, title : str, description : str, start_date : timezone.localtime, end_date : timezone.localtime):
+        challenge = await sync_to_async(Challenge.objects.create)(title=title, description=description, start_date=start_date, end_date=end_date)
+        await self.update_scheduled_messages()
+
+        return challenge
+
     async def validate_staff_user(self, context):
         user = await self.validate_user(context)
 
@@ -385,7 +678,6 @@ class OnesketchadayBot(commands.Bot):
             return None
         
         return user
-
 
     # Send message on the specified channel
     async def send_message_on_channel(self, channel : str, message : str):

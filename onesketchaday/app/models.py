@@ -14,6 +14,10 @@ from .utils import *
 
 import markdown
 
+def getDatetimeString(datetime):
+    datetime = timezone.localtime(datetime)
+    return datetime.strftime(f"%-d{getDaySuffix(datetime.day)} of %B %Y at %-I:%M:%S %p")
+
 class UserManager(BaseUserManager):
     def create_user(self, username, password=None, **extra_fields):
         if not username:
@@ -314,6 +318,80 @@ class Pardon(models.Model):
     def save(self, *args, **kwargs):
         super(Pardon, self).save(*args, **kwargs)
 
+class Challenge(models.Model):
+    title               = models.CharField(max_length=100, null=True)
+    description         = models.TextField(null=True, blank=True)
+
+    submissions         = models.ManyToManyField(Post, blank=True)
+
+    start_date          = models.DateTimeField(null=True, blank=False)
+    end_date            = models.DateTimeField(null=True, blank=False)
+
+    id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
+    
+    def add_submission(self, post : Post):
+        if post.date < self.start_date:
+            raise ValueError("Cannot add a post that were create before the challenge started")
+        
+        self.submissions.add(post)
+
+    def remove_submission(self, post : Post):
+        if self.submissions.exists(post):
+            self.submissions.remove(post)
+
+    def get_start_date_str(self):
+        return getDatetimeString(self.start_date)
+    
+    def get_end_date_str(self):
+        return getDatetimeString(self.end_date)
+
+    def get_participants(self):
+        participants = set()
+        participants_with_posts = []
+
+        for post in self.submissions.all():
+            participants.add(post.owner)
+        
+        for participant in participants:
+            posts = set()
+            for post in self.submissions.filter(owner = participant):
+                posts.add(post)
+            
+            participants_with_posts.append((participant, posts))
+        
+        return participants_with_posts
+    
+    def pardon_participants(self, pardon_num : int):
+        participants = self.get_participants()
+        pardoned_participants = []
+
+        for (participant, _) in participants:
+            misses = participant.get_missed_days()
+            
+            pardoned_dates = []
+            for miss in misses:
+                if len(pardoned_dates) >= pardon_num:
+                    break
+                    
+                if participant.has_pardon_for_date(miss):
+                    continue
+                
+                Pardon.objects.create(user=participant, date=miss)
+                pardoned_dates.append(miss)
+            
+            pardoned_participants.append((participant, pardoned_dates))
+        
+        return pardoned_participants
+
+    def programmed_date_str(self):
+        start_date = getDatetimeString(self.start_date)
+        end_date = getDatetimeString(self.end_date)
+
+        return f"from the {start_date} to the {end_date}"
+
+    def __str__(self):
+        return f"[{self.get_start_date_str()}] {self.title}"
+
 class ProgrammedEvent(models.Model):
     channel             = models.CharField(max_length=100, null=True)
     message             = models.TextField(null=True)
@@ -328,8 +406,7 @@ class ProgrammedEvent(models.Model):
         return self.programmed_date_str()
 
     def programmed_date_str(self):
-        datetime = timezone.localtime(self.programmed_date)
-        return datetime.strftime(f"%-d{getDaySuffix(datetime.day)} of %B %Y, at %-I:%M:%S %p")
+        return getDatetimeString(self.programmed_date)
 
     def save(self, *args, **kwargs):
         super(ProgrammedEvent, self).save(*args, **kwargs)

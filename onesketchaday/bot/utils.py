@@ -24,14 +24,29 @@ async def get_new_member_announcement_message():
 async def get_announcements_channel():
     return (await get_variable("AnnouncementsChannel")).text
 
-async def get_programmed_events():
+async def get_models(model):
     def get_all():
         programmed_events = []
-        for p in ProgrammedEvent.objects.all():
+        for p in model.objects.all():
             programmed_events.append(p)
         return programmed_events
     
     return await sync_to_async(get_all)()
+
+async def get_challenge_submissions(challenge: Challenge):
+    def get():
+        submissions = []
+        for p in challenge.submissions.all():
+            submissions.append(p)
+        return submissions
+
+    return await sync_to_async(get)()
+
+async def get_challenges():
+    return await get_models(Challenge)
+
+async def get_programmed_events():
+    return await get_models(ProgrammedEvent)
 
 async def parse_time_string(fmt : str, time_str : str):
     t = await sync_to_async(timezone.datetime.strptime)(time_str, fmt) 
@@ -75,7 +90,7 @@ async def save_user(user : User):
 async def create_variable(**kwargs):
     return await sync_to_async(Variable.objects.create)(**kwargs)
 
-async def get_variable(name : str):
+async def get_variable(name : str) -> Variable:
     return await sync_to_async(Variable.objects.get)(name=name)
 async def set_variable(variable : Variable):
     return await sync_to_async(variable.save)()

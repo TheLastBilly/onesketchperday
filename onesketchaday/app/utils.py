@@ -30,6 +30,10 @@ def getMaxStrikes():
 def getStrikeStartDate():
     return getDateVariable("StrikeStartDate")
 
+def getFirstOfNextMonth():
+    now = timezone.localtime()
+    return now.replace(day=1, month=(now.month+1 if now.month <= 11 else 1))
+
 def getStartDate():
     return getDateVariable("StartDate")
 

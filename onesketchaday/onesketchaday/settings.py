@@ -208,7 +208,9 @@ DEFAULT_VARIABLES = [
     "AnnouncementsChannel",
     "NewMembersWelcomeMessage",
     "NewMemberDefaultRole",
-    "NewMembersAnnouncementMessage"
+    "NewMembersAnnouncementMessage",
+    "BeginningOfTheMonthMessage",
+    "PardonsPerChallenge"
 ]
 DEFAULT_TAGS = [
     "announcement"
