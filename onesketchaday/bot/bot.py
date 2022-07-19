@@ -113,6 +113,11 @@ class OnesketchadayBot(commands.Bot):
             await self.send_scheduled_challenges(context)
         self.add_command(challenges_command)
 
+        @commands.command(name="giveup", brief="giveup CHALLENGE_ID", description="Deletes a challenge")
+        async def giveup_command(context, arg):
+            await self.giveup_challenge(context, arg)
+        self.add_command(giveup_command)
+
         @commands.command(name="nevermind", brief="nevermind EVENT_NUMBER", description="Removes scheduled message. Please use \"scheduled\" to see a list of all the scheduled messages.")
         async def nevermind_command(context, arg):
             await self.nevermind(context, arg)
@@ -271,6 +276,23 @@ class OnesketchadayBot(commands.Bot):
 
         await self.send_reply_to_user(message, context)
 
+    async def giveup_challenge(self, context, arg):
+        user = await self.validate_user(context)
+
+        if not user:
+            return
+        
+        challenge = await sync_to_async(Challenge.objects.filter)(id=arg)
+        challenge = await sync_to_async(challenge.first)()
+        if not challenge:
+            await self.send_reply_to_user(f"Sorry, but I couldn't find any challenges with that ID", context)
+            return
+        
+        await sync_to_async(challenge.delete)()
+        await self.update_scheduled_messages()
+
+        await self.send_reply_to_user(f"Challenge \"{challenge.title}\" has been deleted!", context)
+
     async def face_challenge(self, context, arg):
         user = await self.validate_user(context)
 
@@ -354,27 +376,27 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user("Looks like something went wrong, please try again later", context)
             return
         
-        message = ""
-        if len(challenges):     
-            message = "```\n"
-            i = 1
-            for scheduled in challenges:
-                if scheduled.end_date < timezone.localtime():
-                    continue
-                
-                def print_challengers():
-                    for challenger in scheduled.get_participants():
-                        print(challenger)
-                await sync_to_async(print_challengers)()
+        i = 0
+        for scheduled in challenges:
+            message = "Here a list with all the active challenges!\n"
+            message += "```\n"
+            if scheduled.end_date < timezone.localtime():
+                continue
+            
+            def print_challengers():
+                for challenger in scheduled.get_participants():
+                    print(challenger)
+            await sync_to_async(print_challengers)()
 
-                message += f"{i}.- [{await sync_to_async(scheduled.programmed_date_str)()}] [{scheduled.id}] {scheduled.title[:40]}"
-                i += 1
-                
-                if len(scheduled.title) > 20:
-                    message += "..."
-                message += "\n"
-            message += "```"
-        else:
+            message += f"{i+1}.- [{await sync_to_async(scheduled.programmed_date_str)()}] [{scheduled.id}] {scheduled.title[:40]}"
+            i += 1
+            
+            if len(scheduled.title) > 20:
+                message += "..."
+            message += "\n"
+        message += "```"
+        
+        if i < 1:
             message = "No challenges have been scheduled so far"
 
         await self.send_reply_to_user(message, context)
