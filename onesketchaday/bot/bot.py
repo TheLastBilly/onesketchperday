@@ -123,7 +123,7 @@ class OnesketchadayBot(commands.Bot):
             await self.nevermind(context, arg)
         self.add_command(nevermind_command)
 
-        @commands.command(name="challenge", brief="challenge START_DATETIME END_DATETIME TITLE\nDESCRIPTION\n", description="Starts a challenge at the given datetime (can only be used by staff)")
+        @commands.command(name="challenge", brief="challenge START_DATETIME END_DATETIME TITLE:\nDESCRIPTION\n", description="Starts a challenge at the given datetime (can only be used by staff)")
         async def challenge_command(context, *, arg=None):
             await self.challenge(context, arg)
         self.add_command(challenge_command)
@@ -377,9 +377,9 @@ class OnesketchadayBot(commands.Bot):
             return
         
         i = 0
+        message = "Here a list with all the active challenges!\n"
+        message += "```\n"
         for scheduled in challenges:
-            message = "Here a list with all the active challenges!\n"
-            message += "```\n"
             if scheduled.end_date < timezone.localtime():
                 continue
             
