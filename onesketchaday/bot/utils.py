@@ -42,6 +42,12 @@ async def get_challenge_submissions(challenge: Challenge):
 
     return await sync_to_async(get)()
 
+async def get_challenge(id : str):
+    challenge = await sync_to_async(Challenge.objects.filter)(id=id)
+    challenge = await sync_to_async(challenge.first)()
+    
+    return challenge
+
 async def get_challenges():
     return await get_models(Challenge)
 

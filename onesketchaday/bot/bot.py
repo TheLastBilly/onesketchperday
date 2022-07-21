@@ -128,7 +128,7 @@ class OnesketchadayBot(commands.Bot):
             await self.challenge(context, arg)
         self.add_command(challenge_command)
     
-        @commands.command(name="face", brief="face CHALLENGE_ID POST_URL", description="Used to submit a post for (face) a challenge. Posts need to be reated during the challenge's runtime. Challenge IDs can be seen using the \"challenges\" command")
+        @commands.command(name="face", brief="face CHALLENGE_ID [TITLE] ATTACHMENT", description="Used to submit a post for (face) a challenge, works pretty much the same as the post command, with the exception that a challenge ID needs to be included. Posts need to be reated during the challenge's runtime. Challenge IDs can be seen using the \"challenges\" command")
         async def face_command(context, *, arg=None):
             await self.face_challenge(context, arg)
         self.add_command(face_command)
@@ -302,31 +302,31 @@ class OnesketchadayBot(commands.Bot):
         args = []
         if arg:
             args = arg.split(" ")
-        if len(args) < 2:
+        if len(args) < 1:
             await self.send_commands(context, "face")
             return
         
         try:
             challenge_id = args[0]
-            url = args[1] 
             
-            post_id = urlparse(url).path.rsplit("/", 1)[-1]
-            
-            post = await sync_to_async(Post.objects.filter)(id=post_id)
-            post = await sync_to_async(post.first)()
-            if not post:
-                await self.send_reply_to_user(f"Sorry, but I couldn't find any posts of yours with that URL", context)
-                return
-            
-            challenge = await sync_to_async(Challenge.objects.filter)(id=challenge_id)
-            challenge = await sync_to_async(challenge.first)()
+            challenge = await get_challenge(challenge_id)
             if not challenge:
                 await self.send_reply_to_user(f"Sorry, but I couldn't find any challenges with that ID", context)
                 return
+        
+            now = timezone.localtime()
             
-            if post.date >= challenge.start_date and post.date <= challenge.end_date:
-                await sync_to_async(challenge.add_submission)(post)
-                await self.send_reply_to_user("Done!", context)
+            if now >= challenge.start_date and now <= challenge.end_date:
+                title = " ".join(args[1:]) if len(args) > 1 else ""
+                posts = await self.create_post(context, title)
+
+                for post in posts:
+                    if not post:
+                        return
+                    await sync_to_async(challenge.add_submission)(post)
+
+                s = "s" if len(posts) > 1 else ""
+                await self.send_reply_to_user(f"Your post{s} have been submited to the \"{challenge.title}\" challenge!", context)
                 return
             else:
                 await self.send_reply_to_user("Sorry, but I can only accept posts created during the challenge's runtime", context)
@@ -474,7 +474,8 @@ class OnesketchadayBot(commands.Bot):
 
                         for (participant, posts) in participants:
                             discord_recipient = await self.fetch_user(int(participant.discord_id))
-                            message += f"{discord_recipient.mention} with {len(posts)} submissions!\n"
+                            s = "s" if len(posts) > 1 else ""
+                            message += f"{discord_recipient.mention} with {len(posts)} submission{s}!\n"
 
                         await sync_to_async(challenge.pardon_participants)(pardons_per_challenge)
 
@@ -489,7 +490,7 @@ class OnesketchadayBot(commands.Bot):
                     hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
                     year=datetime.year, month=datetime.month, day=datetime.day 
                 ))
-                self.scheduled_messages_jobs.update({f"start_{challenge.id}_{datetime}" : job})
+                self.scheduled_messages_jobs.update({f"end_{challenge.id}_{datetime}" : job})
 
         # Do misc messages
 
@@ -741,6 +742,7 @@ class OnesketchadayBot(commands.Bot):
         try:
             await self.download_file(file_name, attachment)
             post = await create_post(owner = user, title = title, is_nsfw = is_nsfw)
+            
             if is_video:
                 post.video = file_name
             else:
@@ -749,6 +751,8 @@ class OnesketchadayBot(commands.Bot):
 
             await self.send_reply_to_user("File succesfully uploaded!\nHere's the link to your new post: " 
                     + await get_post_page(post), context)
+            
+            return post
         
         except Exception as e:
             logger.error("Cannot create image post for user {}: {}".format(user.username, str(e)))
@@ -943,6 +947,7 @@ class OnesketchadayBot(commands.Bot):
             return
         
         i = 0
+        posts = []
         for attachment in context.message.attachments:
             is_nsfw = attachment.is_spoiler() or channel_name == nsfw_channel_name
             file_name = str(attachment.filename).lower()
@@ -972,7 +977,11 @@ class OnesketchadayBot(commands.Bot):
             else:
                 post_title = title
             
-            await self.create_post_from_user(user, post_title, file_name, context, attachment, is_video=is_video, is_nsfw=is_nsfw)
+            post = await self.create_post_from_user(user, post_title, file_name, context, attachment, is_video=is_video, is_nsfw=is_nsfw)
+
+            posts.append(post)
+        
+        return posts
 
     # Delete the users post based on the link provided to that post. Only the owner of those posts can delete them.
     # TODO: Maybe allow the admins to delete any posts also
