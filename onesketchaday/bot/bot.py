@@ -812,7 +812,7 @@ class OnesketchadayBot(commands.Bot):
 
             msg += f" (you've got {miss_count} strikes out of a max of {max_strikes})"
 
-            if miss_count > 1:
+            if miss_count > 0:
                 msg += "\n```\n"
                 msg += "Days missed:\n"
                 i = 0
