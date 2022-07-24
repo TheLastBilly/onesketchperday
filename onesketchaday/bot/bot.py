@@ -440,57 +440,60 @@ class OnesketchadayBot(commands.Bot):
             challenge.start_date = timezone.localtime(challenge.start_date)
             challenge.end_date = timezone.localtime(challenge.end_date)
 
-            if challenge.start_date >= now and challenge.start_date < challenge.end_date:
-                start_date_str = await sync_to_async(challenge.get_start_date_str)()
-                end_date_str = await sync_to_async(challenge.get_end_date_str)()
-
-                async def startChallenge():
-                    message = "Hello @everyone, we have a new challenge for you today!\n\n"
-
-                    message += f"**{challenge.title}**\n"
-                    message += f"{challenge.description}\n\n"
-
-                    message += f"This challenge will start on the **{start_date_str}** and will end on the **{end_date_str}**"
-
-                    await self.send_message_on_channel(announcements_channel, message)
+            # If dates are not valid, move on to the next challenge
+            if challenge.start_date < now or challenge.start_date > challenge.end_date:
+                continue
                 
-                datetime = challenge.start_date
+            start_date_str = await sync_to_async(challenge.get_start_date_str)()
+            end_date_str = await sync_to_async(challenge.get_end_date_str)()
 
-                job = self.message_scheduler.add_job(startChallenge, CronTrigger(
-                    hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
-                    year=datetime.year, month=datetime.month, day=datetime.day 
-                ))
-                self.scheduled_messages_jobs.update({f"start_{challenge.id}_{datetime}" : job})
+            async def startChallenge(challenge):
+                message = "Hello @everyone, we have a new challenge for you today!\n\n"
 
-                async def endChallenge():
-                    participants = await sync_to_async(challenge.get_participants)()
-                    pardons_per_challenge = await get_variable("PardonsPerChallenge")
-                    pardons_per_challenge = pardons_per_challenge.integer
-        
-                    message = f"@everyone Aaaaaand it's done!, the **{challenge.title}** challenge is over!\n"
+                message += f"**{challenge.title}**\n"
+                message += f"{challenge.description}\n\n"
 
-                    if len(participants) > 0:
-                        message += f"Here are the winners:\n"
+                message += f"This challenge will start on the **{start_date_str}** and will end on the **{end_date_str}**"
 
-                        for (participant, posts) in participants:
-                            discord_recipient = await self.fetch_user(int(participant.discord_id))
-                            s = "s" if len(posts) > 1 else ""
-                            message += f"{discord_recipient.mention} with {len(posts)} submission{s}!\n"
+                await self.send_message_on_channel(announcements_channel, message)
+            
+            datetime = challenge.start_date
 
-                        await sync_to_async(challenge.pardon_participants)(pardons_per_challenge)
+            job = self.message_scheduler.add_job(startChallenge, args=[challenge], trigger=CronTrigger(
+                hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
+                year=datetime.year, month=datetime.month, day=datetime.day 
+            ))
+            self.scheduled_messages_jobs.update({f"start_{challenge.id}_{datetime}" : job})
 
-                        s = "s" if pardons_per_challenge > 0 else ""
-                        message += f"They have all received {pardons_per_challenge} pardon{s} each!"
+            async def endChallenge(challenge):
+                participants = await sync_to_async(challenge.get_participants)()
+                pardons_per_challenge = await get_variable("PardonsPerChallenge")
+                pardons_per_challenge = pardons_per_challenge.integer
+    
+                message = f"@everyone Aaaaaand it's done!, the **{challenge.title}** challenge is over!\n"
 
-                    await self.send_message_on_channel(announcements_channel, message)
+                if len(participants) > 0:
+                    message += f"Here are the winners:\n"
 
-                datetime = challenge.end_date
+                    for (participant, posts) in participants:
+                        discord_recipient = await self.fetch_user(int(participant.discord_id))
+                        s = "s" if len(posts) > 1 else ""
+                        message += f"{discord_recipient.mention} with {len(posts)} submission{s}!\n"
 
-                job = self.message_scheduler.add_job(endChallenge, CronTrigger(
-                    hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
-                    year=datetime.year, month=datetime.month, day=datetime.day 
-                ))
-                self.scheduled_messages_jobs.update({f"end_{challenge.id}_{datetime}" : job})
+                    await sync_to_async(challenge.pardon_participants)(pardons_per_challenge)
+
+                    s = "s" if pardons_per_challenge > 0 else ""
+                    message += f"They have all received {pardons_per_challenge} pardon{s} each!"
+
+                await self.send_message_on_channel(announcements_channel, message)
+
+            datetime = challenge.end_date
+
+            job = self.message_scheduler.add_job(endChallenge, args=[challenge], trigger=CronTrigger(
+                hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
+                year=datetime.year, month=datetime.month, day=datetime.day 
+            ))
+            self.scheduled_messages_jobs.update({f"end_{challenge.id}_{datetime}" : job})
 
         # Do misc messages
 
