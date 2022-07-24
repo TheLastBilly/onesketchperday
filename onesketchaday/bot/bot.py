@@ -123,7 +123,7 @@ class OnesketchadayBot(commands.Bot):
             await self.nevermind(context, arg)
         self.add_command(nevermind_command)
 
-        @commands.command(name="challenge", brief="challenge START_DATETIME END_DATETIME TITLE:\nDESCRIPTION\n", description="Starts a challenge at the given datetime (can only be used by staff)")
+        @commands.command(name="challenge", brief="challenge START_DATE END_DATE TITLE:\nDESCRIPTION\n", description="Starts a challenge at the given datetime (can only be used by staff)")
         async def challenge_command(context, *, arg=None):
             await self.challenge(context, arg)
         self.add_command(challenge_command)
@@ -437,6 +437,9 @@ class OnesketchadayBot(commands.Bot):
 
         # Do challenges messages
         for challenge in challenges:
+            start_time = await get_variable("ChallengesStartTime")
+            end_time = await get_variable("ChallengesEndTime")
+
             challenge.start_date = timezone.localtime(challenge.start_date)
             challenge.end_date = timezone.localtime(challenge.end_date)
 
@@ -521,14 +524,29 @@ class OnesketchadayBot(commands.Bot):
 
         try:
             args = arg.split()
-            start_date = await get_datetime_from_string(args[0])
-            end_date = await get_datetime_from_string(args[1])
+            start_date = await get_date_from_string(args[0])
+            end_date = await get_date_from_string(args[1])
 
             text = " ".join(args[2:]).split(":")
             title = text[0]
             description = "\n".join(text[1:])
         except Exception as e:
             await self.send_commands(context, "challenge")
+            return
+        
+        try:
+            start_date = timezone.localtime(start_date)
+            end_date = timezone.localtime(end_date)
+
+            start_time = timezone.localtime((await get_variable("ChallengesStartTime")).date)
+            end_time = timezone.localtime((await get_variable("ChallengesEndTime")).date)
+
+            start_date = start_date.replace(hour=start_time.hour, minute=start_time.minute, second=start_time.second)
+            end_date = end_date.replace(hour=end_time.hour, minute=end_time.minute, second=end_time.second)
+            
+        except Exception as e:
+            await self.send_reply_to_user("Sorry, but I cannot create challenges at the moment, please try again later", context)
+            logger.error(f"cannot create challenge right now: {str(e)}")
             return
         
         if start_date < timezone.localtime():

@@ -210,7 +210,9 @@ DEFAULT_VARIABLES = [
     "NewMemberDefaultRole",
     "NewMembersAnnouncementMessage",
     "BeginningOfTheMonthMessage",
-    "PardonsPerChallenge"
+    "PardonsPerChallenge",
+    "ChallengesStartTime",
+    "ChallengesEndTime"
 ]
 DEFAULT_TAGS = [
     "announcement"
