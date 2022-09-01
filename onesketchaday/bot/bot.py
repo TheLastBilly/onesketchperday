@@ -505,13 +505,16 @@ class OnesketchadayBot(commands.Bot):
         first_of_month_message = await get_variable("BeginningOfTheMonthMessage")
 
         async def sendFirstOfMonthMessage():
+            print("This is is a test" + first_of_month_message.text)
             await self.send_message_on_channel(announcements_channel, first_of_month_message.text)
         
         datetime = timezone.localtime(first_of_month_message.date)
         job = job = self.message_scheduler.add_job(sendFirstOfMonthMessage, CronTrigger(
             hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
-            year=first_of_next_month.year, month=first_of_next_month.month, day=first_of_next_month.day 
+            year=now.year, month=now.month, day=1
         ))
+        print(datetime)
+        print(first_of_next_month)
 
         self.scheduled_messages_jobs.update({f"First of Next Month" : job})
 
