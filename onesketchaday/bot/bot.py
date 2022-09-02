@@ -513,8 +513,6 @@ class OnesketchadayBot(commands.Bot):
             hour=datetime.hour, minute=datetime.minute, second=datetime.second, 
             year=now.year, month=now.month, day=1
         ))
-        print(datetime)
-        print(first_of_next_month)
 
         self.scheduled_messages_jobs.update({f"First of Next Month" : job})
 
