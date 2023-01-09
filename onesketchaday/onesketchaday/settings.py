@@ -181,8 +181,8 @@ if not os.path.exists(MEDIA_ROOT):
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-with open("./discord-token", "r+") as f:
-    DISCORD_API_TOKEN = str(f.readline()).strip()
+# with open("./discord-token", "r+") as f:
+#     DISCORD_API_TOKEN = str(f.readline()).strip()
 
 if os.environ.get('SITE_URL') is not None:
     SITE_URL = os.environ['SITE_URL']
@@ -217,3 +217,4 @@ DEFAULT_VARIABLES = [
 DEFAULT_TAGS = [
     "announcement"
 ]
+ARCHIVE_MARKDOWN_PORT = 'Archive Message 2022'

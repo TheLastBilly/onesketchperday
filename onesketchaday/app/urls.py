@@ -19,7 +19,7 @@ urlpatterns = [
     path('post/day/<str:pk>/<str:nature>', views.getFocusedDayPost, name='getFocusedDayPost'),
     path('post/gallery/<str:pk>/<str:nature>', views.getFocusedGalleryPost, name='getFocusedGalleryPost'),
 
-    path('', views.getTodaysPosts, name='getTodaysPosts'),
+    path('', views.index, name='index'),
     path('404/', views.pageNotFound, name='pageNotFound'),
     path('500/', views.internalError, name='internalError'),
     

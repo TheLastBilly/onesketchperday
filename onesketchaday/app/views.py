@@ -33,10 +33,12 @@ def getMaxCharactersPerBiography():
         return DEFAULT_MAX_CHAR_PER_BIO
 
 def getGlobalContext():
+    d = getDaysFromStartDate()
+
     return {
         "media_url" : settings.MEDIA_URL,
         "static_url" : settings.STATIC_URL,
-        "sidebar_title" : str(getDaysFromStartDate()),
+        "sidebar_title" : str(d if d < 365 else 365),
         "sidebar_months": MONTHS,
         "page_title" : "onesketchaday",
         "site_name" : "onesketchaday",
@@ -225,7 +227,7 @@ def getPostsOfDay(request, timestamp):
     if timestamp < startDateTimestamp:
         return redirect('getPostsOfDay', startDateTimestamp)
     elif timestamp > getTimeStampFromDate(timezone.localtime()):
-        return redirect('getTodaysPosts')
+        return redirect('index')
         
     if timestamp == getTimeStampFromDate(timezone.localdate()):
         title = "Today"
@@ -316,9 +318,10 @@ def getGalleryOfMonth(request, index, page=0):
     )
     
     return renderWithContext(request, "posts.html", context)
-    
-def getTodaysPosts(request):
-    return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
+
+def index(request):
+    # return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
+    return renderMarkdownPost(request, settings.ARCHIVE_MARKDOWN_PORT)
 
 def getGallery(request, index = None, page = 0):
     search_bar_value = request.GET.get("search_bar")
