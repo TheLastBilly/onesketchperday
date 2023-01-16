@@ -21,6 +21,9 @@ class AppConfig(AppConfig):
 
             if not MarkdownPost.objects.filter(title='Updates').exists():
                 MarkdownPost.objects.create(title='Updates',contents='# Updates')
+
+            if not MarkdownPost.objects.filter(label=settings.ARCHIVE_MARKDOWN_POST_LABEL).exists():
+                MarkdownPost.objects.create(title="Welcome!", label=settings.ARCHIVE_MARKDOWN_POST_LABEL,contents='#')
             
             for variable in settings.DEFAULT_VARIABLES:
                 if not Variable.objects.filter(name=variable).exists():
