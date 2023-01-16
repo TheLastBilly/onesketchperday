@@ -217,4 +217,4 @@ DEFAULT_VARIABLES = [
 DEFAULT_TAGS = [
     "announcement"
 ]
-ARCHIVE_MARKDOWN_PORT = 'Archive Message 2022'
+ARCHIVE_MARKDOWN_POST_LABEL = 'Archive Message 2022'

@@ -62,6 +62,19 @@ def renderMarkdownPost(request, title):
     }
     return renderWithContext(request, "md_post.html", context)
 
+def renderMarkdownPostFromLabel(request, label):
+    try:
+        post = MarkdownPost.objects.get(label=label)
+        if not post:
+            return redirect('pageNotFound')
+    except Exception as e:
+            return redirect('pageNotFound')
+        
+    context = {
+        "html" : str(post.get_html()),
+    }
+    return renderWithContext(request, "md_post.html", context)
+
 def renderMarkdownPosts(request, label):
     try:
         objects = MarkdownPost.objects.filter(label=label).order_by('date')
@@ -321,7 +334,7 @@ def getGalleryOfMonth(request, index, page=0):
 
 def index(request):
     # return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
-    return renderMarkdownPost(request, settings.ARCHIVE_MARKDOWN_PORT)
+    return renderMarkdownPostFromLabel(request, settings.ARCHIVE_MARKDOWN_POST_LABEL)
 
 def getGallery(request, index = None, page = 0):
     search_bar_value = request.GET.get("search_bar")
