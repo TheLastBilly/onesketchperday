@@ -11,7 +11,7 @@ if [[ -z "$DEFAULT_PASSWORD" ]]; then
     DEFAULT_PASSWORD=pass
 fi
 
-cat << EOF | python manage.py shell
+cat << EOF | /venv/bin/python manage.py shell
 from app.models import *
 from django.utils import timezone
 

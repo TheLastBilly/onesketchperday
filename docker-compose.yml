@@ -19,6 +19,12 @@ services:
             backend:
         env_file:
             - variables.env
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3
 
     app:
         container_name: onesketchaday_app
@@ -32,7 +38,8 @@ services:
             - ./django-token:/onesketchaday/django-token
             - ./discord-token:/onesketchaday/discord-token
         depends_on:
-            - "db"
+            db:
+              condition: service_healthy
         networks:
             backend:
         env_file:
