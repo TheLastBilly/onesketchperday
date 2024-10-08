@@ -185,6 +185,7 @@ class OnesketchadayBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.members = True
+        intents.message_content=True
 
         super().__init__(command_prefix='.', description="A bot for the https://onesketchaday.art website", intents=intents)
 
@@ -703,7 +704,6 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user("Sorry, but you are not allowed to interact with this bot", context)
             logger.error("Rejected request from {}: Not in the registered list".format(str(context.author)))
             return None
-        
         return user
     
     async def create_challenge(self, title : str, description : str, start_date : timezone.localtime, end_date : timezone.localtime):

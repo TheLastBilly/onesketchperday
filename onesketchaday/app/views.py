@@ -333,8 +333,8 @@ def getGalleryOfMonth(request, index, page=0):
     return renderWithContext(request, "posts.html", context)
 
 def index(request):
-    # return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
-    return renderMarkdownPostFromLabel(request, settings.ARCHIVE_MARKDOWN_POST_LABEL)
+    # return renderMarkdownPostFromLabel(request, settings.ARCHIVE_MARKDOWN_POST_LABEL)
+    return getPostsOfDay(request, getTimeStampFromDate(timezone.localdate()))
 
 def getGallery(request, index = None, page = 0):
     search_bar_value = request.GET.get("search_bar")

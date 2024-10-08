@@ -34,6 +34,6 @@ groupadd -g $PGID app
 useradd -u $PUID -g $PGID app
 
 # Discord bot no longer needed
-# /venv/bin/python manage.py discord_bot &
+/venv/bin/python manage.py discord_bot &
 
 /venv/bin/gunicorn --user $PUID --group $PGID --workers $WORKERS $BIND $APP_NAME.wsgi
