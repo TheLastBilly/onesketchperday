@@ -37,14 +37,14 @@ class DiscordBot():
         reminder.save()
 
     async def getReminder(self):
-        return await sync_to_async(self.syncGetVariable)("ReminderMessage")
+        return await database_sync_to_async(self.syncGetVariable)("ReminderMessage")
     async def setReminder(self, text):
-        await sync_to_async(self.syncSetVariable)(name="ReminderMessage", text=text)
+        await database_sync_to_async(self.syncSetVariable)(name="ReminderMessage", text=text)
     
     async def getVariable(self, name):
-        return await sync_to_async(self.syncGetVariable)(name)
+        return await database_sync_to_async(self.syncGetVariable)(name)
     async def setVariable(self, name, text=None, label=None, date=None, integer=None, file=None):
-        return await sync_to_async(self.syncSetVariable)(name, text=text, label=label, date=date, integer=integer, file=file)
+        return await database_sync_to_async(self.syncSetVariable)(name, text=text, label=label, date=date, integer=integer, file=file)
 
     def syncGetPostsOnTimestamp(self, timestamp):
         posts = Post.objects.filter(timestamp=timestamp)
@@ -52,7 +52,7 @@ class DiscordBot():
     def syncGetTodaysPosts(self):
         return self.syncGetPostsOnTimestamp(getTodaysTimestamp())
     async def getTodaysPosts(self):
-        return await sync_to_async(self.syncGetTodaysPosts)()
+        return await database_sync_to_async(self.syncGetTodaysPosts)()
 
     def syncGetUser(self, index):
         users = User.objects.filter(discord_username=index)
@@ -67,17 +67,17 @@ class DiscordBot():
             return Post.objects.create(owner=owner, image=file, title=title, is_nsfw=is_nsfw)
 
     async def createPost(self, owner, file, title, isVideo=False, is_nsfw=False):
-        return await sync_to_async(self.syncCreatePost)(owner, file, title, isVideo, is_nsfw)
+        return await database_sync_to_async(self.syncCreatePost)(owner, file, title, isVideo, is_nsfw)
 
     def syncDeletePost(self, owner, id):
         Post.objects.get(owner=owner, id=id).delete()
         
     async def deletePost(self, owner, id):
-        await sync_to_async(self.syncDeletePost)(owner, id)
+        await database_sync_to_async(self.syncDeletePost)(owner, id)
 
     async def getUser(self, index):
         try:
-            return await sync_to_async(self.syncGetUser)(index)
+            return await database_sync_to_async(self.syncGetUser)(index)
         except ObjectDoesNotExist as e:
             return None
         
@@ -215,7 +215,7 @@ async def deletePost(context, link):
 async def sendReminder():
     try:
         reminder = await bot.getReminder()
-        await bot.sendMessageOnChannel(reminder.label, "@everyone " + reminder.text + " (Day {})".format(await sync_to_async(getDaysFromStartDate)()))
+        await bot.sendMessageOnChannel(reminder.label, "@everyone " + reminder.text + " (Day {})".format(await database_sync_to_async(getDaysFromStartDate)()))
     except Exception as e:
         logger.error("Cannot send reminder: {}".format(str(e)))
 

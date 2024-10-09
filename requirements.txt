@@ -12,3 +12,4 @@ discord.py
 python-dotenv
 apscheduler
 asgiref
+pynacl

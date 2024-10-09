@@ -1,5 +1,5 @@
 from re import T
-from asgiref.sync import sync_to_async
+from asgiref.sync import SyncToAsync
 from django.core.exceptions import *
 from bot.globals import *
 from datetime import time
@@ -9,8 +9,25 @@ from app.utils import *
 import logging, os
 import asyncio
 
+from django.db import close_old_connections
+
 DATETIME_STRING_FORMAT      = "%H:%M:%S,%d/%m/%Y"
 DATE_STRING_FORMAT          = "%d/%m/%Y"
+
+# Taken from https://github.com/django/channels/blob/main/channels/db.py
+class DatabaseSyncToAsync(SyncToAsync):
+    """
+    SyncToAsync version that cleans up old database connections when it exits.
+    """
+
+    def thread_handler(self, loop, *args, **kwargs):
+        close_old_connections()
+        try:
+            return super().thread_handler(loop, *args, **kwargs)
+        finally:
+            close_old_connections()
+
+database_sync_to_async = DatabaseSyncToAsync
 
 async def get_new_member_role():
     return (await get_variable("NewMemberDefaultRole")).text
@@ -31,7 +48,7 @@ async def get_models(model):
             programmed_events.append(p)
         return programmed_events
     
-    return await sync_to_async(get_all)()
+    return await database_sync_to_async(get_all)()
 
 async def get_challenge_submissions(challenge: Challenge):
     def get():
@@ -40,11 +57,11 @@ async def get_challenge_submissions(challenge: Challenge):
             submissions.append(p)
         return submissions
 
-    return await sync_to_async(get)()
+    return await database_sync_to_async(get)()
 
 async def get_challenge(id : str):
-    challenge = await sync_to_async(Challenge.objects.filter)(id=id)
-    challenge = await sync_to_async(challenge.first)()
+    challenge = await database_sync_to_async(Challenge.objects.filter)(id=id)
+    challenge = await database_sync_to_async(challenge.first)()
     
     return challenge
 
@@ -55,8 +72,8 @@ async def get_programmed_events():
     return await get_models(ProgrammedEvent)
 
 async def parse_time_string(fmt : str, time_str : str):
-    t = await sync_to_async(timezone.datetime.strptime)(time_str, fmt) 
-    t = await sync_to_async(timezone.make_aware)(t)
+    t = await database_sync_to_async(timezone.datetime.strptime)(time_str, fmt) 
+    t = await database_sync_to_async(timezone.make_aware)(t)
 
     return t
 
@@ -70,81 +87,81 @@ async def get_nsfw_channel_name():
     return (await get_variable("NSFWChannel")).label
 
 async def get_day_suffix(day):
-    return await sync_to_async(getDaySuffix)(day)
+    return await database_sync_to_async(getDaySuffix)(day)
 
 async def get_start_date():
-    return await sync_to_async(getStartDate)()
+    return await database_sync_to_async(getStartDate)()
 
 async def get_max_strikes():
-    return await sync_to_async(getMaxStrikes)()
+    return await database_sync_to_async(getMaxStrikes)()
 
 async def get_days_from_start_date():
-    return await sync_to_async(getDaysFromStartDate)()
+    return await database_sync_to_async(getDaysFromStartDate)()
 
 async def get_session_time_remaining():
-    return await sync_to_async(getTimeRemainingForSession)()
+    return await database_sync_to_async(getTimeRemainingForSession)()
 
 async def get_post_page(post : Post):
-    return await sync_to_async(post.get_page)()
+    return await database_sync_to_async(post.get_page)()
 
 async def get_user_page(user : User):
-    return await sync_to_async(user.get_page)()
+    return await database_sync_to_async(user.get_page)()
 
 async def save_user(user : User):
-    return await sync_to_async(user.save)()
+    return await database_sync_to_async(user.save)()
 
 async def create_variable(**kwargs):
-    return await sync_to_async(Variable.objects.create)(**kwargs)
+    return await database_sync_to_async(Variable.objects.create)(**kwargs)
 
 async def get_variable(name : str) -> Variable:
-    return await sync_to_async(Variable.objects.get)(name=name)
+    return await database_sync_to_async(Variable.objects.get)(name=name)
 async def set_variable(variable : Variable):
-    return await sync_to_async(variable.save)()
+    return await database_sync_to_async(variable.save)()
 
 async def get_date_from_timestamp(timestamp : int):
-    return await sync_to_async(getDateFromTimestamp)(timestamp)
+    return await database_sync_to_async(getDateFromTimestamp)(timestamp)
 
 async def make_datetime_aware(datetime : timezone.datetime):
-    return await sync_to_async(makeDatetimeAware)(datetime)
+    return await database_sync_to_async(makeDatetimeAware)(datetime)
 
 async def get_date():
-    return await sync_to_async(timezone.localdate)()
+    return await database_sync_to_async(timezone.localdate)()
 
 async def get_reminder():
-    return await sync_to_async(Variable.objects.get)(name="ReminderMessage")
+    return await database_sync_to_async(Variable.objects.get)(name="ReminderMessage")
 async def set_reminder(reminder : str):
     var = await get_reminder()
     var.text = reminder
-    await sync_to_async(var.save)()
+    await database_sync_to_async(var.save)()
 
 async def create_post(**kwargs):
-    return await sync_to_async(Post.objects.create)(**kwargs)
+    return await database_sync_to_async(Post.objects.create)(**kwargs)
 async def get_post(owner : User, id : str):
-    return await sync_to_async(Post.objects.get)(owner = owner, id = id)
+    return await database_sync_to_async(Post.objects.get)(owner = owner, id = id)
 async def delete_post(id : str):
     post = await get_post(id)
-    await sync_to_async(post.delete)()
+    await database_sync_to_async(post.delete)()
 async def save_post(post : Post):
-    return await sync_to_async(post.save)()
+    return await database_sync_to_async(post.save)()
 
 async def get_todays_posts():
-    timestamp = await sync_to_async(getTodaysTimestamp)()
-    posts = await sync_to_async(Post.objects.filter)(timestamp=timestamp)
-    return posts, await sync_to_async(len)(posts)
+    timestamp = await database_sync_to_async(getTodaysTimestamp)()
+    posts = await database_sync_to_async(Post.objects.filter)(timestamp=timestamp)
+    return posts, await database_sync_to_async(len)(posts)
 
 async def delete_post(onwer, id):
     post = await get_post(onwer, id) 
-    await sync_to_async(post.delete)()
+    await database_sync_to_async(post.delete)()
 
 async def get_user_from_id(discord_id : int):
     try:
-        return await sync_to_async(User.objects.get)(discord_id=discord_id)
+        return await database_sync_to_async(User.objects.get)(discord_id=discord_id)
     except ObjectDoesNotExist as e:
         return None
 
 async def get_user_from_name(username : str):
     try:
-        return await sync_to_async(User.objects.get)(username=username)
+        return await database_sync_to_async(User.objects.get)(username=username)
     except ObjectDoesNotExist as e:
         return None
 

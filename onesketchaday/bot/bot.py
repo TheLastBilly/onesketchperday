@@ -236,7 +236,7 @@ class OnesketchadayBot(commands.Bot):
             message.save()
         
         try:
-            await sync_to_async(set_message)()
+            await database_sync_to_async(set_message)()
             await self.send_reply_to_user("Done!", context)
         except:
             await self.send_reply_to_user("There seems to be a problem with the backend, please try again later", context)
@@ -251,8 +251,8 @@ class OnesketchadayBot(commands.Bot):
             await self.send_commands(context, "submissions")
             return
         
-        challenge = await sync_to_async(Challenge.objects.filter)(id=arg)
-        challenge = await sync_to_async(challenge.first)()
+        challenge = await database_sync_to_async(Challenge.objects.filter)(id=arg)
+        challenge = await database_sync_to_async(challenge.first)()
         if not challenge:
             await self.send_reply_to_user(f"Sorry, but I couldn't find any challenges with that ID", context)
             return
@@ -266,11 +266,11 @@ class OnesketchadayBot(commands.Bot):
         message = "```\n"
         message += f"Submisssions for the {challenge.title} challenge:\n\n"
         for i,submission in enumerate(submissions):
-            url = await sync_to_async(submission.get_page)()
+            url = await database_sync_to_async(submission.get_page)()
             
             def get_owner():
                 return submission.owner.username
-            owner = await sync_to_async(get_owner)()
+            owner = await database_sync_to_async(get_owner)()
 
             message += f"{i+1}.- {url} by {owner}\n"
         message += "```"
@@ -283,13 +283,13 @@ class OnesketchadayBot(commands.Bot):
         if not user:
             return
         
-        challenge = await sync_to_async(Challenge.objects.filter)(id=arg)
-        challenge = await sync_to_async(challenge.first)()
+        challenge = await database_sync_to_async(Challenge.objects.filter)(id=arg)
+        challenge = await database_sync_to_async(challenge.first)()
         if not challenge:
             await self.send_reply_to_user(f"Sorry, but I couldn't find any challenges with that ID", context)
             return
         
-        await sync_to_async(challenge.delete)()
+        await database_sync_to_async(challenge.delete)()
         await self.update_scheduled_messages()
 
         await self.send_reply_to_user(f"Challenge \"{challenge.title}\" has been deleted!", context)
@@ -324,7 +324,7 @@ class OnesketchadayBot(commands.Bot):
                 for post in posts:
                     if not post:
                         return
-                    await sync_to_async(challenge.add_submission)(post)
+                    await database_sync_to_async(challenge.add_submission)(post)
 
                 s = "s" if len(posts) > 1 else ""
                 await self.send_reply_to_user(f"Your post{s} have been submited to the \"{challenge.title}\" challenge!", context)
@@ -354,7 +354,7 @@ class OnesketchadayBot(commands.Bot):
         if len(programmed_events):     
             message = "```\n"
             for i, scheduled in enumerate(programmed_events):
-                message += f"{i+1}.- [{await sync_to_async(scheduled.programmed_date_str)()}] {scheduled.message[:20]}"
+                message += f"{i+1}.- [{await database_sync_to_async(scheduled.programmed_date_str)()}] {scheduled.message[:20]}"
                 if len(scheduled.message) > 20:
                     message += "..."
                 message += "\n"
@@ -387,9 +387,9 @@ class OnesketchadayBot(commands.Bot):
             def print_challengers():
                 for challenger in scheduled.get_participants():
                     print(challenger)
-            await sync_to_async(print_challengers)()
+            await database_sync_to_async(print_challengers)()
 
-            message += f"{i+1}.- [{await sync_to_async(scheduled.programmed_date_str)()}] [{scheduled.id}] {scheduled.title[:40]}"
+            message += f"{i+1}.- [{await database_sync_to_async(scheduled.programmed_date_str)()}] [{scheduled.id}] {scheduled.title[:40]}"
             i += 1
             
             if len(scheduled.title) > 20:
@@ -418,12 +418,12 @@ class OnesketchadayBot(commands.Bot):
         # Do scheduled messages
         for scheduled_message in scheduled_messages:
             if scheduled_message.programmed_date < now:
-                await sync_to_async(scheduled_message.delete)()
+                await database_sync_to_async(scheduled_message.delete)()
                 continue
 
             async def sendScheduledMessage():
                 await self.send_message_on_channel(scheduled_message.channel, scheduled_message.message)
-                await sync_to_async(scheduled_message.delete)()
+                await database_sync_to_async(scheduled_message.delete)()
             
             datetime = timezone.localtime(scheduled_message.programmed_date)
 
@@ -448,8 +448,8 @@ class OnesketchadayBot(commands.Bot):
             if challenge.start_date < now or challenge.start_date > challenge.end_date:
                 continue
                 
-            start_date_str = await sync_to_async(challenge.get_start_date_str)()
-            end_date_str = await sync_to_async(challenge.get_end_date_str)()
+            start_date_str = await database_sync_to_async(challenge.get_start_date_str)()
+            end_date_str = await database_sync_to_async(challenge.get_end_date_str)()
 
             async def startChallenge(challenge):
                 message = "Hello @everyone, we have a new challenge for you today!\n\n"
@@ -470,7 +470,7 @@ class OnesketchadayBot(commands.Bot):
             self.scheduled_messages_jobs.update({f"start_{challenge.id}_{datetime}" : job})
 
             async def endChallenge(challenge):
-                participants = await sync_to_async(challenge.get_participants)()
+                participants = await database_sync_to_async(challenge.get_participants)()
                 pardons_per_challenge = await get_variable("PardonsPerChallenge")
                 pardons_per_challenge = pardons_per_challenge.integer
     
@@ -484,7 +484,7 @@ class OnesketchadayBot(commands.Bot):
                         s = "s" if len(posts) > 1 else ""
                         message += f"{discord_recipient.mention} with {len(posts)} submission{s}!\n"
 
-                    await sync_to_async(challenge.pardon_participants)(pardons_per_challenge)
+                    await database_sync_to_async(challenge.pardon_participants)(pardons_per_challenge)
 
                     s = "s" if pardons_per_challenge > 0 else ""
                     message += f"They have all received {pardons_per_challenge} pardon{s} each!"
@@ -502,7 +502,7 @@ class OnesketchadayBot(commands.Bot):
         # Do misc messages
 
         # First of month message
-        first_of_next_month = await sync_to_async(getFirstOfNextMonth)()
+        first_of_next_month = await database_sync_to_async(getFirstOfNextMonth)()
         first_of_month_message = await get_variable("BeginningOfTheMonthMessage")
 
         async def sendFirstOfMonthMessage():
@@ -559,15 +559,15 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user("The end date cannot come before the start date bud!", context)
             return
         
-        if end_date < await sync_to_async(timezone.localtime)():
+        if end_date < await database_sync_to_async(timezone.localtime)():
             await self.send_reply_to_user("Sorry, but I can't create challenges that end in the past", context)
             return
         
         challenge = await self.create_challenge(title=title, description=description,
             start_date=start_date, end_date=end_date)
         
-        start_date_str = await sync_to_async(challenge.get_start_date_str)()
-        end_date_str = await sync_to_async(challenge.get_end_date_str)()
+        start_date_str = await database_sync_to_async(challenge.get_start_date_str)()
+        end_date_str = await database_sync_to_async(challenge.get_end_date_str)()
         message = f"Done!, your challenge has been scheduled to start on the {start_date_str}, and will end on the {end_date_str}"
 
         await self.send_reply_to_user(message, context)
@@ -595,8 +595,8 @@ class OnesketchadayBot(commands.Bot):
             await self.send_reply_to_user("Wrong event number, please check the scheduled events")
             return
         
-        datetime_str = await sync_to_async(programmed_events[index-1].programmed_date_str)()
-        await sync_to_async(programmed_events[index-1].delete)()
+        datetime_str = await database_sync_to_async(programmed_events[index-1].programmed_date_str)()
+        await database_sync_to_async(programmed_events[index-1].delete)()
 
         await self.send_reply_to_user(f"The event scheduled for {datetime_str} has been deleted!", context)
 
@@ -617,7 +617,7 @@ class OnesketchadayBot(commands.Bot):
             return
 
         event = await self.schedule_message_on_channel(channel, message, datetime)
-        await self.send_reply_to_user(f"Message scheduled for {await sync_to_async(event.programmed_date_str)()}", context)
+        await self.send_reply_to_user(f"Message scheduled for {await database_sync_to_async(event.programmed_date_str)()}", context)
 
     async def pardon(self, context, arg):
         username = None
@@ -707,7 +707,7 @@ class OnesketchadayBot(commands.Bot):
         return user
     
     async def create_challenge(self, title : str, description : str, start_date : timezone.localtime, end_date : timezone.localtime):
-        challenge = await sync_to_async(Challenge.objects.create)(title=title, description=description, start_date=start_date, end_date=end_date)
+        challenge = await database_sync_to_async(Challenge.objects.create)(title=title, description=description, start_date=start_date, end_date=end_date)
         await self.update_scheduled_messages()
 
         return challenge
@@ -736,8 +736,8 @@ class OnesketchadayBot(commands.Bot):
         await ch.send(message)
 
     async def schedule_message_on_channel(self, channel : str, message : str, datetime : timezone.datetime):
-        event = await sync_to_async(ProgrammedEvent)(channel=channel, message=message, programmed_date=datetime)
-        await sync_to_async(event.save)()
+        event = await database_sync_to_async(ProgrammedEvent)(channel=channel, message=message, programmed_date=datetime)
+        await database_sync_to_async(event.save)()
 
         await self.update_scheduled_messages()
 
@@ -789,7 +789,7 @@ class OnesketchadayBot(commands.Bot):
             return
         
         try:
-            await sync_to_async(user.delete_profile_picture)()
+            await database_sync_to_async(user.delete_profile_picture)()
 
             user.biography = ""
             user.profile_picture = ""
@@ -824,8 +824,8 @@ class OnesketchadayBot(commands.Bot):
         try:
             msg = ""
             max_strikes = await get_max_strikes()
-            misses = await sync_to_async(user.get_missed_days)()
-            miss_count = await sync_to_async(len)(misses)
+            misses = await database_sync_to_async(user.get_missed_days)()
+            miss_count = await database_sync_to_async(len)(misses)
             
             if miss_count < max_strikes:
                 msg += "You are still in the game!"
@@ -840,7 +840,7 @@ class OnesketchadayBot(commands.Bot):
                 i = 0
 
                 for miss in misses:
-                    s = await sync_to_async(miss.strftime)("%d %B, %Y")
+                    s = await database_sync_to_async(miss.strftime)("%d %B, %Y")
                     msg += f"{i+1}: {s}\n"
                     i += 1
                 
@@ -874,18 +874,18 @@ class OnesketchadayBot(commands.Bot):
         try:
             date = await get_date_from_string(date_str)
 
-            pardon = await sync_to_async(Pardon)(user = recipient, date = date)
-            date_str = await sync_to_async(pardon.date_str)()
+            pardon = await database_sync_to_async(Pardon)(user = recipient, date = date)
+            date_str = await database_sync_to_async(pardon.date_str)()
             
             if date < await get_start_date():
                 await self.send_reply_to_user(f"Sorry, but the {date_str} happened before the challenge started", context)
                 return
 
-            if await sync_to_async(recipient.has_pardon_for_date)(date):
+            if await database_sync_to_async(recipient.has_pardon_for_date)(date):
                 await self.send_reply_to_user(f"Looks like {discord_recipient.mention} has already received a pardon for the {date_str}!", context)
                 return
             
-            await sync_to_async(pardon.save)()
+            await database_sync_to_async(pardon.save)()
             await self.send_reply_to_user(f"Done! {discord_recipient.mention} you will no longer have to worry about making a post on the {date_str}!", context)
 
         except Exception as e:
@@ -1032,7 +1032,7 @@ class OnesketchadayBot(commands.Bot):
         try:
             reminder = await get_reminder()
             announcements_message = await get_announcements_channel()
-            await self.send_message_on_channel(announcements_message, "@everyone " + reminder.text + " (Day {})".format(await sync_to_async(getDaysFromStartDate)()))
+            await self.send_message_on_channel(announcements_message, "@everyone " + reminder.text + " (Day {})".format(await database_sync_to_async(getDaysFromStartDate)()))
         except Exception as e:
             logger.error("Cannot send reminder: {}".format(str(e)))
 
