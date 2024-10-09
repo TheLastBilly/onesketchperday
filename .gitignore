@@ -6,3 +6,5 @@ onesketchaday/media/
 *-token
 onesketchaday/static/
 *.swp
+media/
+static/
