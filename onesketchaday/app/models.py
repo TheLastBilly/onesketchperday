@@ -160,8 +160,7 @@ class Post(models.Model):
         super(Post, self).save()
         
     def save(self, *args, **kwargs):
-        if not self.timestamp:
-            self.update_timestamp(save=False)
+        self.update_timestamp(save=False)
         if not self.clicks:
             self.clicks = 0
 
