@@ -134,7 +134,7 @@ class Post(models.Model):
     description         = models.TextField(null=True, blank=True)
 
     owner               = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE, null=False)
-    date                = models.DateTimeField(auto_now_add=True, null=True)
+    date                = models.DateTimeField(null=True, blank=True, default=None)
 
     image               = models.ImageField(null=True, blank=True)
     video               = models.FileField(null=True, blank=True)
@@ -144,7 +144,7 @@ class Post(models.Model):
 
     is_nsfw             = models.BooleanField(default=False)
 
-    timestamp           = models.IntegerField(null=True)
+    timestamp           = models.IntegerField(null=True, blank=True)
     id                  = models.CharField(max_length=ID_LENGTH, default=getRandomBase64String, primary_key=True, editable=False)
 
     def update_timestamp(self, save=True):
@@ -160,6 +160,8 @@ class Post(models.Model):
         super(Post, self).save()
         
     def save(self, *args, **kwargs):
+        if self.date is None:
+            self.date = timezone.now()
         self.update_timestamp(save=False)
         if not self.clicks:
             self.clicks = 0
